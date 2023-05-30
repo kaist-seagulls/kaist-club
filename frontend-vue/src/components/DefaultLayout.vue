@@ -3,8 +3,10 @@
     DefaultLayout (NavBar and FilterBox)
   </div>
   <NavBar />
-  <FilterBox />
-  <slot />
+  <div class="t-flex">
+    <FilterBox />
+    <slot />
+  </div>
 </template>
 <script setup>
 import NavBar from '@/components/NavBar.vue'

@@ -25,6 +25,15 @@ const layout = computed(() => useRoute().meta.layout || DefaultLayout)
   margin: 5px;
 }
 .t-title {
-  color: grey
+  color: dodgerblue;
+}
+.t-flex-g0 {
+  flex-grow: 0;
+}
+.t-flex-g1 {
+  flex-grow: 1;
+}
+.t-flex {
+  display: flex;
 }
 </style>

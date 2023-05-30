@@ -3,7 +3,7 @@
     <div class="t-title">
       FilterBox
     </div>
-    <div class="t-box">
+    <div class="t-box t-flex-g0">
       <div class="t-title">
         FilterControl
       </div>
