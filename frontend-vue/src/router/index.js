@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-// import DefaultLayout from '@/components/DefaultLayout.vue'
+import DefaultLayout from '@/components/DefaultLayout.vue'
 import NonfilteredLayout from '@/components/NonfilteredLayout.vue'
 import NoLayout from '@/components/NoLayout.vue'
 
@@ -28,6 +28,7 @@ const routes = [
   {
     path: '/calendar',
     name: 'calendar',
+    meta: { layout: DefaultLayout },
     component: CalendarView,
   },
   {
@@ -39,6 +40,7 @@ const routes = [
   {
     path: '/club/:id?',
     name: 'club',
+    meta: { layout: DefaultLayout },
     component: ClubProfileView,
   },
   {
@@ -50,11 +52,13 @@ const routes = [
   {
     path: '/newpost',
     name: 'newpost',
+    meta: { layout: DefaultLayout },
     component: CreatePostView,
   },
   {
     path: '/editclub',
     name: 'editclub',
+    meta: { layout: DefaultLayout },
     component: EditClubProfileView,
   },
   {
@@ -66,6 +70,7 @@ const routes = [
   {
     path: '/',
     name: 'main',
+    meta: { layout: DefaultLayout },
     component: MainView,
   },
   {
