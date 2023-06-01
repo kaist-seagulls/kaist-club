@@ -1,15 +1,14 @@
 <template>
   <component :is="layout">
-    <router-view />
+    <RouterView />
   </component>
 </template>
 
 <script setup>
-import { computed } from '@vue/reactivity';
-import { useRoute } from 'vue-router';
-import DefaultLayout from '@/components/DefaultLayout.vue'
+import { computed } from '@vue/reactivity'
+import { useRoute } from 'vue-router'
 
-const layout = computed(() => useRoute().meta.layout || DefaultLayout)
+const layout = computed(() => useRoute().meta.layout)
 </script>
 
 <style>

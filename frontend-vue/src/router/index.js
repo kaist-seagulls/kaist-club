@@ -17,6 +17,7 @@ import ManageClubView from '@/views/ManageClubView.vue'
 import SignInView from '@/views/SignInView.vue'
 import SignUpView from '@/views/SignUpView.vue'
 import UserProfileView from '@/views/UserProfileView.vue'
+import NotFoundView from '@/views/NotFoundView.vue'
 
 const routes = [
   {
@@ -26,10 +27,11 @@ const routes = [
     component: AdminView,
   },
   {
-    path: '/calendar',
+    path: '/calendar/:month(\\d+)/:year(\\d+)',
     name: 'calendar',
     meta: { layout: DefaultLayout },
     component: CalendarView,
+    props: true,
   },
   {
     path: '/changepassword',
@@ -38,10 +40,11 @@ const routes = [
     component: ChangePasswordView,
   },
   {
-    path: '/club/:id?',
+    path: '/club/:id(\\d+)',
     name: 'club',
     meta: { layout: DefaultLayout },
     component: ClubProfileView,
+    props: true,
   },
   {
     path: '/newclub',
@@ -72,6 +75,7 @@ const routes = [
     name: 'main',
     meta: { layout: DefaultLayout },
     component: MainView,
+    props: (route) => ({ q: route.query.q || "" }),
   },
   {
     path: '/manageclub',
@@ -96,6 +100,12 @@ const routes = [
     name: 'mypage',
     meta: { layout: NonfilteredLayout },
     component: UserProfileView,
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'notfound',
+    meta: { layout: NoLayout },
+    component: NotFoundView,
   },
 ]
 
