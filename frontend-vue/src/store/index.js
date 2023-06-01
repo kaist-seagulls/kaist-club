@@ -1,30 +1,30 @@
 import { createStore } from 'vuex'
-// import axios from 'axios'
+import axios from 'axios'
 
-// const prefix = '/api/v1/'
+const prefix = '/api/v1/'
 
-const exampleClubs = [
-  {
-    id: 1,
-    name: 'Number',
-    isJoined: true,
-  },
-  {
-    id: 2,
-    name: 'Lunatic',
-    isJoined: false,
-  },
-  {
-    id: 3,
-    name: 'K-Let',
-    isJoined: true,
-  },
-  {
-    id: 4,
-    name: 'Mixer',
-    isJoined: false,
-  },
-]
+// const exampleClubs = [
+// {
+//   id: 1,
+//   name: 'Number',
+//   isJoined: true,
+// },
+// {
+//   id: 2,
+//   name: 'Lunatic',
+//   isJoined: false,
+// },
+// {
+//   id: 3,
+//   name: 'K-Let',
+//   isJoined: true,
+// },
+// {
+//   id: 4,
+//   name: 'Mixer',
+//   isJoined: false,
+// },
+// ]
 
 export default createStore({
   state: {
@@ -143,15 +143,15 @@ export default createStore({
   },
   actions: {
     async fetchRelatedClubs (context) {
-      // axios
-      //   .get(prefix + 'get-clubs-related')
-      //   .then(res => {
-      //     context.commit('updateRelatedClubs', res.related)
-      //   })
-      //   .catch(err => {
-      //     alert(err)
-      //   })
-      context.commit('updateRelatedClubs', exampleClubs)
+        axios
+          .get(prefix + 'get-clubs-related')
+          .then(res => {
+            context.commit('updateRelatedClubs', res.related)
+          })
+          .catch(err => {
+            alert(err)
+          })
+      //context.commit('updateRelatedClubs', exampleClubs)
     },
     toggleChecked (context, id) {
       if (context.state.checked[id]) {
