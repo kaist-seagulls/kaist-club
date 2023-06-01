@@ -17,8 +17,66 @@
         FilterOptions
       </div>
       <div>
-        ToFill: FilterOptions
+        <div>
+          Joined
+          <button @click="toggleJoinedChecked()">
+            <div v-if="isAllJoinedChecked" style="color: green;">V</div>
+            <div v-else                    style="color:   red;">X</div>
+          </button>
+        </div>
+        <div>
+          <FilterOption v-for="filter in filterConfig.joined" :filter="filter" :key="filter.id" />
+        </div>
+        <div>
+          Subscribed
+          <button @click="toggleNotJoinedChecked()">
+            <div v-if="isAllNotJoinedChecked" style="color: green;">V</div>
+            <div v-else                       style="color:   red;">X</div>
+          </button>
+        </div>
+        <div>
+          <FilterOption v-for="filter in filterConfig.notJoined" :filter="filter" :key="filter.id" />
+        </div>
+        <div>
+          All
+          <button @click="toggleAllChecked()">
+            <div v-if="isAllChecked" style="color: green;">V</div>
+            <div v-else              style="color:   red;">X</div>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
+
+<script>
+import { mapActions, mapGetters } from 'vuex';
+import FilterOption from './FilterOption.vue'
+
+export default {
+  name: "FilterBox",
+  components: {
+    FilterOption,
+  },
+  computed: {
+    ...mapGetters({
+      filterConfig: 'filterConfig',
+      isAllJoinedChecked: 'isAllJoinedChecked',
+      isAllNotJoinedChecked: 'isAllNotJoinedChecked',
+      isAllChecked: 'isAllChecked',
+    })
+  },
+  methods: {
+    ...mapActions({
+      fetchRelatedClubs: 'fetchRelatedClubs',
+      toggleJoinedChecked: 'toggleJoinedChecked',
+      toggleNotJoinedChecked: 'toggleNotJoinedChecked',
+      toggleAllChecked: 'toggleAllChecked',
+    })
+  },
+  beforeMount() {
+    this.fetchRelatedClubs()
+    console.log('MOUNTED')
+  }
+}
+</script>

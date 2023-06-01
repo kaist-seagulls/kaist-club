@@ -1,7 +1,30 @@
 import { createStore } from 'vuex'
-import axios from 'axios'
+// import axios from 'axios'
 
-const prefix = '/api/v1/'
+// const prefix = '/api/v1/'
+
+const exampleClubs = [
+  {
+    id: 1,
+    name: 'Number',
+    isJoined: true,
+  },
+  {
+    id: 2,
+    name: 'Lunatic',
+    isJoined: false,
+  },
+  {
+    id: 3,
+    name: 'K-Let',
+    isJoined: true,
+  },
+  {
+    id: 4,
+    name: 'Mixer',
+    isJoined: false,
+  },
+]
 
 export default createStore({
   state: {
@@ -10,31 +33,68 @@ export default createStore({
   },
   getters: {
     filterConfig (state) {
-      let config = Object.create()
+      const config = {}
       config.joined = []
       config.notJoined = []
-      for (const [id, club] in Object.entries(state.relatedClubs)) {
+      for (const [id, club] of Object.entries(state.relatedClubs)) {
         if (club.isJoined) {
           config.joined.push(
             {id, name: club.name, isChecked: state.checked[id]}
           )
         } else {
-          config.joined.push(
+          config.notJoined.push(
             {id, name: club.name, isChecked: state.checked[id]}
           )
         }
       }
       return config
     },
+    isAllJoinedChecked (state) {
+      for (const [id, club] of Object.entries(state.relatedClubs)) {
+        if (club.isJoined) {
+          if (!state.checked[id]) {
+            return false
+          }
+        }
+      }
+      return true
+    },
+    isAllNotJoinedChecked (state) {
+      for (const [id, club] of Object.entries(state.relatedClubs)) {
+        if (!club.isJoined) {
+          if (!state.checked[id]) {
+            return false
+          }
+        }
+      }
+      return true
+    },
+    isAllChecked (state) {
+      for (const checked of Object.values(state.checked)) {
+        if (!checked) {
+          return false
+        }
+      }
+      return true
+    }
   },
   mutations: {
     updateRelatedClubs (state, clubs) {
-      for (const club in clubs) {
-        let id = club.id
-        club.removeAttribute('id')
-        state.checked[id] = true
-        state.relatedClubs[id] = club
+      const relatedClubs = {}
+      const checked = {}
+      for (const club of clubs) {
+        relatedClubs[club.id] = {
+          name: club.name,
+          isJoined: club.isJoined,
+        }
+        if (state.checked[club.id] === undefined) {
+          checked[club.id] = true
+        } else {
+          checked[club.id] = state.checked[club.id]
+        }
       }
+      state.relatedClubs = relatedClubs
+      state.checked = checked
     },
     setChecked (state, id) {
       state.checked[id] = true
@@ -42,35 +102,85 @@ export default createStore({
     setUnchecked (state, id) {
       state.checked[id] = false
     },
+    setAllJoinedChecked (state) {
+      for (const [id, club] of Object.entries(state.relatedClubs)) {
+        if (club.isJoined) {
+          state.checked[id] = true
+        }
+      }
+    },
+    setAllJoinedUnchecked (state) {
+      for (const [id, club] of Object.entries(state.relatedClubs)) {
+        if (club.isJoined) {
+          state.checked[id] = false
+        }
+      }
+    },
+    setAllNotJoinedChecked (state) {
+      for (const [id, club] of Object.entries(state.relatedClubs)) {
+        if (!club.isJoined) {
+          state.checked[id] = true
+        }
+      }
+    },
+    setAllNotJoinedUnchecked (state) {
+      for (const [id, club] of Object.entries(state.relatedClubs)) {
+        if (!club.isJoined) {
+          state.checked[id] = false
+        }
+      }
+    },
     setAllChecked (state) {
-      for (let id in Object.keys(state.checked)) {
+      for (const id in Object.keys(state.checked)) {
         state.checked[id] = true
       }
     },
     setAllUnchecked (state) {
-      for (let id in Object.keys(state.checked)) {
+      for (const id in Object.keys(state.checked)) {
         state.checked[id] = false
       }
     },
   },
   actions: {
     async fetchRelatedClubs (context) {
-      axios
-        .get(prefix + 'get-clubs-related')
-        .then(res => {
-          context.commit('updateRelatedClubs', res.related)
-        })
-        .catch(err => {
-          alert(err)
-        })
+      // axios
+      //   .get(prefix + 'get-clubs-related')
+      //   .then(res => {
+      //     context.commit('updateRelatedClubs', res.related)
+      //   })
+      //   .catch(err => {
+      //     alert(err)
+      //   })
+      context.commit('updateRelatedClubs', exampleClubs)
     },
     toggleChecked (context, id) {
       if (context.state.checked[id]) {
-        context.commit('setUnchecked')
+        context.commit('setUnchecked', id)
       } else {
-        context.commit('setChecked')
+        context.commit('setChecked', id)
       }
-    },    
+    },
+    toggleJoinedChecked (context) {
+      if (context.getters.isAllJoinedChecked) {
+        context.commit('setAllJoinedUnchecked')
+      } else {
+        context.commit('setAllJoinedChecked')
+      }
+    },
+    toggleNotJoinedChecked (context) {
+      if (context.getters.isAllNotJoinedChecked) {
+        context.commit('setAllNotJoinedUnchecked')
+      } else {
+        context.commit('setAllNotJoinedChecked')
+      }
+    },
+    toggleAllChecked (context) {
+      if (context.getters.isAllChecked) {
+        context.commit('setAllUnchecked')
+      } else {
+        context.commit('setAllChecked')
+      }
+    }
   },
   modules: {
   }
