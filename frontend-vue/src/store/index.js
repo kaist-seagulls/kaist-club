@@ -1,7 +1,7 @@
 import { createStore } from 'vuex'
 import axios from 'axios'
 
-const prefix = 'api/'
+const prefix = '/api/v1/'
 
 export default createStore({
   state: {
