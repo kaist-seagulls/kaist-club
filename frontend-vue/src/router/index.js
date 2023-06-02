@@ -106,7 +106,7 @@ const routes = [
     name: 'notfound',
     meta: { layout: NoLayout },
     component: NotFoundView,
-  },
+  }
 ]
 
 const router = createRouter({

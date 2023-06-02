@@ -1,30 +1,7 @@
 import { createStore } from 'vuex'
 import axios from 'axios'
 
-const prefix = '/api/v1/'
-
-// const exampleClubs = [
-// {
-//   id: 1,
-//   name: 'Number',
-//   isJoined: true,
-// },
-// {
-//   id: 2,
-//   name: 'Lunatic',
-//   isJoined: false,
-// },
-// {
-//   id: 3,
-//   name: 'K-Let',
-//   isJoined: true,
-// },
-// {
-//   id: 4,
-//   name: 'Mixer',
-//   isJoined: false,
-// },
-// ]
+const prefix = 'api/'
 
 export default createStore({
   state: {
@@ -79,7 +56,8 @@ export default createStore({
     }
   },
   mutations: {
-    updateRelatedClubs (state, clubs) {
+    updateRelatedClubs(state, clubs) {
+      console.log(clubs)
       const relatedClubs = {}
       const checked = {}
       for (const club of clubs) {
@@ -95,6 +73,7 @@ export default createStore({
       }
       state.relatedClubs = relatedClubs
       state.checked = checked
+      console.log(state.relatedClubs)
     },
     setChecked (state, id) {
       state.checked[id] = true
@@ -146,12 +125,12 @@ export default createStore({
         axios
           .get(prefix + 'get-clubs-related')
           .then(res => {
-            context.commit('updateRelatedClubs', res.related)
+            context.commit('updateRelatedClubs', res.data)
           })
           .catch(err => {
+            console.log(err)
             alert(err)
           })
-      //context.commit('updateRelatedClubs', exampleClubs)
     },
     toggleChecked (context, id) {
       if (context.state.checked[id]) {
