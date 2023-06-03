@@ -7,17 +7,11 @@
       Login
       <label>
         <span>Id</span>
-        <input
-          type="id"
-          v-model="id"
-        />
+        <input type="id" v-model="id" />
       </label>
       <label>
         <span>Password</span>
-        <input
-          type="password"
-          v-model="pw"
-        />
+        <input type="password" v-model="pw" />
       </label>
       <button @click="login()">Login</button>
     </div>
@@ -30,7 +24,7 @@
 
 <script setup>
 import { ref } from "vue"
-// import axios from 'axios'
+import axios from "axios"
 import { useRouter } from "vue-router"
 
 const router = useRouter()
@@ -48,18 +42,18 @@ function goSignup() {
   router.push("/signup")
 }
 function login() {
-  // axios
-  //   .post('/sign-in', {
-  //     userId: id,
-  //     password: pw,
-  //   })
-  //   .then(() => {
-  //     goHome()
-  //   })
-  //   .catch(err => {
-  //     alert(err)
-  //     console.log(err)
-  //   })
-  goHome()
+  axios
+    .post("/sign-in", {
+      userId: id,
+      password: pw,
+    })
+    .then(() => {
+      goHome()
+    })
+    .catch(err => {
+      alert(err)
+      console.log(err)
+    })
+  // goHome()
 }
 </script>

@@ -6,8 +6,10 @@ const bodyParser = require("body-parser")
 var mysql = require("mysql2")
 // var router = express.Router()
 var session = require("express-session")
+var MySQLStore = require("express-mysql-session")(session)
 // const history = require('connect-history-api-fallback');
 //const { request } = require('express');
+
 var connectionDB = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -15,29 +17,47 @@ var connectionDB = mysql.createConnection({
   database: "cs350db",
 })
 
-//module.exports = router;
-
 const app = express()
-
-//app.use(history());
-//app.use('/api/v1/get-clubs-related',router);
 
 // parse application/x-www-form-urlencoded
 // { extended: true } : support nested object
 app.use(bodyParser.urlencoded({ extended: true }))
-
-// parse application/json
 app.use(bodyParser.json())
+
+app.use(
+  session({
+    secret: SECRET.session.secret,
+    store: new MySQLStore({
+      host: "127.0.0.1",
+      user: "root",
+      password: SECRET.mysql.password,
+      database: "cs350db",
+    }),
+    resave: false,
+    saveUninitialized: false,
+  }),
+)
 
 app.get("/", (req, res) => res.send("Hello World!"))
 
-app.use(session({
-  userId: "tpdus2155",
-  secret: SECRET.session.secret,
-  resave: false,
-  saveUninitialized: true,
-}))
-
+app.post("/api/v1/sign-in", (req, res) => {
+  var post = req.body
+  var userId = post.userId
+  var password = post.password
+  if (connectionDB) {
+    if (/*데이터베이스 안에 useId가 있는지 확인 && 해당 아이디에 password가 맞는지*/1) {
+      var bodyList = new Array()
+      req.session.isLogged = true
+      req.session.userId = userId
+      req.session.password = password
+      res.status(200).send("Login completed")
+    } else {
+      res.status(401).send("There is no account or password is wrong")
+    }
+  } else {
+    throw new Error("DB Connection Failed")
+  }
+})
 
 app.get("/api/v1/get-clubs-related", (req, res) => {
   //var session = req.session;
@@ -68,8 +88,6 @@ app.get("/api/v1/get-clubs-related", (req, res) => {
       //console.log(bodyList);
       res.send(bodyList)
     })
-
-
   } else {
     throw new Error("DB Connection Failed")
   }

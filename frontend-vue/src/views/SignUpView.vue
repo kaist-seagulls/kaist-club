@@ -6,39 +6,30 @@
     <div>
       <label>
         <span>Id</span>
-        <input
-          type="id"
-          v-model="id"
-        />
+        <input type="id" v-model="id" />
         <span>@kaist.ac.kr</span>
       </label>
       <button @click="auth" :disabled="timeLeft">AUTH</button>
-      <input
-          type="text"
-          v-model="code"
-        />
+      <input type="text" v-model="code" />
       <span v-if="timeLeft">{{ authStatus }}</span>
     </div>
     <div>
       <span>Password</span>
-        <input
-          type="password"
-          v-model="pw"
-        />
+      <input type="password" v-model="pw" />
+    </div>
+    <div v-if="!isStrongPw">
+      Password must be at least 8 characters including letters and numbers.
     </div>
     <div>
       <span>Confirm password</span>
-        <input
-          type="password"
-          v-model="confirmPw"
-        />
+      <input type="password" v-model="confirmPw" />
+    </div>
+    <div v-if="!pwConfirmed">
+      Values do not match.
     </div>
     <div>
       <span>Phone number</span>
-        <input
-          type="tel"
-          v-model="phone"
-        />
+      <input type="tel" v-model="phone" />
     </div>
     <div>
       <button @click="signup()">
@@ -49,11 +40,12 @@
 </template>
 
 <script setup>
-//import axios from 'axios'
-import { ref, computed} from "vue"
+import axios from "axios"
+import { ref, computed } from "vue"
 import { useRouter } from "vue-router"
 
 const router = useRouter()
+
 
 const id = ref("")
 const pw = ref("")
@@ -62,7 +54,10 @@ const phone = ref("")
 const code = ref("")
 const authStatus = computed(() => "wait for resend: " + timeLeft.value + "s")
 const timeLeft = ref(0)
-const pwConfirmed = computed(() => pw.value == confirmPw.value)
+
+const strongPassword = /(?=.{8,})(?=.*[0-9])((?=.*[a-z])|(?=.*[A-Z]))/
+const isStrongPw = computed(() => strongPassword.test(pw.value))
+const pwConfirmed = computed(() => pw.value === confirmPw.value)
 
 function authTimer() {
   if (timeLeft.value) {
@@ -73,40 +68,38 @@ function authTimer() {
 
 function auth() {
   if (id.value) {
-    // axios
-    //   .post('/check-auth-code')
-    //   .then(() => {
-    //     timeLeft = 5
-    //     setTimeout(authTimer, 1000)
-    //     authStatus = computed(() => {return 'wait for resend: ' + timeLeft})
-    //   })
-    //   .catch(err => {
-    //     alert(err)
-    //     console.log(err)
-    //   })
-    timeLeft.value = 5
-    setTimeout(authTimer, 1000)
+    axios
+      .post("/check-auth-code")
+      .then(() => {
+        timeLeft.value = 5
+        setTimeout(authTimer, 1000)
+      })
+      .catch(err => {
+        alert(err)
+        console.log(err)
+      })
+    // timeLeft.value = 5
+    // setTimeout(authTimer, 1000)
   }
 }
 function signup() {
-  if (pw.value && pwConfirmed.value && code.value) {
-    // axios
-    //   .post('/sign-up', {
-    //     id,
-    //     code,
-    //     pw,
-    //     phone,
-    //   })
-    //   .then(() => {
-    //     // setSession()
-    //     goSignin()
-    //   })
-    //   .err(err => {
-    //     alert(err)
-    //     console.log(err)
-    //   })
-    goSignin()
-  } else if (!pw.value || !pwConfirmed.value){
+  if (isStrongPw.value && pwConfirmed.value && code.value) {
+    axios
+      .post("/sign-up", {
+        userId: id,
+        code,
+        password: pw,
+        phone,
+      })
+      .then(() => {
+        goSignin()
+      })
+      .err(err => {
+        alert(err)
+        console.log(err)
+      })
+    // goSignin()
+  } else if (!isStrongPw.value || !pwConfirmed.value) {
     alert("Please confirm your new password")
   } else {
     alert("Type the authentication code: Please check your email box")
@@ -115,6 +108,4 @@ function signup() {
 function goSignin() {
   router.push("/signin")
 }
-
-
 </script>
