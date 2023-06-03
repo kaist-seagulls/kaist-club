@@ -76,7 +76,6 @@ export default {
   },
   beforeMount() {
     this.fetchRelatedClubs()
-    console.log('MOUNTED')
   }
 }
 </script>
