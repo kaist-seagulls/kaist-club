@@ -9,6 +9,7 @@ var session = require("express-session")
 var MySQLStore = require("express-mysql-session")(session)
 // const history = require('connect-history-api-fallback');
 //const { request } = require('express');
+const app = express()
 
 var connectionDB = mysql.createConnection({
   host: "localhost",
@@ -16,13 +17,6 @@ var connectionDB = mysql.createConnection({
   password: SECRET.mysql.password,
   database: "cs350db",
 })
-
-const app = express()
-
-// parse application/x-www-form-urlencoded
-// { extended: true } : support nested object
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(bodyParser.json())
 
 app.use(
   session({
@@ -37,23 +31,55 @@ app.use(
     saveUninitialized: false,
   }),
 )
+//module.exports = router;
+
+
+// parse application/x-www-form-urlencoded
+// { extended: true } : support nested object
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json())
 
 app.get("/", (req, res) => res.send("Hello World!"))
 
 app.post("/api/v1/sign-in", (req, res) => {
-  var post = req.body
-  var userId = post.userId
-  var password = post.password
+  // var post = "aslkdksdl"
+  var userId = "ytrewq271828"
+  var password = "klasjfdkljsdkljfsda"
+  req.session.isRep = false
+  req.session.isAdmin = false
   if (connectionDB) {
-    if (/*데이터베이스 안에 useId가 있는지 확인 && 해당 아이디에 password가 맞는지*/1) {
-      var bodyList = new Array()
+    const queryFunc = async (userId) => {
+      let queryPW = `select hashedPW, isRep, isAdmin from users where userId='${userId}';`
+      return new Promise((resolve, reject) => {
+        connectionDB.query(queryPW, (error, subRows) => {
+          if (subRows.length == 0 || subRows != password) {
+            reject(res.status(401).send("There is no account or password is wrong"))
+          } else {
+            resolve(subRows)
+          }
+        })
+
+      })
+    }
+    const queryAsync = async () => {
+      const result = await queryFunc(userId)
+
+      if (result["isRep"] == 1) {
+        req.session.isRep = true
+        console.log("The user is a representative")
+      }
+
+      if (result["isAdmin"] == 1) {
+        req.session.isAdmin = true
+        console.log("The user is an admin")
+      }
       req.session.isLogged = true
       req.session.userId = userId
       req.session.password = password
-      res.status(200).send("Login completed")
-    } else {
-      res.status(401).send("There is no account or password is wrong")
+      res.status(200).send("Login Succeed")
     }
+
+    queryAsync()
   } else {
     throw new Error("DB Connection Failed")
   }
