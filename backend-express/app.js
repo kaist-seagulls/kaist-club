@@ -9,7 +9,7 @@ var session = require("express-session")
 // const history = require('connect-history-api-fallback');
 //const { request } = require('express');
 var connectionDB = mysql.createConnection({
-  host: "127.0.0.1",
+  host: "localhost",
   user: "root",
   password: SECRET.mysql.password,
   database: "cs350db",
