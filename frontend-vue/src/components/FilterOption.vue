@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions } from "vuex"
 
 export default {
   props: {
@@ -23,5 +23,5 @@ export default {
       toggleChecked: "toggleChecked",
     }),
   },
-};
+}
 </script>

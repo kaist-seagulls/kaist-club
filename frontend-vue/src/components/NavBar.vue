@@ -4,7 +4,7 @@
       NavBar
     </div>
     <div>
-      <input v-model="q"/>
+      <input v-model="q" />
       <button @click="goSearch()">Search</button>
     </div>
     <div>
@@ -44,8 +44,8 @@ function goSearch() {
     router.push({
       name: 'main',
       query: {
-        q: q.value
-      }
+        q: q.value,
+      },
     })
   }
 }
@@ -64,7 +64,7 @@ function goCalendar() {
   const year = today.getFullYear().toString()
   router.push({
     name: 'calendar',
-    params: { month, year }
+    params: { month, year },
   })
 }
 function goUserProfile() {

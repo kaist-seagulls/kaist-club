@@ -10,6 +10,6 @@
 </template>
 <script setup>
 import NavBar from '@/components/NavBar.vue'
-import FilterBox from '@/components/FilterBox.vue';
+import FilterBox from '@/components/FilterBox.vue'
 
 </script>

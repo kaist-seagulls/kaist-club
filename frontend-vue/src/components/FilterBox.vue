@@ -21,7 +21,7 @@
           Joined
           <button @click="toggleJoinedChecked()">
             <div v-if="isAllJoinedChecked" style="color: green;">V</div>
-            <div v-else                    style="color:   red;">X</div>
+            <div v-else style="color:   red;">X</div>
           </button>
         </div>
         <div>
@@ -31,7 +31,7 @@
           Subscribed
           <button @click="toggleNotJoinedChecked()">
             <div v-if="isAllNotJoinedChecked" style="color: green;">V</div>
-            <div v-else                       style="color:   red;">X</div>
+            <div v-else style="color:   red;">X</div>
           </button>
         </div>
         <div>
@@ -41,7 +41,7 @@
           All
           <button @click="toggleAllChecked()">
             <div v-if="isAllChecked" style="color: green;">V</div>
-            <div v-else              style="color:   red;">X</div>
+            <div v-else style="color:   red;">X</div>
           </button>
         </div>
       </div>
@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex';
+import { mapActions, mapGetters } from 'vuex'
 import FilterOption from './FilterOption.vue'
 
 export default {
@@ -64,7 +64,7 @@ export default {
       isAllJoinedChecked: 'isAllJoinedChecked',
       isAllNotJoinedChecked: 'isAllNotJoinedChecked',
       isAllChecked: 'isAllChecked',
-    })
+    }),
   },
   methods: {
     ...mapActions({
@@ -72,10 +72,10 @@ export default {
       toggleJoinedChecked: 'toggleJoinedChecked',
       toggleNotJoinedChecked: 'toggleNotJoinedChecked',
       toggleAllChecked: 'toggleAllChecked',
-    })
+    }),
   },
   beforeMount() {
     this.fetchRelatedClubs()
-  }
+  },
 }
 </script>
