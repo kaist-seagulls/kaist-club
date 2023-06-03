@@ -1,15 +1,16 @@
 // Server-side: app.js
+const SECRET = require('../secret.config.js')
 const express = require('express');
 const bodyParser = require('body-parser');
 var mysql = require('mysql2');
 var router = express.Router();
 var session = require('express-session');
-const history = require('connect-history-api-fallback');
+// const history = require('connect-history-api-fallback');
 //const { request } = require('express');
 var connectionDB = mysql.createConnection({
   host: '127.0.0.1',
   user: 'root',
-  password: '00000000',
+  password: SECRET.mysql.password,
   database: 'cs350db',
 });
 
@@ -31,7 +32,7 @@ app.get('/', (req, res) => res.send('Hello World!'));
 
 app.use(session({
   userId: 'tpdus2155',
-  secret: "asdfasffdas",
+  secret: SECRET.session.secret,
   resave: false,
   saveUninitialized: true
 }));
