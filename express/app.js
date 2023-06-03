@@ -1,5 +1,6 @@
 // Server-side: app.js
-const SECRET = require('../secret.config.js')
+const { readFileSync } = require('fs')
+const SECRET = JSON.parse(readFileSync('../personal.config.json'))
 const express = require('express');
 const bodyParser = require('body-parser');
 var mysql = require('mysql2');
