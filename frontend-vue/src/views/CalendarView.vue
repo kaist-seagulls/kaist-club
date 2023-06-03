@@ -11,8 +11,8 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue'
-import CalendarComp from '@/components/CalendarComp.vue'
+import { defineProps } from "vue"
+import CalendarComp from "@/components/CalendarComp.vue"
 
 const props = defineProps({
   month: String,

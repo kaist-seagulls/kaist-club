@@ -29,8 +29,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref } from "vue"
+import { useRouter, useRoute } from "vue-router"
 
 const router = useRouter()
 const route = useRoute()
@@ -39,10 +39,10 @@ const q = ref(route.query.q || "")
 
 function goSearch() {
   if (q.value === "") {
-    router.push('/')
+    router.push("/")
   } else {
     router.push({
-      name: 'main',
+      name: "main",
       query: {
         q: q.value,
       },
@@ -50,24 +50,24 @@ function goSearch() {
   }
 }
 function goMain() {
-  router.push('/')
+  router.push("/")
 }
 function goCreatePost() {
-  router.push('/newpost')
+  router.push("/newpost")
 }
 function goCreateClub() {
-  router.push('/newclub')
+  router.push("/newclub")
 }
 function goCalendar() {
   const today = new Date()
   const month = today.getMonth().toString()
   const year = today.getFullYear().toString()
   router.push({
-    name: 'calendar',
+    name: "calendar",
     params: { month, year },
   })
 }
 function goUserProfile() {
-  router.push('/mypage')
+  router.push("/mypage")
 }
 </script>

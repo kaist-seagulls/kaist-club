@@ -50,8 +50,8 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'
-import FilterOption from './FilterOption.vue'
+import { mapActions, mapGetters } from "vuex"
+import FilterOption from "./FilterOption.vue"
 
 export default {
   name: "FilterBox",
@@ -60,18 +60,18 @@ export default {
   },
   computed: {
     ...mapGetters({
-      filterConfig: 'filterConfig',
-      isAllJoinedChecked: 'isAllJoinedChecked',
-      isAllNotJoinedChecked: 'isAllNotJoinedChecked',
-      isAllChecked: 'isAllChecked',
+      filterConfig: "filterConfig",
+      isAllJoinedChecked: "isAllJoinedChecked",
+      isAllNotJoinedChecked: "isAllNotJoinedChecked",
+      isAllChecked: "isAllChecked",
     }),
   },
   methods: {
     ...mapActions({
-      fetchRelatedClubs: 'fetchRelatedClubs',
-      toggleJoinedChecked: 'toggleJoinedChecked',
-      toggleNotJoinedChecked: 'toggleNotJoinedChecked',
-      toggleAllChecked: 'toggleAllChecked',
+      fetchRelatedClubs: "fetchRelatedClubs",
+      toggleJoinedChecked: "toggleJoinedChecked",
+      toggleNotJoinedChecked: "toggleNotJoinedChecked",
+      toggleAllChecked: "toggleAllChecked",
     }),
   },
   beforeMount() {

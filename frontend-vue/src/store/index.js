@@ -1,7 +1,7 @@
-import { createStore } from 'vuex'
-import axios from 'axios'
+import { createStore } from "vuex"
+import axios from "axios"
 
-const prefix = '/api/v1/'
+const prefix = "/api/v1/"
 
 export default createStore({
   state: {
@@ -121,9 +121,9 @@ export default createStore({
   actions: {
     async fetchRelatedClubs(context) {
       axios
-        .get(prefix + 'get-clubs-related')
+        .get(prefix + "get-clubs-related")
         .then(res => {
-          context.commit('updateRelatedClubs', res.data)
+          context.commit("updateRelatedClubs", res.data)
         })
         .catch(err => {
           console.log(err)
@@ -132,30 +132,30 @@ export default createStore({
     },
     toggleChecked(context, id) {
       if (context.state.checked[id]) {
-        context.commit('setUnchecked', id)
+        context.commit("setUnchecked", id)
       } else {
-        context.commit('setChecked', id)
+        context.commit("setChecked", id)
       }
     },
     toggleJoinedChecked(context) {
       if (context.getters.isAllJoinedChecked) {
-        context.commit('setAllJoinedUnchecked')
+        context.commit("setAllJoinedUnchecked")
       } else {
-        context.commit('setAllJoinedChecked')
+        context.commit("setAllJoinedChecked")
       }
     },
     toggleNotJoinedChecked(context) {
       if (context.getters.isAllNotJoinedChecked) {
-        context.commit('setAllNotJoinedUnchecked')
+        context.commit("setAllNotJoinedUnchecked")
       } else {
-        context.commit('setAllNotJoinedChecked')
+        context.commit("setAllNotJoinedChecked")
       }
     },
     toggleAllChecked(context) {
       if (context.getters.isAllChecked) {
-        context.commit('setAllUnchecked')
+        context.commit("setAllUnchecked")
       } else {
-        context.commit('setAllChecked')
+        context.commit("setAllChecked")
       }
     },
   },

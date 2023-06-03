@@ -5,8 +5,8 @@
 </template>
 
 <script setup>
-import { computed } from '@vue/reactivity'
-import { useRoute } from 'vue-router'
+import { computed } from "@vue/reactivity"
+import { useRoute } from "vue-router"
 
 const layout = computed(() => useRoute().meta.layout)
 </script>
