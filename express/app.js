@@ -1,7 +1,7 @@
 // Server-side: app.js
 const express = require('express');
 const bodyParser = require('body-parser');
-var mysql = require('mysql');
+var mysql = require('mysql2');
 var router = express.Router();
 var session = require('express-session');
 const history = require('connect-history-api-fallback');
