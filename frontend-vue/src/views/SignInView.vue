@@ -16,9 +16,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width:600px;
-  margin-left:32%;
-  margin-right:32%
+  width: 600px;
+  margin-left: 32%;
+  margin-right: 32%
 }
 
 .textBox {
@@ -63,7 +63,8 @@
 .margin {
   margin: 2.2%
 }
-#email{
+
+#email {
   width: 460px;
   height: 35px;
   font-size: 18px;
@@ -72,8 +73,9 @@
   box-shadow: none;
   border: 1px solid #D8D8D8;
 }
-#mail{
-  margin-left:10px;
+
+#mail {
+  margin-left: 10px;
 }
 </style>
 <template>
@@ -107,6 +109,7 @@ import axios from "axios"
 import { useRouter } from "vue-router"
 
 const router = useRouter()
+const prefix = "api/v1/"
 
 const id = ref("")
 const pw = ref("")
@@ -118,13 +121,13 @@ function goHome() {
   router.push("/")
 }
 function goSignup() {
-  router.push("/signup")
+  router.push("/sign.valueup")
 }
 function login() {
   axios
-    .post("/sign-in", {
-      userId: id,
-      password: pw,
+    .post(prefix + "sign-in", {
+      userId: id.value,
+      password: pw.value,
     })
     .then(() => {
       goHome()
