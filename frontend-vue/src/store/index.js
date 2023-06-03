@@ -108,12 +108,12 @@ export default createStore({
       }
     },
     setAllChecked (state) {
-      for (const id in Object.keys(state.checked)) {
+      for (const id in state.checked) {
         state.checked[id] = true
       }
     },
     setAllUnchecked (state) {
-      for (const id in Object.keys(state.checked)) {
+      for (const id in state.checked) {
         state.checked[id] = false
       }
     },
