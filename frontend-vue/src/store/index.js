@@ -57,7 +57,6 @@ export default createStore({
   },
   mutations: {
     updateRelatedClubs(state, clubs) {
-      console.log(clubs)
       const relatedClubs = {}
       const checked = {}
       for (const club of clubs) {
@@ -73,7 +72,6 @@ export default createStore({
       }
       state.relatedClubs = relatedClubs
       state.checked = checked
-      console.log(state.relatedClubs)
     },
     setChecked (state, id) {
       state.checked[id] = true
