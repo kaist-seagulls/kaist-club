@@ -10,13 +10,14 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.2",
+    "express-mysql-session": "^3.0.0",
     "express-session": "^1.17.3",
     "mysql2": "^3.3.3"
   },
   "devDependencies": {
-    "eslint": "^8.42.0",
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
+    "eslint": "^8.42.0",
     "nodemon": "^2.0.22"
   }
 }
