@@ -47,7 +47,7 @@ app.get('/api/v1/get-clubs-related', (req, res) => {
     console.log(req.session.userId);
     //bodyList = new Array();
     connectionDB.query(`select *, 1 as rowtype from subscribes natural left join clubs where userId='${req.session.userId}' union select *, 2 as rowtype from joins natural left join clubs where userId='${req.session.userId}';`, (error, subRows) => {
-      console.log(subRows);
+      // console.log(subRows);
       bodyList = new Array();
       if (error) throw error;
       //console.log(subRows.length);
