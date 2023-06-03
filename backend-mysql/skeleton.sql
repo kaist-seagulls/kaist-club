@@ -1,3 +1,4 @@
+drop database cs350db;
 create database cs350db;
 use cs350db;
 
