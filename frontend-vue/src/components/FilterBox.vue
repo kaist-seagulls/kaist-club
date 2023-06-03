@@ -5,12 +5,8 @@
     </div>
     <div class="t-box t-flex-g0">
       <div class="t-title">
-        FilterControl
+        FilterSearchBox
       </div>
-      <button>Select Subscribed</button>
-      <button>Select Joined</button>
-      <button>No Filter</button>
-      <div>ToDo: Connect onclick handlers</div>
     </div>
     <div class="t-box">
       <div class="t-title">
@@ -39,9 +35,9 @@
         </div>
         <div>
           All
-          <button @click="toggleAllChecked()">
-            <div v-if="isAllChecked" style="color: green;">V</div>
-            <div v-else style="color:   red;">X</div>
+          <button @click="toggleNoFilter()">
+            <div v-if="isNoFilterChecked" style="color: green;">V</div>
+            <div v-else style="color: red;">X</div>
           </button>
         </div>
       </div>
@@ -63,7 +59,7 @@ export default {
       filterConfig: "filterConfig",
       isAllJoinedChecked: "isAllJoinedChecked",
       isAllNotJoinedChecked: "isAllNotJoinedChecked",
-      isAllChecked: "isAllChecked",
+      isNoFilterChecked: "isNoFilterChecked",
     }),
   },
   methods: {
@@ -71,7 +67,7 @@ export default {
       fetchRelatedClubs: "fetchRelatedClubs",
       toggleJoinedChecked: "toggleJoinedChecked",
       toggleNotJoinedChecked: "toggleNotJoinedChecked",
-      toggleAllChecked: "toggleAllChecked",
+      toggleNoFilter: "toggleNoFilter",
     }),
   },
   beforeMount() {

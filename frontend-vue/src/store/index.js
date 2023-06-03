@@ -7,6 +7,7 @@ export default createStore({
   state: {
     relatedClubs: {},
     checked: {},
+    noFilter: false,
   },
   getters: {
     filterConfig(state) {
@@ -46,13 +47,8 @@ export default createStore({
       }
       return true
     },
-    isAllChecked(state) {
-      for (const checked of Object.values(state.checked)) {
-        if (!checked) {
-          return false
-        }
-      }
-      return true
+    isNoFilterChecked(state) {
+      return state.noFilter
     },
   },
   mutations: {
@@ -107,15 +103,18 @@ export default createStore({
         }
       }
     },
-    setAllChecked(state) {
-      for (const id in state.checked) {
-        state.checked[id] = true
+    toggleNoFilter(state) {
+      if (state.noFilter) {
+        state.noFilter = false
+      } else {
+        state.noFilter = true
+        for (const id in state.checked) {
+          state.checked[id] = true
+        }
       }
     },
-    setAllUnchecked(state) {
-      for (const id in state.checked) {
-        state.checked[id] = false
-      }
+    setNoFilterUnchecked(state) {
+      state.noFilter = false
     },
   },
   actions: {
@@ -133,6 +132,7 @@ export default createStore({
     toggleChecked(context, id) {
       if (context.state.checked[id]) {
         context.commit("setUnchecked", id)
+        context.commit("setNoFilterUnchecked")
       } else {
         context.commit("setChecked", id)
       }
@@ -140,6 +140,7 @@ export default createStore({
     toggleJoinedChecked(context) {
       if (context.getters.isAllJoinedChecked) {
         context.commit("setAllJoinedUnchecked")
+        context.commit("setNoFilterUnchecked")
       } else {
         context.commit("setAllJoinedChecked")
       }
@@ -147,16 +148,13 @@ export default createStore({
     toggleNotJoinedChecked(context) {
       if (context.getters.isAllNotJoinedChecked) {
         context.commit("setAllNotJoinedUnchecked")
+        context.commit("setNoFilterUnchecked")
       } else {
         context.commit("setAllNotJoinedChecked")
       }
     },
-    toggleAllChecked(context) {
-      if (context.getters.isAllChecked) {
-        context.commit("setAllUnchecked")
-      } else {
-        context.commit("setAllChecked")
-      }
+    toggleNoFilter(context) {
+      context.commit("toggleNoFilter")
     },
   },
   modules: {
