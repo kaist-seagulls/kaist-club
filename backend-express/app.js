@@ -43,8 +43,9 @@ app.get("/", (req, res) => res.send("Hello World!"))
 
 app.post("/api/v1/sign-in", (req, res) => {
   // var post = "aslkdksdl"
-  var userId = "ytrewq271828"
-  var password = "klasjfdkljsdkljfsda"
+  var userId = req.body.userId
+  var password = req.body.password
+  console.log("userId: " + userId)
   req.session.isRep = false
   req.session.isAdmin = false
   if (connectionDB) {
@@ -52,17 +53,18 @@ app.post("/api/v1/sign-in", (req, res) => {
       let queryPW = `select hashedPW, isRep, isAdmin from users where userId='${userId}';`
       return new Promise((resolve, reject) => {
         connectionDB.query(queryPW, (error, subRows) => {
-          if (subRows.length == 0 || subRows != password) {
+          console.log("subRows: " + subRows[0].hashedPW)
+          if (subRows.length == 0 || subRows[0].hashedPW != password) {
             reject(res.status(401).send("There is no account or password is wrong"))
           } else {
             resolve(subRows)
           }
         })
-
       })
     }
     const queryAsync = async () => {
       const result = await queryFunc(userId)
+      console.log("result: " + result)
 
       if (result["isRep"] == 1) {
         req.session.isRep = true
@@ -79,7 +81,7 @@ app.post("/api/v1/sign-in", (req, res) => {
       res.status(200).send("Login Succeed")
     }
 
-    queryAsync()
+    queryAsync().catch(() => console.log("error occurs"))
   } else {
     throw new Error("DB Connection Failed")
   }
@@ -92,7 +94,7 @@ app.get("/api/v1/get-clubs-related", (req, res) => {
   // var joinRows
   //let bodyList = [];
   if (connectionDB) {
-    console.log(req.session.userId)
+    // console.log(req.session.userId)
     //bodyList = new Array();
     connectionDB.query(`select *, 1 as rowtype from subscribes natural left join clubs where userId='${req.session.userId}' union select *, 2 as rowtype from joins natural left join clubs where userId='${req.session.userId}';`, (error, subRows) => {
       // console.log(subRows);
