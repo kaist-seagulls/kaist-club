@@ -94,7 +94,12 @@ app.post("/api/v1/send-auth-code", (req, res) => {
             const date = new Date()
             console.log(date.toISOString())
             console.log(Date.now() - new Date(tempTime.getTime()))
-            if (Date.now() - new Date(tempTime.getTime()) < 32400000 + 300000) {
+            if (Date.now() - new Date(tempTime.getTime()) > 32400000 + 300000) {
+              connectionDB.query(`delete from authCode where userId='${userId}';`, (err) => {
+                if (err) throw err
+              })
+            }
+            if (Date.now() - new Date(tempTime.getTime()) < 32400000 + 30000) {
               reject(res.status(409).send("Issued"))
             } else {
               console.log("HEREHRER")
@@ -120,20 +125,18 @@ app.post("/api/v1/send-auth-code", (req, res) => {
     const sendAuth = async (userId) => {
       const newCode = await idAuthCheck(userId)
       console.log("ICIS")
-      setTimeout((err, userId) => {
-        if (err) throw err
-        connectionDB.query(`delete from authCode where userId='${userId}';`, (err) => {
-          if (err) throw err
-        })
-      }, 300000)
-      let transporter = nodemailer.createTransport("SMTP", {
-        host: "smtp.google.com",
+
+      let transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
         port: 587,
         secure: false,
-        service: "Gmail",
+        //service: "Gmail",
         auth: {
           user: "kjyeric1117@gmail.com",
           pass: "yidnstrgdfcgaikr",
+        },
+        tls: {
+          rejectUnauthorized: false,
         },
       })
       //emailjs.init("RiPaL0zdYlKLUiHu_")
@@ -148,30 +151,14 @@ app.post("/api/v1/send-auth-code", (req, res) => {
           Your Authentication Code is ${newCode}
           </div>`,
       }
-      //      try {
-      await transporter.sendMail(mailParams, (err) => {
-        if (err) {
-          console.log("Failed to send mail")
-          //throw new Error(err)
-
-        } else {
-          console.log("Success!")
-          req.status(204).send("")
-        }
-      })
-      //} catch (err) {
-      //  throw new Error("Mail failed")
-      //}
-      //emailjs.send("service_wpexgyv", "template_ewtrl0p", templateParams).then(function () {
-      //  console.log("SUCCESS!")
-      //}, function (error) {
-      //  console.log("FAILED...", error)
-      //})
-      //console.log("ArriveHere")
-
-
-
-
+      try {
+        transporter.sendMail(mailParams)
+        console.log("Success!")
+        res.status(204).send(" ")
+        console.log("Please")
+      } catch (err) {
+        throw new Error(err)
+      }
     }
 
     sendAuth(userId).catch(() => console.log("Error occurred"))
