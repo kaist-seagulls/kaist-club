@@ -3,9 +3,13 @@ const { readFileSync } = require("fs")
 const SECRET = JSON.parse(readFileSync("../personal.config.json"))
 const express = require("express")
 const bodyParser = require("body-parser")
-var mysql = require("mysql2")
+const mysql = require("mysql2")
+//const emailjs = require("@emailjs/browser")
+const nodemailer = require("nodemailer")
+//var emailjs = require("emailjs")
 // var router = express.Router()
 var session = require("express-session")
+//var smtpTransport=require("nodemailer-stmp-transport")
 var MySQLStore = require("express-mysql-session")(session)
 // const history = require('connect-history-api-fallback');
 //const { request } = require('express');
@@ -50,7 +54,9 @@ app.use(bodyParser.json())
 app.get("/", (req, res) => res.send("Hello World!"))
 
 app.post("/api/v1/send-auth-code", (req, res) => {
+  console.log("sendauthcode")
   var userId = req.body.userId
+  console.log(userId)
   if (connectionDB) {
     const idCheck = async (userId) => {
       let queryId = `select * from users where userId='${userId}';`
@@ -79,20 +85,29 @@ app.post("/api/v1/send-auth-code", (req, res) => {
       return new Promise((resolve, reject) => {
         connectionDB.query(queryAuth, (err, authRows) => {
           // If userId - authcode pair exists
-          if (queryAuth.length > 0) {
-            var tempTime = authRows[0]["timeAuth"].split(/[- :]/)
-            var jsTime = new Date(Date.UTC(tempTime[0], tempTime[1] - 1, tempTime[2], tempTime[3], tempTime[4], tempTime[5]))
-            console.log(jsTime)
-            if ((Date.now() - jsTime) / 1000 < 30) {
+          if (authRows.length > 0) {
+            const tempTime = authRows[0]["timeAuth"]
+            console.log(tempTime)
+            //var jsTime = new Date(Date.UTC(tempTime[0], tempTime[1] - 1, tempTime[2], tempTime[3], tempTime[4], tempTime[5]))
+            //var jsTime = new Date(tempTime.toISOString().slice(0, 19).replace("T", " "))
+            //console.log(jsTime)
+            const date = new Date()
+            console.log(date.toISOString())
+            console.log(Date.now() - new Date(tempTime.getTime()))
+            if (Date.now() - new Date(tempTime.getTime()) < 32400000 + 300000) {
               reject(res.status(409).send("Issued"))
             } else {
-              var oldCode = authRows[0]["authCode"]
-              connectionDB.query(`update authCode set authCode=replace(authCode, '${oldCode}', '${newCode}')`, (err) => {
+              console.log("HEREHRER")
+              //var oldCode = authRows[0]["authCode"]
+              const now = new Date()
+              const replaceQuery = `update authCode set authCode=${newCode}, timeAuth="${now.toISOString().slice(0, 19).replace("T", " ")}" where userId='${userId}'`
+              connectionDB.query(replaceQuery, (err) => {
                 if (err) throw err
               })
             }
           } else {
-            connectionDB.query(`insert into authCode values('${userId}', ${newCode}, "${Date.now().toISOString().slice(0, 19).replace("T", " ")}")`, (err) => {
+            const now = new Date()
+            connectionDB.query(`insert into authCode values('${userId}', ${newCode}, "${now.toISOString().slice(0, 19).replace("T", " ")}")`, (err) => {
               if (err) throw err
             })
 
@@ -104,27 +119,59 @@ app.post("/api/v1/send-auth-code", (req, res) => {
     // Send an email
     const sendAuth = async (userId) => {
       const newCode = await idAuthCheck(userId)
-      emailjs.init("user_1SL5nfKY5dbyrLj2F")
-      var templateParams = {
-        to_name: userId,
-        from_name: "KAIST Club",
-        message: `Your Authentication Code is ${newCode}`,
-      }
-      emailjs.send("service_wpexgyv", "template_ewtrl0p", templateParams).then(function () {
-        console.log("SUCCESS!")
-      }, function (error) {
-        console.log("FAILED...", error)
-      })
-
-
+      console.log("ICIS")
       setTimeout((err, userId) => {
         if (err) throw err
         connectionDB.query(`delete from authCode where userId='${userId}';`, (err) => {
           if (err) throw err
         })
       }, 300000)
+      let transporter = nodemailer.createTransport("SMTP", {
+        host: "smtp.google.com",
+        port: 587,
+        secure: false,
+        service: "Gmail",
+        auth: {
+          user: "kjyeric1117@gmail.com",
+          pass: "yidnstrgdfcgaikr",
+        },
+      })
+      //emailjs.init("RiPaL0zdYlKLUiHu_")
+      console.log("initinit")
+      let mailParams = {
+        from: "kjyeric1117@gmail.com",
+        //from: "ytrewq271828@kaist.ac.kr",
+        to: `${userId}@kaist.ac.kr`,
+        subject: "Your Authentication Code for KAIST Club",
+        html:
+          `<div>
+          Your Authentication Code is ${newCode}
+          </div>`,
+      }
+      //      try {
+      await transporter.sendMail(mailParams, (err) => {
+        if (err) {
+          console.log("Failed to send mail")
+          //throw new Error(err)
 
-      req.status(204).send("")
+        } else {
+          console.log("Success!")
+          req.status(204).send("")
+        }
+      })
+      //} catch (err) {
+      //  throw new Error("Mail failed")
+      //}
+      //emailjs.send("service_wpexgyv", "template_ewtrl0p", templateParams).then(function () {
+      //  console.log("SUCCESS!")
+      //}, function (error) {
+      //  console.log("FAILED...", error)
+      //})
+      //console.log("ArriveHere")
+
+
+
+
     }
 
     sendAuth(userId).catch(() => console.log("Error occurred"))

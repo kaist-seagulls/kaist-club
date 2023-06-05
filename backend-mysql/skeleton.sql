@@ -1,3 +1,5 @@
+-- Active: 1685622877657@@127.0.0.1@3306@cs350db
+
 drop database cs350db;
 
 create database cs350db;
@@ -17,8 +19,7 @@ create table
     );
 
 insert into users
-values
-(
+values (
         20190169,
         'ytrewq271828',
         'Junyup Kim',
@@ -30,8 +31,7 @@ values
     );
 
 insert into users
-values
-(
+values (
         20190194,
         'tanit23',
         'Taehan Kim',
@@ -43,8 +43,7 @@ values
     );
 
 insert into users
-values
-(
+values (
         20190447,
         'derick321',
         'Dongseop Lee',
@@ -56,8 +55,7 @@ values
     );
 
 insert into users
-values
-(
+values (
         20200096,
         'tpdus2155',
         'Seyeon Kim',
@@ -69,8 +67,7 @@ values
     );
 
 insert into users
-values
-(
+values (
         20200577,
         'antony',
         'Seunghyeon Jeong',
@@ -90,8 +87,7 @@ create table
     );
 
 insert into Clubs
-values
-(
+values (
         1,
         'Number',
         'KAIST Musical club',
@@ -99,8 +95,7 @@ values
     );
 
 insert into Clubs
-values
-(
+values (
         2,
         'K-Let',
         'KAIST Leadership Executing Team',
@@ -108,8 +103,7 @@ values
     );
 
 insert into Clubs
-values
-(
+values (
         3,
         'KAIST Times',
         'KAIST Korean Newspaper',
@@ -136,8 +130,7 @@ add
     foreign key (postClubName) references clubs (clubName);
 
 insert into Posts
-values
-(
+values (
         1,
         'Number',
         'Number President',
@@ -150,8 +143,7 @@ values
     );
 
 insert into Posts
-values
-(
+values (
         2,
         'Number',
         'Number Recruit',
@@ -164,8 +156,7 @@ values
     );
 
 insert into Posts
-values
-(
+values (
         3,
         'K-Let',
         'K-Let President',
@@ -178,8 +169,7 @@ values
     );
 
 insert into Posts
-values
-(
+values (
         4,
         'K-Let',
         'K-Let Recruit',
@@ -219,8 +209,7 @@ add
     foreign key (clubCategory) references category (categoryName);
 
 insert into creationrequests
-values
-(
+values (
         'Shakespeare',
         'antony',
         'KAIST English Literature club',
@@ -229,8 +218,7 @@ values
     );
 
 insert into creationrequests
-values
-(
+values (
         'KISA',
         'ytrewq271828',
         'KAIST International Students Association',
@@ -350,5 +338,6 @@ insert into HandoverRequests values('tpdus2155', 'antony', 'Number');
 create table
     authCode(
         userId varchar(20) primary key,
-        authCode int not null
+        authCode int not null,
+        timeAuth timestamp not null
     );

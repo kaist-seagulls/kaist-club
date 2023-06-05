@@ -9,7 +9,7 @@
         <input type="id" v-model="id" />
         <span>@kaist.ac.kr</span>
       </label>
-      <button @click="auth" :disabled="timeLeft">AUTH</button>
+      <button @click="auth()" :disabled="timeLeft">AUTH</button>
       <input type="text" v-model="code" />
       <span v-if="timeLeft">{{ authStatus }}</span>
     </div>
@@ -46,6 +46,7 @@ import { useRouter } from "vue-router"
 
 const router = useRouter()
 
+const prefix = "/api/v1/"
 
 const id = ref("")
 const pw = ref("")
@@ -69,7 +70,9 @@ function authTimer() {
 function auth() {
   if (id.value) {
     axios
-      .post("/check-auth-code")
+      .post(prefix+"send-auth-code", {
+        userId: id.value,
+      })
       .then(() => {
         timeLeft.value = 5
         setTimeout(authTimer, 1000)
