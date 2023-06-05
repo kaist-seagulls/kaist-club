@@ -5,7 +5,7 @@
     </div>
     <div>
       ToFill: CalendarView Inners
-      <CalendarComp />
+      <CalendarComp :month="month" :year="year" />
     </div>
   </div>
 </template>
