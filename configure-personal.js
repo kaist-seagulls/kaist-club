@@ -3,7 +3,7 @@ const { stdin: input, stdout: output } = require("process");
 const fs = require("fs/promises");
 
 (async () => {
-const stdio = readline.createInterface({ input, output });
+  const stdio = readline.createInterface({ input, output });
   try {
     const config = {
       mysql: {
@@ -20,7 +20,7 @@ const stdio = readline.createInterface({ input, output });
     stdio.write("Your configuration is save in configure-personal.js successfully!\n")
     stdio.close();
     process.exit(-1);
-  } catch(err) {
+  } catch (err) {
     stdio.write("Saving configuration failed\n")
     stdio.close();
     console.log("Error: ", err);

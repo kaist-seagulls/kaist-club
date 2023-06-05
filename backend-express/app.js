@@ -322,7 +322,8 @@ app.post("/api/v1/sign-up", (req, res) => {
     return
   })
 })
-const SQL_CHECK_ADMIN = "SELECT clubName FROM Users WHERE userid='?' and isAdmin=true"
+
+const SQL_CHECK_ADMIN = "SELECT userId FROM Users WHERE userid='?' and isAdmin=true"
 const SQL_READCLUB_ADMIN = "SELECT clubName FROM Clubs"
 const SQL_READREQUEST_ADMIN = "SELECT clubCategory, clubName, descriptions, requestUser FROM Clubrequests"
 const SQL_READHANDOVER_ADMIN = "SELECT * FROM Handoverrequests"
@@ -336,17 +337,17 @@ app.get("/api/v1/get-admin-info", (req, res) => {
         message: "Unauthorized access",
       })
     }
-    const checkAdminResult = await conn.execute(SQL_CHECK_ADMIN, [userId])[0]
-    if (checkAdminResult.length === 0) {
+    const checkAdminResult = await conn.execute(SQL_CHECK_ADMIN, [userId])
+    if (checkAdminResult[0].length === 0) {
       await conn.rollback()
       res.status(StatusCodes.FORBIDDEN).json({
         message: "Forbidden",
       })
     }
-    const readClubResult = await conn.execute(SQL_READCLUB_ADMIN)[0]
-    const readRequestResult = await conn.execute(SQL_READREQUEST_ADMIN)[0]
-    const readHandoverResult = await conn.execute(SQL_READHANDOVER_ADMIN)[0]
-    if (readClubResult.length === 0 || readRequestResult.length === 0 || readHandoverResult === 0) {
+    const readClubResult = await conn.execute(SQL_READCLUB_ADMIN)
+    const readRequestResult = await conn.execute(SQL_READREQUEST_ADMIN)
+    const readHandoverResult = await conn.execute(SQL_READHANDOVER_ADMIN)
+    if (readClubResult[0].length === 0 || readRequestResult[0].length === 0 || readHandoverResult[0] === 0) {
       await conn.rollback()
       res.status(StatusCodes.NOT_FOUND).json({
         message: "Not found",
