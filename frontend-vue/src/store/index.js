@@ -417,18 +417,6 @@ export default createStore({
         context.commit("setAllNotJoinedChecked")
       }
     },
-    // Actions for representing
-    fetchUserInfo(context) {
-      axios
-        .get(prefix + "get-user-info")
-        .then((res) => {
-          context.commit("updateUserInfo", res.data)
-        })
-        .catch((err) => {
-          alert(err)
-          console.log(err)
-        })
-    },
     async acceptJoin(context, id) {
       let userInfo = context.state.userInfo
       axios
@@ -598,6 +586,18 @@ export default createStore({
         .get(apiAddress) // example api address
         .then((res) => {
           context.commit("updateClubInfo", res.data)
+        })
+        .catch((err) => {
+          alert(err)
+          console.log(err)
+        })
+    },
+    // Actions for userInfo
+    fetchUserInfo(context) {
+      axios
+        .get(prefix + "get-user-info")
+        .then((res) => {
+          context.commit("updateUserInfo", res.data)
         })
         .catch((err) => {
           alert(err)
