@@ -59,9 +59,9 @@ app.post("/api/v1/send-auth-code", (req, res) => {
   console.log(userId)
   if (connectionDB) {
     const idCheck = async (userId) => {
-      let queryId = `select * from users where userId='${userId}';`
+      let queryId = "select * from users where userId='?';"
       return new Promise((resolve, reject) => {
-        connectionDB.query(queryId, (error, resultRows) => {
+        connectionDB.execute(queryId, [userId], (error, resultRows) => {
           if (resultRows.length > 0) {
             reject(res.status(409).send("Account already exists"))
           }
@@ -80,10 +80,10 @@ app.post("/api/v1/send-auth-code", (req, res) => {
       //console.assert(already !== 1, { errorMsg: "Check whether the account already exists" })
       var randNum = String(Math.floor(Math.random() * 1000000))
       var newCode = randNum.padStart(6, "0")
-      let queryAuth = `select * from authCode where userId='${userId}';`
+      let queryAuth = "select * from authCode where userId='?';"
 
       return new Promise((resolve, reject) => {
-        connectionDB.query(queryAuth, (err, authRows) => {
+        connectionDB.execute(queryAuth, [userId], (err, authRows) => {
           // If userId - authcode pair exists
           if (authRows.length > 0) {
             const tempTime = authRows[0]["timeAuth"]
@@ -95,7 +95,7 @@ app.post("/api/v1/send-auth-code", (req, res) => {
             console.log(date.toISOString())
             console.log(Date.now() - new Date(tempTime.getTime()))
             if (Date.now() - new Date(tempTime.getTime()) > 32400000 + 300000) {
-              connectionDB.query(`delete from authCode where userId='${userId}';`, (err) => {
+              connectionDB.execute("delete from authCode where userId='?';", [userId], (err) => {
                 if (err) throw err
               })
             }
@@ -105,14 +105,15 @@ app.post("/api/v1/send-auth-code", (req, res) => {
               console.log("HEREHRER")
               //var oldCode = authRows[0]["authCode"]
               const now = new Date()
-              const replaceQuery = `update authCode set authCode=${newCode}, timeAuth="${now.toISOString().slice(0, 19).replace("T", " ")}" where userId='${userId}'`
-              connectionDB.query(replaceQuery, (err) => {
+              const replaceQuery = "update authCode set authCode=?, timeAuth=\"?\" where userId='?'"
+              connectionDB.execute(replaceQuery, [newCode, now.toISOString().slice(0, 19).replace("T", " "), userId], (err) => {
                 if (err) throw err
               })
             }
           } else {
             const now = new Date()
-            connectionDB.query(`insert into authCode values('${userId}', ${newCode}, "${now.toISOString().slice(0, 19).replace("T", " ")}")`, (err) => {
+            const insertQuery = "insert into authCode values('?', ?, \"?\")"
+            connectionDB.execute(insertQuery, [userId, newCode, now.toISOString().slice(0, 19).replace("T", " ")], (err) => {
               if (err) throw err
             })
 
@@ -176,11 +177,11 @@ app.post("/api/v1/sign-in", (req, res) => {
   req.session.isAdmin = false
   if (connectionDB) {
     const queryFunc = async (userId) => {
-      let queryPW = `select hashedPW, isRep, isAdmin from users where userId='${userId}';`
+      let queryPW = "select hashedPW, isRep, isAdmin from users where userId='?';"
 
       return new Promise((resolve, reject) => {
 
-        connectionDB.query(queryPW, (error, subRows) => {
+        connectionDB.execute(queryPW, [userId], (error, subRows) => {
           console.log("subRows: " + subRows[0].hashedPW)
           if (subRows.length == 0 || subRows[0].hashedPW != password) {
             reject(res.status(401).send("There is no account or password is wrong"))
@@ -224,11 +225,11 @@ app.post("/api/v1/sign-up", (req, res) => {
   req.session.isAdmin = false
   if (connectionDB) {
     const queryFunc = async (userId) => {
-      let queryPW = `select hashedPW, isRep, isAdmin from users where userId='${userId}';`
+      let queryPW = "select hashedPW, isRep, isAdmin from users where userId='?';"
 
       return new Promise((resolve, reject) => {
 
-        connectionDB.query(queryPW, (error, subRows) => {
+        connectionDB.execute(queryPW, [userId], (error, subRows) => {
           console.log("subRows: " + subRows[0].hashedPW)
           if (subRows.length == 0 || subRows[0].hashedPW != password) {
             reject(res.status(401).send("There is no account or password is wrong"))
@@ -273,7 +274,9 @@ app.get("/api/v1/get-clubs-related", (req, res) => {
   if (connectionDB) {
     // console.log(req.session.userId)
     //bodyList = new Array();
-    connectionDB.query(`select *, 1 as rowtype from subscribes natural left join clubs where userId='${req.session.userId}' union select *, 2 as rowtype from joins natural left join clubs where userId='${req.session.userId}';`, (error, subRows) => {
+    const connectQuery = `start transaction; select *, 1 as rowtype from subscribes natural left join clubs where userId='?' 
+                          union select *, 2 as rowtype from joins natural left join clubs where userId='?'; commit`
+    connectionDB.execute(connectQuery, [req.session.userId, req.session.userId], (error, subRows) => {
       // console.log(subRows);
       const bodyList = new Array()
       if (error) throw error
