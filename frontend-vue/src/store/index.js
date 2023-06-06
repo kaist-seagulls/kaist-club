@@ -16,7 +16,7 @@ export default createStore({
     },
     checked: {},
     noFilter: false,
-    currentClubs: [],
+    currentClubs: {},
     requestsNewClub: {},
     requestsHandover: {},
     clubProfile: {},
@@ -287,9 +287,12 @@ export default createStore({
     },
     //Mutations for admin
     updateAdminInfo(state, adminInfo) {
-      state.currentClubs = adminInfo.clubs
+      state.currentClubs = {}
       state.requestsNewClub = {}
       state.requestsHandover = {}
+      for (const club of adminInfo.currentClubs) {
+        state.currentClubs[club.clubId] = club.clubName
+      }
       for (const request of adminInfo.requestsNewClub) {
         state.requestsNewClub[request.requestNewClubId] = {
           categoryName: request.categoryName,
@@ -413,19 +416,6 @@ export default createStore({
         context.commit("setAllJoinedChecked")
         context.commit("setAllNotJoinedChecked")
       }
-    },
-    // Actions for clubprofile
-    fetchClubProfile(context, id) {
-      let apiAddress = prefix + "getdata/assets/logos" + id
-      axios
-        .get(apiAddress) // example api address
-        .then((res) => {
-          context.commit("updateClubInfo", res.data)
-        })
-        .catch((err) => {
-          alert(err)
-          console.log(err)
-        })
     },
     // Actions for representing
     fetchUserInfo(context) {
@@ -597,6 +587,19 @@ export default createStore({
           context.commit("updateEvents", res.data.events)
         })
         .catch(err => {
+          alert(err)
+          console.log(err)
+        })
+    },
+    // Actions for clubprofile
+    fetchClubProfile(context, id) {
+      let apiAddress = prefix + "getdata/assets/logos" + id
+      axios
+        .get(apiAddress) // example api address
+        .then((res) => {
+          context.commit("updateClubInfo", res.data)
+        })
+        .catch((err) => {
           alert(err)
           console.log(err)
         })
