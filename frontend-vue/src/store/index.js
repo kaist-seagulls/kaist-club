@@ -631,6 +631,54 @@ export default createStore({
           console.log(err)
         })
     },
+    acceptJoin(context, id) {
+      let userInfo = context.state.userInfo
+      axios
+        .post(prefix + "accept-join/" + userInfo.representing, id)
+        .then((res) => {
+          context.commit("eraseApplicant", id)
+        })
+        .catch((err) => {
+          alert(err)
+          console(err)
+        })
+    },
+    denyJoin(context, id) {
+      let userInfo = context.state.userInfo
+      axios
+        .post(prefix + "deny-join/" + userInfo.representing, id)
+        .then((res) => {
+          context.commit("eraseApplicant", id)
+        })
+        .catch((err) => {
+          alert(err)
+          console(err)
+        })
+    },
+    getOuttaMyClubDude(context, id) {
+      let userInfo = context.state.userInfo
+      axios
+        .post(prefix + "get-outta-my-club-dude/" + userInfo.representing, id)
+        .then((res) => {
+          context.commit("eraseMember", id)
+        })
+        .catch((err) => {
+          alert(err)
+          console(err)
+        })
+    },
+    requestHandover(context, id) {
+      let userInfo = context.state.userInfo
+      axios
+        .post(prefix + "request-handover/" + userInfo.representing, id)
+        .then((res) => {
+          alert(`Handover request completed: ${userInfo.userId} -> ${id}`)
+        })
+        .catch((err) => {
+          alert(err)
+          console(err)
+        })
+    },
   },
   modules: {
   },
