@@ -437,42 +437,6 @@ export default createStore({
           console.log(err)
         })
     },
-    async acceptJoin(context, id) {
-      let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "accept-join/" + userInfo.representing, id)
-        .then(() => {
-          context.commit("eraseApplicant", id)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
-    },
-    async denyJoin(context, id) {
-      let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "deny-join/" + userInfo.representing, id)
-        .then(() => {
-          context.commit("eraseApplicant", id)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
-    },
-    async getOuttaMyClubDude(context, id) {
-      let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "get-outta-my-club-dude/" + userInfo.representing, id)
-        .then(() => {
-          context.commit("eraseMember", id)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
-    },
     async requestHandover(context, id) {
       let userInfo = context.state.userInfo
       axios
@@ -600,7 +564,7 @@ export default createStore({
         })
     },
     // Actions for userInfo
-    fetchUserInfo(context) {
+    async fetchUserInfo(context) {
       axios
         .get(prefix + "get-user-info")
         .then((res1) => {
@@ -608,7 +572,7 @@ export default createStore({
             .get(prefix + "get-representing-club")
             .then((res2) => {
               let userInfo = res1.data
-              userInfo.representing = user2.data
+              userInfo.representing = res2.data
               context.commit("updateUserInfo", userInfo)
             })
         })
@@ -618,7 +582,7 @@ export default createStore({
         })
     },
     // Actions for representing
-    fetchClubManagementInfo(context) {
+    async fetchClubManagementInfo(context) {
       if (context.state.userInfo.authority != "representative" ) return
       axios
         .get(prefix + "get-club-management-info", context.state.userInfo.representing)
@@ -631,11 +595,11 @@ export default createStore({
           console.log(err)
         })
     },
-    acceptJoin(context, id) {
+    async acceptJoin(context, id) {
       let userInfo = context.state.userInfo
       axios
         .post(prefix + "accept-join/" + userInfo.representing, id)
-        .then((res) => {
+        .then(() => {
           context.commit("eraseApplicant", id)
         })
         .catch((err) => {
@@ -643,11 +607,11 @@ export default createStore({
           console(err)
         })
     },
-    denyJoin(context, id) {
+    async denyJoin(context, id) {
       let userInfo = context.state.userInfo
       axios
         .post(prefix + "deny-join/" + userInfo.representing, id)
-        .then((res) => {
+        .then(() => {
           context.commit("eraseApplicant", id)
         })
         .catch((err) => {
@@ -655,24 +619,12 @@ export default createStore({
           console(err)
         })
     },
-    getOuttaMyClubDude(context, id) {
+    async getOuttaMyClubDude(context, id) {
       let userInfo = context.state.userInfo
       axios
         .post(prefix + "get-outta-my-club-dude/" + userInfo.representing, id)
-        .then((res) => {
+        .then(() => {
           context.commit("eraseMember", id)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
-    },
-    requestHandover(context, id) {
-      let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "request-handover/" + userInfo.representing, id)
-        .then((res) => {
-          alert(`Handover request completed: ${userInfo.userId} -> ${id}`)
         })
         .catch((err) => {
           alert(err)
