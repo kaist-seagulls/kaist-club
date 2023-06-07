@@ -417,48 +417,12 @@ export default createStore({
         context.commit("setAllNotJoinedChecked")
       }
     },
-    async acceptJoin(context, id) {
-      let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "accept-join/" + userInfo.representing, id)
-        .then(() => {
-          context.commit("eraseApplicant", id)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
-    },
-    async denyJoin(context, id) {
-      let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "deny-join/" + userInfo.representing, id)
-        .then(() => {
-          context.commit("eraseApplicant", id)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
-    },
     async getOuttaMyClubDude(context, id) {
       let userInfo = context.state.userInfo
       axios
         .post(prefix + "get-outta-my-club-dude/" + userInfo.representing, id)
         .then(() => {
           context.commit("eraseMember", id)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
-    },
-    async requestHandover(context, id) {
-      let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "request-handover/" + userInfo.representing, id)
-        .then(() => {
-          alert(`Handover request completed: ${userInfo.userId} -> ${id}`)
         })
         .catch((err) => {
           alert(err)
@@ -602,6 +566,42 @@ export default createStore({
         .catch((err) => {
           alert(err)
           console.log(err)
+        })
+    },
+    async acceptJoin(context, id) {
+      let userInfo = context.state.userInfo
+      axios
+        .post(prefix + "accept-join/" + userInfo.representing, id)
+        .then(() => {
+          context.commit("eraseApplicant", id)
+        })
+        .catch((err) => {
+          alert(err)
+          console(err)
+        })
+    },
+    async denyJoin(context, id) {
+      let userInfo = context.state.userInfo
+      axios
+        .post(prefix + "deny-join/" + userInfo.representing, id)
+        .then(() => {
+          context.commit("eraseApplicant", id)
+        })
+        .catch((err) => {
+          alert(err)
+          console(err)
+        })
+    },
+    async requestHandover(context, id) {
+      let userInfo = context.state.userInfo
+      axios
+        .post(prefix + "request-handover/" + userInfo.representing, id)
+        .then(() => {
+          alert(`Handover request completed: ${userInfo.userId} -> ${id}`)
+        })
+        .catch((err) => {
+          alert(err)
+          console(err)
         })
     },
   },

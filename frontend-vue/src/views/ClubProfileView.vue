@@ -17,12 +17,13 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios"
+import { mapGetters, mapActions } from "vuex"
 
 export default {
   name: "ClubProfileView",
   props: {
-    id: String
+    id: String,
   },
   computed: {
     ...mapGetters({
@@ -32,7 +33,7 @@ export default {
   methods: {
     fetchLogoImg() {
       axios
-        .get('api/v1/get-image-example')
+        .get("api/v1/get-image-example")
         .then()
     },
     ...mapActions({
