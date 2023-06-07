@@ -41,6 +41,11 @@ const buildMailParams = (userId, code) => ({
   html: `<div>Your Authentication Code is ${code}</div>`,
 })
 
+const generateCode = () => {
+  const randNum = String(Math.floor(Math.random() * 1000000))
+  return randNum.padStart(6, "0")
+}
+
 const connectionDB = mysql.createConnection(options)
 const sessionStore = new MySQLStore(options)
 
@@ -70,6 +75,9 @@ const findUserByUserId = async (conn, userId) => {
   const rows = await conn.execute(SQL_FIND_USER_BY_USERID, [userId])
   return rows
 }
+const SQL_FIND_AUTHCODE_BY_USERID = "SELECT * FROM authCode WHERE userId = ?"
+const SQL_NEW_AUTHCODE = "INSERT INTO authCode(userId, authCode, timeAuth) VALUES (?, ?, NOW())"
+const SQL_RENEW_AUTHCODE_BY_USERID = "UPDATE authCode SET authCode = ?, timeAuth = NOW() WHERE userId = ?"
 
 app.post("/api/v1/send-auth-code", (req, res) => {
   const userId = req.body.userId
@@ -83,37 +91,32 @@ app.post("/api/v1/send-auth-code", (req, res) => {
             res.status(409).send("exists")
             return false
           }
-          const randNum = String(Math.floor(Math.random() * 1000000))
-          const code = randNum.padStart(6, "0")
-          const SQL_FIND_AUTHCODE_BY_USERID = "SELECT * FROM authCode WHERE userId = ?"
-          const authRes = await conn.execute(SQL_FIND_AUTHCODE_BY_USERID, [userId])
-          const authRows = authRes[0]
+
+          let code = null
+          const authRows = (await conn.execute(SQL_FIND_AUTHCODE_BY_USERID, [userId]))[0]
           if (authRows.length > 0) {
             const timeElapsed = Date.now() - authRows[0].timeAuth
             if (timeElapsed < MIN_AUTHCODE_VALID_TIME) {
               res.status(409).send("issued")
               return false
             } else {
-              const SQL_RENEW_AUTHCODE_BY_USERID = "UPDATE authCode SET authCode = ?, timeAuth = NOW() WHERE userId = ?"
-              const updateRes = await conn.execute(SQL_RENEW_AUTHCODE_BY_USERID, [code, userId])
-              const affectedRows = updateRes[0].affectedRows
+              code = generateCode()
+              const affectedRows = (await conn.execute(SQL_RENEW_AUTHCODE_BY_USERID, [code, userId]))[0].affectedRows
               if (affectedRows !== 1) {
                 res.status(409).send()
                 return false
               }
             }
           } else {
-            const SQL_NEW_AUTHCODE = "INSERT INTO authCode(userId, authCode, timeAuth) VALUES (?, ?, NOW())"
-            const insertRes = await conn.execute(SQL_NEW_AUTHCODE, [userId, code])
-            const affectedRows = insertRes[0].affectedRows
+            code = generateCode()
+            const affectedRows = (await conn.execute(SQL_NEW_AUTHCODE, [userId, code]))[0].affectedRows
             if (affectedRows !== 1) {
               res.status(409).send()
               return false
             }
           }
           const transporter = nodemailer.createTransport(nodemailerTransportConfig)
-          const mailParams = buildMailParams(userId, code)
-          transporter.sendMail(mailParams)
+          await transporter.sendMail(buildMailParams(userId, code))
           return true
         } catch (e) {
           return false
