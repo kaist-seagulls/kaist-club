@@ -603,8 +603,14 @@ export default createStore({
     fetchUserInfo(context) {
       axios
         .get(prefix + "get-user-info")
-        .then((res) => {
-          context.commit("updateUserInfo", res.data)
+        .then((res1) => {
+          axios
+            .get(prefix + "get-representing-club")
+            .then((res2) => {
+              let userInfo = res1.data
+              userInfo.representing = user2.data
+              context.commit("updateUserInfo", userInfo)
+            })
         })
         .catch((err) => {
           alert(err)
@@ -615,14 +621,10 @@ export default createStore({
     fetchClubManagementInfo(context) {
       if (context.state.userInfo.authority != "representative" ) return
       axios
-        .get(prefix + "get-representing-club")
+        .get(prefix + "get-club-management-info", context.state.userInfo.representing)
         .then((res) => {
-          axios
-            .get(prefix + "get-club-management-info", res.data)
-            .then((res) => {
-              context.commit("updateMembers", res.data.members)
-              context.commit("updateApplicants", res.data.applicants)
-            })
+          context.commit("updateMembers", res.data.members)
+          context.commit("updateApplicants", res.data.applicants)
         })
         .catch((err) => {
           alert(err)
