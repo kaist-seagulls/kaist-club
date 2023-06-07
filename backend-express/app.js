@@ -4,15 +4,12 @@ const SECRET = JSON.parse(readFileSync("../personal.config.json"))
 const express = require("express")
 const bodyParser = require("body-parser")
 const mysql = require("mysql2")
-//const emailjs = require("@emailjs/browser")
 const nodemailer = require("nodemailer")
-//var emailjs = require("emailjs")
 // var router = express.Router()
-var session = require("express-session")
-//var smtpTransport=require("nodemailer-stmp-transport")
+const session = require("express-session")
+// eslint-disable-next-line
+const { getConn, releaseConn, doTransaction } = require("./pool.js")
 var MySQLStore = require("express-mysql-session")(session)
-// const history = require('connect-history-api-fallback');
-//const { request } = require('express');
 var app = express()
 
 var connectionDB = mysql.createConnection({

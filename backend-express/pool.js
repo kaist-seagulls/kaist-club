@@ -1,0 +1,76 @@
+const { readFileSync } = require("fs")
+const SECRET = JSON.parse(readFileSync("../personal.config.json"))
+const mysql = require("mysql2/promise")
+const pool = mysql.createPool({
+  host: "127.0.0.1",
+  port: 3306,
+  user: "root",
+  password: SECRET.mysql.password,
+  database: "cs350db",
+  connectionLimit: 25,
+})
+
+const getConn = async () => {
+  try {
+    const conn = await pool.getConnection()
+    return conn
+  } catch (error) {
+    console.error(`connection error: ${error.message}`)
+    return null
+  }
+}
+
+const releaseConn = async (conn) => {
+  try {
+    conn.release()
+  } catch (error) {
+    console.error(`release error: ${error.message}`)
+  }
+}
+
+/*
+ * async doTransaction(task: connection -> any) -> any
+ *  
+ * [return values](TODO: refactoring is needed)
+ *    -1: A connection is not established
+ *    -2: A transaction is not started
+ *    -3: There was a problem during doing the task or committing
+ *    null: The task returned null and the transaction is committed
+ *    others: The transaction
+ */
+const doTransaction = async (task) => {
+  const conn = await getConn()
+  if (conn) {
+    try {
+      try {
+        await conn.beginTransaction()
+      } catch (error) {
+        console.log(`beginConnection: ${error.message}`)
+        return -2
+      }
+      const task_result = await task(conn)
+      if (task_result) {
+        return task_result
+      }
+      await conn.commit()
+      return null
+    } catch (error) {
+      if (conn) {
+        await conn.rollback()
+        return -3
+      }
+    } finally {
+      if (conn) {
+        releaseConn(conn)
+      }
+    }
+  } else {
+    return -1
+  }
+}
+
+module.exports = {
+  getConn,
+  releaseConn,
+  doTransaction,
+}
