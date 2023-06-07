@@ -4,19 +4,16 @@ const SECRET = JSON.parse(readFileSync("../personal.config.json"))
 const express = require("express")
 const bodyParser = require("body-parser")
 const mysql = require("mysql2")
-// const moment = require("moment")
 const nodemailer = require("nodemailer")
-// var router = express.Router()
 const session = require("express-session")
-// eslint-disable-next-line
-const { getConn, releaseConn, doTransaction } = require("./pool.js")
-var MySQLStore = require("express-mysql-session")(session)
-var app = express()
+const { doTransaction } = require("./pool.js")
+const MySQLStore = require("express-mysql-session")(session)
+const app = express()
 
 const MIN_AUTHCODE_VALID_TIME = 30 * 1000
-const MAX_AUTOCODE_VALID_TIME = 5 * 60 * 1000
+// const MAX_AUTOCODE_VALID_TIME = 5 * 60 * 1000
 
-var options = {
+const options = {
   host: "127.0.0.1",
   port: 3306,
   user: "root",
@@ -24,9 +21,28 @@ var options = {
   database: "cs350db",
 }
 
+const nodemailerTransportConfig = {
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: "kjyeric1117@gmail.com",
+    pass: "yidnstrgdfcgaikr",
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+}
 
-var connectionDB = mysql.createConnection(options)
-var sessionStore = new MySQLStore(options)
+const buildMailParams = (userId, code) => ({
+  from: "kjyeric1117@gmail.com",
+  to: `${userId}@kaist.ac.kr`,
+  subject: "Your Authentication Code for KAIST Club",
+  html: `<div>Your Authentication Code is ${code}</div>`,
+})
+
+const connectionDB = mysql.createConnection(options)
+const sessionStore = new MySQLStore(options)
 
 app.use(
   session({
@@ -36,12 +52,6 @@ app.use(
     saveUninitialized: false,
   }),
 )
-
-//var sessionStore = new MySQLStore(connectionDB)
-
-//module.exports = router;
-
-
 
 //app.use(history());
 //app.use('/api/v1/get-clubs-related',router);
@@ -53,7 +63,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // parse application/json
 app.use(bodyParser.json())
 
-app.get("/", (req, res) => res.send("Hello World!"))
+app.get("/", (_req, res) => res.send("Hello World!"))
 
 const findUserByUserId = async (conn, userId) => {
   const SQL_FIND_USER_BY_USERID = "SELECT * FROM users WHERE userId = ?"
@@ -61,20 +71,8 @@ const findUserByUserId = async (conn, userId) => {
   return rows
 }
 
-// const task_test = async (conn) => {
-//   try {
-//     const SQL = "SELECT * FROM authCode"
-//     const timestamp = await conn.execute(SQL, [])
-//     console.log(Date.now() - timestamp[0][0].timeAuth)
-//     return null
-//   } catch (e) {
-//     console.log(e.message)
-//   }
-// }
-// console.log(doTransaction(task_test))
-
 app.post("/api/v1/send-auth-code", (req, res) => {
-  var userId = req.body.userId
+  const userId = req.body.userId
   const cont = async () => {
     try {
       const transactionResult = await doTransaction(async (conn) => {
@@ -113,30 +111,8 @@ app.post("/api/v1/send-auth-code", (req, res) => {
               return false
             }
           }
-
-          const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 587,
-            secure: false,
-            auth: {
-              user: "kjyeric1117@gmail.com",
-              pass: "yidnstrgdfcgaikr",
-            },
-            tls: {
-              rejectUnauthorized: false,
-            },
-          })
-
-          const mailParams = {
-            from: "kjyeric1117@gmail.com",
-            to: `${userId}@kaist.ac.kr`,
-            subject: "Your Authentication Code for KAIST Club",
-            html:
-              `<div>
-            Your Authentication Code is ${code}
-            </div>`,
-          }
-
+          const transporter = nodemailer.createTransport(nodemailerTransportConfig)
+          const mailParams = buildMailParams(userId, code)
           transporter.sendMail(mailParams)
           return true
         } catch (e) {
@@ -154,15 +130,14 @@ app.post("/api/v1/send-auth-code", (req, res) => {
 })
 
 app.post("/api/v1/sign-in", (req, res) => {
-  // var post = "aslkdksdl"
-  var userId = req.body.userId
-  var password = req.body.password
+  const userId = req.body.userId
+  const password = req.body.password
   console.log("userId: " + userId)
   req.session.isRep = false
   req.session.isAdmin = false
   if (connectionDB) {
     const queryFunc = async (userId) => {
-      let queryPW = "select hashedPW, isRep, isAdmin from users where userId='?';"
+      const queryPW = "select hashedPW, isRep, isAdmin from users where userId='?';"
 
       return new Promise((resolve, reject) => {
 
@@ -202,15 +177,14 @@ app.post("/api/v1/sign-in", (req, res) => {
   }
 })
 app.post("/api/v1/sign-up", (req, res) => {
-  // var post = "aslkdksdl"
-  var userId = req.body.userId
-  var password = req.body.password
+  const userId = req.body.userId
+  const password = req.body.password
   console.log("userId: " + userId)
   req.session.isRep = false
   req.session.isAdmin = false
   if (connectionDB) {
     const queryFunc = async (userId) => {
-      let queryPW = "select hashedPW, isRep, isAdmin from users where userId='?';"
+      const queryPW = "select hashedPW, isRep, isAdmin from users where userId='?';"
 
       return new Promise((resolve, reject) => {
 
@@ -251,14 +225,8 @@ app.post("/api/v1/sign-up", (req, res) => {
 })
 
 app.get("/api/v1/get-clubs-related", (req, res) => {
-  //var session = req.session;
   req.session.userId = "ytrewq271828"
-  // var subRows
-  // var joinRows
-  //let bodyList = [];
   if (connectionDB) {
-    // console.log(req.session.userId)
-    //bodyList = new Array();
     const connectQuery = `start transaction; select *, 1 as rowtype from subscribes natural left join clubs where userId='?' 
                           union select *, 2 as rowtype from joins natural left join clubs where userId='?'; commit`
     connectionDB.execute(connectQuery, [req.session.userId, req.session.userId], (error, subRows) => {
@@ -266,8 +234,8 @@ app.get("/api/v1/get-clubs-related", (req, res) => {
       const bodyList = new Array()
       if (error) throw error
       //console.log(subRows.length);
-      for (var i = 0; i < subRows.length; i++) {
-        var isJoined = true
+      for (let i = 0; i < subRows.length; i++) {
+        let isJoined = true
         //console.log(connectionDB.query(`select exists(select * from joins where userId='${req.session.userId}');`));
         if (subRows[i]["rowtype"] == 1) {
           isJoined = false
