@@ -4,6 +4,7 @@ const SECRET = JSON.parse(readFileSync("../personal.config.json"))
 const express = require("express")
 const bodyParser = require("body-parser")
 const mysql = require("mysql2")
+// const moment = require("moment")
 const nodemailer = require("nodemailer")
 // var router = express.Router()
 const session = require("express-session")
@@ -12,8 +13,12 @@ const { getConn, releaseConn, doTransaction } = require("./pool.js")
 var MySQLStore = require("express-mysql-session")(session)
 var app = express()
 
-var connectionDB = mysql.createConnection({
-  host: "localhost",
+const MIN_AUTHCODE_VALID_TIME = 30 * 1000
+const MAX_AUTOCODE_VALID_TIME = 5 * 60 * 1000
+
+var options = {
+  host: "127.0.0.1",
+  port: 3306,
   user: "root",
   password: SECRET.mysql.password,
   database: "cs350db",
@@ -50,119 +55,102 @@ app.use(bodyParser.json())
 
 app.get("/", (req, res) => res.send("Hello World!"))
 
+const findUserByUserId = async (conn, userId) => {
+  const SQL_FIND_USER_BY_USERID = "SELECT * FROM users WHERE userId = ?"
+  const rows = await conn.execute(SQL_FIND_USER_BY_USERID, [userId])
+  return rows
+}
+
+// const task_test = async (conn) => {
+//   try {
+//     const SQL = "SELECT * FROM authCode"
+//     const timestamp = await conn.execute(SQL, [])
+//     console.log(Date.now() - timestamp[0][0].timeAuth)
+//     return null
+//   } catch (e) {
+//     console.log(e.message)
+//   }
+// }
+// console.log(doTransaction(task_test))
+
 app.post("/api/v1/send-auth-code", (req, res) => {
-  console.log("sendauthcode")
   var userId = req.body.userId
-  console.log(userId)
-  if (connectionDB) {
-    const idCheck = async (userId) => {
-      let queryId = "select * from users where userId='?';"
-      return new Promise((resolve, reject) => {
-        connectionDB.execute(queryId, [userId], (error, resultRows) => {
-          if (resultRows.length > 0) {
-            reject(res.status(409).send("Account already exists"))
+  const cont = async () => {
+    try {
+      const transactionResult = await doTransaction(async (conn) => {
+        try {
+          const userRes = await findUserByUserId(conn, userId)
+          const userRows = userRes[0]
+          if (userRows.length > 0) {
+            res.status(409).send("exists")
+            return false
           }
-          else {
-            resolve(1)
-          }
-
-        })
-      })
-    }
-    const idAuthCheck = async (userId) => {
-      const already = await idCheck(userId)
-      if (already !== 1) {
-        throw new Error("Account check failed")
-      }
-      //console.assert(already !== 1, { errorMsg: "Check whether the account already exists" })
-      var randNum = String(Math.floor(Math.random() * 1000000))
-      var newCode = randNum.padStart(6, "0")
-      let queryAuth = "select * from authCode where userId='?';"
-
-      return new Promise((resolve, reject) => {
-        connectionDB.execute(queryAuth, [userId], (err, authRows) => {
-          // If userId - authcode pair exists
+          const randNum = String(Math.floor(Math.random() * 1000000))
+          const code = randNum.padStart(6, "0")
+          const SQL_FIND_AUTHCODE_BY_USERID = "SELECT * FROM authCode WHERE userId = ?"
+          const authRes = await conn.execute(SQL_FIND_AUTHCODE_BY_USERID, [userId])
+          const authRows = authRes[0]
           if (authRows.length > 0) {
-            const tempTime = authRows[0]["timeAuth"]
-            console.log(tempTime)
-            //var jsTime = new Date(Date.UTC(tempTime[0], tempTime[1] - 1, tempTime[2], tempTime[3], tempTime[4], tempTime[5]))
-            //var jsTime = new Date(tempTime.toISOString().slice(0, 19).replace("T", " "))
-            //console.log(jsTime)
-            const date = new Date()
-            console.log(date.toISOString())
-            console.log(Date.now() - new Date(tempTime.getTime()))
-            if (Date.now() - new Date(tempTime.getTime()) > 32400000 + 300000) {
-              connectionDB.execute("delete from authCode where userId='?';", [userId], (err) => {
-                if (err) throw err
-              })
-            }
-            if (Date.now() - new Date(tempTime.getTime()) < 32400000 + 30000) {
-              reject(res.status(409).send("Issued"))
+            const timeElapsed = Date.now() - authRows[0].timeAuth
+            if (timeElapsed < MIN_AUTHCODE_VALID_TIME) {
+              res.status(409).send("issued")
+              return false
             } else {
-              console.log("HEREHRER")
-              //var oldCode = authRows[0]["authCode"]
-              const now = new Date()
-              const replaceQuery = "update authCode set authCode=?, timeAuth=\"?\" where userId='?'"
-              connectionDB.execute(replaceQuery, [newCode, now.toISOString().slice(0, 19).replace("T", " "), userId], (err) => {
-                if (err) throw err
-              })
+              const SQL_RENEW_AUTHCODE_BY_USERID = "UPDATE authCode SET authCode = ?, timeAuth = NOW() WHERE userId = ?"
+              const updateRes = await conn.execute(SQL_RENEW_AUTHCODE_BY_USERID, [code, userId])
+              const affectedRows = updateRes[0].affectedRows
+              if (affectedRows !== 1) {
+                res.status(409).send()
+                return false
+              }
             }
           } else {
-            const now = new Date()
-            const insertQuery = "insert into authCode values('?', ?, \"?\")"
-            connectionDB.execute(insertQuery, [userId, newCode, now.toISOString().slice(0, 19).replace("T", " ")], (err) => {
-              if (err) throw err
-            })
-
+            const SQL_NEW_AUTHCODE = "INSERT INTO authCode(userId, authCode, timeAuth) VALUES (?, ?, NOW())"
+            const insertRes = await conn.execute(SQL_NEW_AUTHCODE, [userId, code])
+            const affectedRows = insertRes[0].affectedRows
+            if (affectedRows !== 1) {
+              res.status(409).send()
+              return false
+            }
           }
-          resolve(newCode)
-        })
-      })
-    }
-    // Send an email
-    const sendAuth = async (userId) => {
-      const newCode = await idAuthCheck(userId)
-      console.log("ICIS")
 
-      let transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false,
-        //service: "Gmail",
-        auth: {
-          user: "kjyeric1117@gmail.com",
-          pass: "yidnstrgdfcgaikr",
-        },
-        tls: {
-          rejectUnauthorized: false,
-        },
-      })
-      //emailjs.init("RiPaL0zdYlKLUiHu_")
-      console.log("initinit")
-      let mailParams = {
-        from: "kjyeric1117@gmail.com",
-        //from: "ytrewq271828@kaist.ac.kr",
-        to: `${userId}@kaist.ac.kr`,
-        subject: "Your Authentication Code for KAIST Club",
-        html:
-          `<div>
-          Your Authentication Code is ${newCode}
-          </div>`,
-      }
-      try {
-        transporter.sendMail(mailParams)
-        console.log("Success!")
-        res.status(204).send(" ")
-        console.log("Please")
-      } catch (err) {
-        throw new Error(err)
-      }
-    }
+          const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false,
+            auth: {
+              user: "kjyeric1117@gmail.com",
+              pass: "yidnstrgdfcgaikr",
+            },
+            tls: {
+              rejectUnauthorized: false,
+            },
+          })
 
-    sendAuth(userId).catch(() => console.log("Error occurred"))
-  } else {
-    throw new Error("DB Connection Failed")
+          const mailParams = {
+            from: "kjyeric1117@gmail.com",
+            to: `${userId}@kaist.ac.kr`,
+            subject: "Your Authentication Code for KAIST Club",
+            html:
+              `<div>
+            Your Authentication Code is ${code}
+            </div>`,
+          }
+
+          transporter.sendMail(mailParams)
+          return true
+        } catch (e) {
+          return false
+        }
+      })
+      if (transactionResult) {
+        res.status(204).send()
+      }
+    } catch {
+      res.status(503).send()
+    }
   }
+  cont()
 })
 
 app.post("/api/v1/sign-in", (req, res) => {

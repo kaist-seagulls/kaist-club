@@ -41,31 +41,22 @@ const releaseConn = async (conn) => {
 const doTransaction = async (task) => {
   const conn = await getConn()
   if (conn) {
+    await conn.beginTransaction()
     try {
-      try {
-        await conn.beginTransaction()
-      } catch (error) {
-        console.log(`beginConnection: ${error.message}`)
-        return -2
-      }
       const task_result = await task(conn)
       if (task_result) {
-        return task_result
-      }
-      await conn.commit()
-      return null
-    } catch (error) {
-      if (conn) {
+        await conn.commit()
+        return true
+      } else {
         await conn.rollback()
-        return -3
+        return false
       }
     } finally {
-      if (conn) {
-        releaseConn(conn)
-      }
+      await conn.rollback()
+      await releaseConn(conn)
     }
   } else {
-    return -1
+    throw null
   }
 }
 
