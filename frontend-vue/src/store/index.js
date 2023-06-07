@@ -232,6 +232,13 @@ export default createStore({
         weeks,
       }
     },
+    // Getters for representing
+    members(state) {
+      return state.members
+    },
+    applicants(state) {
+      return state.applicants
+    },
   },
   mutations: {
     // Mutations for filter
@@ -598,6 +605,24 @@ export default createStore({
         .get(prefix + "get-user-info")
         .then((res) => {
           context.commit("updateUserInfo", res.data)
+        })
+        .catch((err) => {
+          alert(err)
+          console.log(err)
+        })
+    },
+    // Actions for representing
+    fetchClubManagementInfo(context) {
+      if (context.state.userInfo.authority != "representative" ) return
+      axios
+        .get(prefix + "get-representing-club")
+        .then((res) => {
+          axios
+            .get(prefix + "get-club-management-info", res.data)
+            .then((res) => {
+              context.commit("updateMembers", res.data.members)
+              context.commit("updateApplicants", res.data.applicants)
+            })
         })
         .catch((err) => {
           alert(err)
