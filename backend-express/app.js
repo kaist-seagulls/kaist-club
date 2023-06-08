@@ -5,6 +5,7 @@ const express = require("express")
 const bodyParser = require("body-parser")
 const mysql = require("mysql2")
 const nodemailer = require("nodemailer")
+const { StatusCodes } = require("http-status-codes")
 const session = require("express-session")
 const { doTransaction } = require("./pool.js")
 const MySQLStore = require("express-mysql-session")(session)
@@ -81,55 +82,52 @@ const SQL_RENEW_AUTHCODE_BY_USERID = "UPDATE authCode SET authCode = ?, timeAuth
 
 app.post("/api/v1/send-auth-code", (req, res) => {
   const userId = req.body.userId
-  const cont = async () => {
-    try {
-      const transactionResult = await doTransaction(async (conn) => {
-        try {
-          const userRes = await findUserByUserId(conn, userId)
-          const userRows = userRes[0]
-          if (userRows.length > 0) {
-            res.status(409).send("exists")
-            return false
-          }
-
-          let code = null
-          const authRows = (await conn.execute(SQL_FIND_AUTHCODE_BY_USERID, [userId]))[0]
-          if (authRows.length > 0) {
-            const timeElapsed = Date.now() - authRows[0].timeAuth
-            if (timeElapsed < MIN_AUTHCODE_VALID_TIME) {
-              res.status(409).send("issued")
-              return false
-            } else {
-              code = generateCode()
-              const affectedRows = (await conn.execute(SQL_RENEW_AUTHCODE_BY_USERID, [code, userId]))[0].affectedRows
-              if (affectedRows !== 1) {
-                res.status(409).send()
-                return false
-              }
-            }
-          } else {
-            code = generateCode()
-            const affectedRows = (await conn.execute(SQL_NEW_AUTHCODE, [userId, code]))[0].affectedRows
-            if (affectedRows !== 1) {
-              res.status(409).send()
-              return false
-            }
-          }
-          const transporter = nodemailer.createTransport(nodemailerTransportConfig)
-          await transporter.sendMail(buildMailParams(userId, code))
-          return true
-        } catch (e) {
-          return false
-        }
+  doTransaction(res, async (conn) => {
+    const userRows = (await findUserByUserId(conn, userId))[0]
+    // ASSUME userRows.length <= 1
+    if (userRows.length > 0) {
+      await conn.rollback()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "exists",
       })
-      if (transactionResult) {
-        res.status(204).send()
-      }
-    } catch {
-      res.status(503).send()
+      return
     }
-  }
-  cont()
+
+    const authRows = (await conn.execute(SQL_FIND_AUTHCODE_BY_USERID, [userId]))[0]
+    // ASSUME authRows.length <= 1
+    const doesAuthCodeExists = (authRows.length > 0)
+    if (doesAuthCodeExists) {
+      const timeElapsed = Date.now() - authRows[0].timeAuth
+      if (timeElapsed < MIN_AUTHCODE_VALID_TIME) {
+        await conn.rollback()
+        const timeRemaining = MIN_AUTHCODE_VALID_TIME - timeElapsed
+        res.status(StatusCodes.CONFLICT).json({
+          message: "issued",
+          timeRemaining,
+        })
+        return
+      }
+    }
+
+    const code = generateCode()
+    let modifyResult = undefined
+    if (doesAuthCodeExists) {
+      modifyResult = await conn.execute(SQL_RENEW_AUTHCODE_BY_USERID, [code, userId])
+    } else {
+      modifyResult = await conn.execute(SQL_NEW_AUTHCODE, [userId, code])
+    }
+    if (modifyResult[0].affectedRows !== 1) {
+      await conn.rollback()
+      res.status(StatusCodes.CONFLICT).end()
+      return
+    }
+
+    const transporter = nodemailer.createTransport(nodemailerTransportConfig)
+    await transporter.sendMail(buildMailParams(userId, code))
+    await conn.commit()
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
 })
 
 app.post("/api/v1/sign-in", (req, res) => {

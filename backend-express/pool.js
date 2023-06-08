@@ -1,6 +1,7 @@
 const { readFileSync } = require("fs")
 const SECRET = JSON.parse(readFileSync("../personal.config.json"))
 const mysql = require("mysql2/promise")
+const { StatusCodes } = require("http-status-codes")
 const pool = mysql.createPool({
   host: "127.0.0.1",
   port: 3306,
@@ -10,58 +11,40 @@ const pool = mysql.createPool({
   connectionLimit: 25,
 })
 
-const getConn = async () => {
-  try {
-    const conn = await pool.getConnection()
-    return conn
-  } catch (error) {
-    console.error(`connection error: ${error.message}`)
-    return null
-  }
-}
-
-const releaseConn = async (conn) => {
-  try {
-    conn.release()
-  } catch (error) {
-    console.error(`release error: ${error.message}`)
-  }
-}
-
 /*
- * async doTransaction(task: connection -> any) -> any
+ * async doTransaction(
+ *   res: response,
+ *   task: async (connection) -> void
+ * ) -> void
  *  
- * [return values](TODO: refactoring is needed)
- *    -1: A connection is not established
- *    -2: A transaction is not started
- *    -3: There was a problem during doing the task or committing
- *    null: The task returned null and the transaction is committed
- *    others: The transaction
+ * In `task`:
+ *   (1) Handle every exception except for SERVICE_UNAVAILABLE.
+ *   (2) Do commit or rollback appropriately.
  */
-const doTransaction = async (task) => {
-  const conn = await getConn()
-  if (conn) {
-    await conn.beginTransaction()
+const doTransaction = async (res, task) => {
+  try {
+    // If throw: -> sendGeneralError
+    const conn = await pool.getConnection()
+    // In CONNECTION from now on
     try {
-      const task_result = await task(conn)
-      if (task_result) {
-        await conn.commit()
-        return true
-      } else {
+      // If throw: -> release -> sendGeneralError
+      await conn.beginTransaction()
+      // In TRANSACTION from now on
+      try {
+        // If throw: -> rollback -> release -> sendGeneralError
+        await task(conn)
+      } catch (e) { // "rollback" TRANSACTION
         await conn.rollback()
-        return false
+        throw e
       }
-    } finally {
-      await conn.rollback()
-      await releaseConn(conn)
+    } finally { // "release" CONNECTION
+      conn.release()
     }
-  } else {
-    throw null
+  } catch { // "sendGeneralError" - ALL GENERAL EXCEPTIONS BOUND HERE
+    res.status(StatusCodes.SERVICE_UNAVAILABLE).end()
   }
 }
 
 module.exports = {
-  getConn,
-  releaseConn,
   doTransaction,
 }
