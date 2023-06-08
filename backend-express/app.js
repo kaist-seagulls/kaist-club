@@ -132,51 +132,27 @@ app.post("/api/v1/send-auth-code", (req, res) => {
 
 app.post("/api/v1/sign-in", (req, res) => {
   const userId = req.body.userId
-  const password = req.body.password
+  const pw = req.body.password
   console.log("userId: " + userId)
-  req.session.isRep = false
-  req.session.isAdmin = false
-  if (connectionDB) {
-    const queryFunc = async (userId) => {
-      const queryPW = "select hashedPW, isRep, isAdmin from users where userId='?';"
-
-      return new Promise((resolve, reject) => {
-
-        connectionDB.execute(queryPW, [userId], (error, subRows) => {
-          console.log("subRows: " + subRows[0].hashedPW)
-          if (subRows.length == 0 || subRows[0].hashedPW != password) {
-            reject(res.status(401).send("There is no account or password is wrong"))
-          } else {
-            resolve(subRows)
-          }
-        })
-      })
-    }
-    const queryAsync = async () => {
-
-      const result = await queryFunc(userId)
-      console.log("result: " + result)
-
-      if (result["isRep"] == 1) {
-        req.session.isRep = true
-        console.log("The user is a representative")
-      }
-
-      if (result["isAdmin"] == 1) {
-        req.session.isAdmin = true
-        console.log("The user is an admin")
-      }
-      req.session.isLogged = true
-      req.session.userId = userId
-      req.session.password = password
-      res.status(200).send("Login Succeed")
-    }
-
-    queryAsync().catch(() => console.log("error occurs"))
-  } else {
-    throw new Error("DB Connection Failed")
+  const hashPw = (pw) => {
+    return pw
   }
+  doTransaction(res, async (conn) => {
+    const SQL_FIND_USER_BY_SIGNIN_INFO = "SELECT * FROM Users WHERE userId = ? AND hashedPW = ?"
+    const findResult = await conn.execute(SQL_FIND_USER_BY_SIGNIN_INFO, [userId, hashPw(pw)])
+    if (findResult[0].length == 0) {
+      await conn.rollback()
+      res.status(StatusCodes.UNAUTHORIZED).end()
+      return
+    }
+    await conn.commit()
+    req.session.isLogged = true
+    req.session.userId = userId
+    res.status(StatusCodes.OK).end()
+    return
+  })
 })
+
 app.post("/api/v1/sign-up", (req, res) => {
   const userId = req.body.userId
   const password = req.body.password
@@ -226,35 +202,44 @@ app.post("/api/v1/sign-up", (req, res) => {
 })
 
 app.get("/api/v1/get-clubs-related", (req, res) => {
-  req.session.userId = "ytrewq271828"
-  if (connectionDB) {
-    const connectQuery = `start transaction; select *, 1 as rowtype from subscribes natural left join clubs where userId='?' 
-                          union select *, 2 as rowtype from joins natural left join clubs where userId='?'; commit`
-    connectionDB.execute(connectQuery, [req.session.userId, req.session.userId], (error, subRows) => {
-      // console.log(subRows);
-      const bodyList = new Array()
-      if (error) throw error
-      //console.log(subRows.length);
-      for (let i = 0; i < subRows.length; i++) {
-        let isJoined = true
-        //console.log(connectionDB.query(`select exists(select * from joins where userId='${req.session.userId}');`));
-        if (subRows[i]["rowtype"] == 1) {
-          isJoined = false
-        }
-        bodyList.push({
-          id: subRows[i]["clubId"],
-          name: subRows[i]["clubName"],
-          isJoined: isJoined,
-        })
-      }
-      //console.log(bodyList);
-      res.send(bodyList)
-    })
-
-
-  } else {
-    throw new Error("DB Connection Failed")
+  const userId = req.session.userId
+  if (userId === undefined) {
+    res.status(StatusCodes.UNAUTHORIZED).end()
+    return
   }
+  doTransaction(res, async (conn) => {
+    const joinedClubs = []
+    const SQL_FIND_JOINED = "SELECT clubName FROM joins WHERE userId = ?"
+    const joinedClubsResult = await conn.execute(SQL_FIND_JOINED, [userId])
+    for (const club of joinedClubsResult[0]) {
+      joinedClubs.push({
+        name: club.clubName,
+        isJoined: true,
+      })
+    }
+    const SQL_FIND_SUBSCRIBED = "SELECT clubName FROM subscribes WHERE userId = ?"
+    const subscribedClubsResult = await conn.execute(SQL_FIND_SUBSCRIBED, [userId])
+    const subscribedClubs = []
+    for (const club of subscribedClubsResult[0]) {
+      let joined = false
+      for (const joinedClub of joinedClubs) {
+        if (club.clubName === joinedClub.name) {
+          joined = true
+          break
+        }
+      }
+      if (joined) {
+        continue
+      }
+      subscribedClubs.push({
+        name: club.clubName,
+        isJoined: false,
+      })
+    }
+    const relatedClubs = subscribedClubs.concat(joinedClubs)
+    await conn.commit()
+    res.status(StatusCodes.OK).json(relatedClubs)
+  })
 })
 
 
