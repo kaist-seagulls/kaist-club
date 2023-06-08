@@ -12,7 +12,7 @@ create table
         userId varchar(20) primary key,
         userName varchar(30) not null,
         email varchar(50) unique not null,
-        phone int unique not null,
+        phone varchar(15) unique not null,
         hashedPW varchar(50),
         isRep boolean not null,
         isAdmin boolean not null
@@ -24,7 +24,7 @@ values (
         'ytrewq271828',
         'Junyup Kim',
         'ytrewq271828@kaist.ac.kr',
-        98342208,
+        '01098342208',
         'klasjfdkljsdkljfsda',
         false,
         false
@@ -36,7 +36,7 @@ values (
         'tanit23',
         'Taehan Kim',
         'tanit23@kaist.ac.kr',
-        66826915,
+        '01066826915',
         'sfadlksadflkjsadkljs',
         true,
         false
@@ -48,7 +48,7 @@ values (
         'derick321',
         'Dongseop Lee',
         'derick321@kaist.ac.kr',
-        04470447,
+        '01004470447',
         'laiowjeivona',
         false,
         true
@@ -60,7 +60,7 @@ values (
         'tpdus2155',
         'Seyeon Kim',
         'tpdus2155@kaist.ac.kr',
-        00960096,
+        '01000960096',
         'kasdjfklajseijija',
         true,
         false
@@ -72,7 +72,7 @@ values (
         'antony',
         'Seunghyeon Jeong',
         'antony@kaist.ac.kr',
-        05770577,
+        '01005770577',
         'qwerqwerqwer',
         false,
         false
@@ -80,7 +80,6 @@ values (
 
 create table
     Clubs(
-        clubId int not null unique,
         clubName varchar(20) primary key,
         descriptions varchar(100) not null,
         clubCategory varchar(30) not null
@@ -88,7 +87,6 @@ create table
 
 insert into Clubs
 values (
-        1,
         'Number',
         'KAIST Musical club',
         'Performance'
@@ -96,7 +94,6 @@ values (
 
 insert into Clubs
 values (
-        2,
         'K-Let',
         'KAIST Leadership Executing Team',
         'Social'
@@ -104,13 +101,12 @@ values (
 
 insert into Clubs
 values (
-        3,
         'KAIST Times',
         'KAIST Korean Newspaper',
         'Association'
     );
 
-insert into Clubs values(4, 'Bear Paw', 'KAIST Handmaking', 'Arts');
+insert into Clubs values('Bear Paw', 'KAIST Handmaking', 'Arts');
 
 create table
     Posts(
@@ -127,7 +123,7 @@ create table
 
 alter table Posts
 add
-    foreign key (postClubName) references clubs (clubName);
+    foreign key (postClubName) references clubs (clubName) on delete cascade;
 
 insert into Posts
 values (
@@ -182,7 +178,7 @@ values (
     );
 
 create table
-    category(
+    Category(
         categoryId int,
         categoryName varchar(30) primary key
     );
@@ -196,7 +192,7 @@ insert into category values(3, 'Social');
 insert into category values(4, 'Association');
 
 create table
-    creationrequests(
+    Creationrequests(
         clubName varchar(20) primary key,
         requestUser varchar(20) not null,
         descriptions varchar(100) not null,
@@ -206,7 +202,7 @@ create table
 
 alter table creationrequests
 add
-    foreign key (clubCategory) references category (categoryName);
+    foreign key (clubCategory) references category (categoryName) on delete cascade;
 
 insert into creationrequests
 values (
@@ -228,29 +224,29 @@ values (
 
 alter table Clubs
 add
-    foreign key (clubCategory) references category (categoryName);
+    foreign key (clubCategory) references category (categoryName) on delete cascade;
 
 alter table creationrequests
 add
-    foreign key (clubCategory) references category (categoryName);
+    foreign key (clubCategory) references category (categoryName) on delete cascade;
 
 alter table creationrequests
 add
-    foreign key (requestUser) references users (userId);
+    foreign key (requestUser) references users (userId) on delete cascade;
 
 create table
-    subscribes(
+    Subscribes(
         userId varchar(20) not null,
         clubName varchar(20) not null
     );
 
 alter table subscribes
 add
-    foreign key (userId) references users (userId);
+    foreign key (userId) references users (userId) on delete cascade;
 
 alter table subscribes
 add
-    foreign key (clubName) references clubs (clubName);
+    foreign key (clubName) references clubs (clubName) on delete cascade;
 
 insert into subscribes values('ytrewq271828', 'Number');
 
@@ -273,16 +269,18 @@ insert into subscribes values('tpdus2155', 'Number');
 insert into subscribes values('antony', 'Number');
 
 create table
-    joins(
+    Joins(
         userId varchar(20) not null,
         clubName varchar(20) not null
     );
 
-alter table joins add foreign key (userId) references users (userId);
+alter table joins
+add
+    foreign key (userId) references users (userId) on delete CASCADE;
 
 alter table joins
 add
-    foreign key (clubName) references clubs (clubName);
+    foreign key (clubName) references clubs (clubName) on delete cascade;
 
 insert into joins values('ytrewq271828', 'K-Let');
 
@@ -297,18 +295,18 @@ insert into joins values('tpdus2155', 'Number');
 insert into joins values('antony', 'Number');
 
 create table
-    represents(
+    Represents(
         userId varchar(20) not null,
         clubName varchar(20) primary key
     );
 
 alter table represents
 add
-    foreign key (userId) references users (userId);
+    foreign key (userId) references users (userId) on delete cascade;
 
 alter table represents
 add
-    foreign key (clubName) references clubs (clubName);
+    foreign key (clubName) references clubs (clubName) on delete cascade;
 
 insert into represents values('tanit23', 'K-Let');
 
@@ -323,20 +321,20 @@ create table
 
 alter table HandoverRequests
 add
-    foreign key (fromId) references users (userId);
+    foreign key (fromId) references users (userId) on delete cascade;
 
 alter table HandoverRequests
 add
-    foreign key (toId) references users (userId);
+    foreign key (toId) references users (userId) on delete cascade;
 
 alter table HandoverRequests
 add
-    foreign key (ofClub) references clubs (clubName);
+    foreign key (ofClub) references clubs (clubName) on delete cascade;
 
 insert into HandoverRequests values('tpdus2155', 'antony', 'Number');
 
 create table
-    authCode(
+    AuthCode(
         userId varchar(20) primary key,
         authCode int not null,
         timeAuth timestamp not null
