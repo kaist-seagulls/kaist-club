@@ -1,220 +1,180 @@
 -- Active: 1685622877657@@127.0.0.1@3306@cs350db
 
-drop database cs350db;
+DROP DATABASE cs350db;
 
-create database cs350db;
+CREATE DATABASE cs350db;
 
-use cs350db;
+USE cs350db;
 
-create table
-    Users(
-        studentId int,
-        userId varchar(20) primary key,
-        userName varchar(30) not null,
-        email varchar(50) unique not null,
-        phone varchar(15) unique not null,
-        hashedPW varchar(50),
-        isRep boolean not null,
-        isAdmin boolean not null
-    );
+CREATE TABLE Users (
+    userId VARCHAR(20) PRIMARY KEY,
+    phone VARCHAR(15) NOT NULL,
+    hashedPw VARCHAR(50) NOT NULL,
+    isAdmin BOOLEAN NOT NULL
+);
 
-insert into users
-values (
-        20190169,
+INSERT INTO Users VALUES
+    (
         'ytrewq271828',
-        'Junyup Kim',
-        'ytrewq271828@kaist.ac.kr',
         '01098342208',
         'klasjfdkljsdkljfsda',
-        false,
-        false
-    );
-
-insert into users
-values (
-        20190194,
+        TRUE
+    ),
+    (
         'tanit23',
-        'Taehan Kim',
-        'tanit23@kaist.ac.kr',
         '01066826915',
         'sfadlksadflkjsadkljs',
-        true,
-        false
-    );
-
-insert into users
-values (
-        20190447,
+        FALSE
+    ),
+    (
         'derick321',
-        'Dongseop Lee',
-        'derick321@kaist.ac.kr',
         '01004470447',
         'laiowjeivona',
-        false,
-        true
-    );
-
-insert into users
-values (
-        20200096,
+        TRUE
+    ),
+    (
         'tpdus2155',
-        'Seyeon Kim',
-        'tpdus2155@kaist.ac.kr',
         '01000960096',
         'kasdjfklajseijija',
-        true,
-        false
-    );
-
-insert into users
-values (
-        20200577,
+        FALSE
+    ),
+    (
         'antony',
-        'Seunghyeon Jeong',
-        'antony@kaist.ac.kr',
         '01005770577',
         'qwerqwerqwer',
-        false,
-        false
+        FALSE
     );
 
-create table
-    Clubs(
-        clubName varchar(20) primary key,
-        descriptions varchar(100) not null,
-        clubCategory varchar(30) not null
-    );
+CREATE TABLE Clubs (
+    clubName VARCHAR(20) PRIMARY KEY,
+    descriptions VARCHAR(100) NOT NULL,
+    categoryName VARCHAR(30) NOT NULL
+);
 
-insert into Clubs
-values (
+INSERT INTO Clubs VALUES
+    (
         'Number',
         'KAIST Musical club',
         'Performance'
-    );
-
-insert into Clubs
-values (
+    ),
+    (
         'K-Let',
         'KAIST Leadership Executing Team',
         'Social'
-    );
-
-insert into Clubs
-values (
+    ),
+    (
         'KAIST Times',
         'KAIST Korean Newspaper',
         'Association'
+    ),
+    (
+        'Bear Paw',
+        'KAIST Handmaking',
+        'Arts'
     );
 
-insert into Clubs values('Bear Paw', 'KAIST Handmaking', 'Arts');
+CREATE TABLE Posts (
+    postId INT AUTO_INCREMENT PRIMARY KEY,
+    clubName VARCHAR(20) NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    uploadTime TIMESTAMP NOT NULL,
+    contents VARCHAR(2000) NOT NULL,
+    scheduleStart DATE,
+    scheduleEnd DATE,
+    isRecruit BOOLEAN NOT NULL,
+    isOnly BOOLEAN NOT NULL
+);
 
-create table
-    Posts(
-        postId int primary key,
-        postClubName varchar(20) not null,
-        title varchar(100) not null,
-        uploadTime timestamp not null,
-        contents varchar(2000) not null,
-        scheduleStart date,
-        scheduleEnd date,
-        isRecruit boolean not null,
-        isonly boolean not null
-    );
+ALTER TABLE Posts
+    ADD FOREIGN KEY (clubName) REFERENCES Clubs (clubName) ON DELETE CASCADE;
 
-alter table Posts
-add
-    foreign key (postClubName) references clubs (clubName) on delete cascade;
-
-insert into Posts
-values (
-        1,
+INSERT INTO Posts (
+    clubName,
+    title,
+    uploadTime,
+    contents,
+    scheduleStart,
+    scheduleEnd,
+    isRecruit,
+    isOnly
+) VALUES
+    (
         'Number',
         'Number President',
         "2023-05-29 12:34:56",
         'Seunghyeon Jeong becomes Number president',
-        null,
-        null,
-        false,
-        false
-    );
-
-insert into Posts
-values (
-        2,
+        NULL,
+        NULL,
+        FALSE,
+        FALSE
+    ),
+    (
         'Number',
         'Number Recruit',
         "2023-09-01 01:23:45",
         'Number recruits 23F new members!',
         "2023-09-01",
         "2023-09-08",
-        true,
-        true
-    );
-
-insert into Posts
-values (
-        3,
+        TRUE,
+        TRUE
+    ),
+    (
         'K-Let',
         'K-Let President',
         "2023-05-31 23:00:00",
         'Dakyung Seo becomes K-Let president',
-        null,
-        null,
-        false,
-        false
-    );
-
-insert into Posts
-values (
-        4,
+        NULL,
+        NULL,
+        FALSE,
+        FALSE
+    ),
+    (
         'K-Let',
         'K-Let Recruit',
         "2023-08-31 02:34:50",
         'K-Let wants 23F sinip members!',
         "2023-08-31",
         "2023-09-05",
-        true,
-        true
+        TRUE,
+        TRUE
     );
 
-create table
-    Category(
-        categoryId int,
-        categoryName varchar(30) primary key
-    );
+CREATE TABLE Categories (
+    categoryName VARCHAR(30) PRIMARY KEY
+);
 
-insert into category values(1, 'Performance');
+INSERT INTO Categories VALUES
+    ('Performance'),
+    ('Arts'),
+    ('Social'),
+    ('Association');
 
-insert into category values(2, 'Arts');
+ALTER TABLE Clubs
+    ADD FOREIGN KEY (categoryName) REFERENCES Categories (categoryName);
 
-insert into category values(3, 'Social');
+CREATE TABLE CreationRequests (
+    clubName VARCHAR(20) PRIMARY KEY,
+    userId VARCHAR(20) NOT NULL,
+    descriptions VARCHAR(100) NOT NULL,
+    reqTime TIMESTAMP NOT NULL,
+    categoryName VARCHAR(30) NOT NULL
+);
 
-insert into category values(4, 'Association');
+ALTER TABLE CreationRequests
+    ADD FOREIGN KEY (categoryName) REFERENCES Categories (categoryName);
 
-create table
-    Creationrequests(
-        clubName varchar(20) primary key,
-        requestUser varchar(20) not null,
-        descriptions varchar(100) not null,
-        reqTime timestamp not null,
-        clubCategory varchar(30) not null
-    );
+ALTER TABLE CreationRequests
+    ADD FOREIGN KEY (userId) REFERENCES Users (userId) ON DELETE CASCADE;
 
-alter table creationrequests
-add
-    foreign key (clubCategory) references category (categoryName) on delete cascade;
-
-insert into creationrequests
-values (
+INSERT INTO CreationRequests VALUES
+    (
         'Shakespeare',
         'antony',
         'KAIST English Literature club',
         "2023-07-07 07:07:07",
         'Arts'
-    );
-
-insert into creationrequests
-values (
+    ),
+    (
         'KISA',
         'ytrewq271828',
         'KAIST International Students Association',
@@ -222,120 +182,83 @@ values (
         'Association'
     );
 
-alter table Clubs
-add
-    foreign key (clubCategory) references category (categoryName) on delete cascade;
+CREATE TABLE Subscribes (
+    userId VARCHAR(20) NOT NULL,
+    clubName VARCHAR(20) NOT NULL
+);
 
-alter table creationrequests
-add
-    foreign key (clubCategory) references category (categoryName) on delete cascade;
+ALTER TABLE Subscribes
+    ADD FOREIGN KEY (userId) REFERENCES Users (userId) ON DELETE CASCADE;
 
-alter table creationrequests
-add
-    foreign key (requestUser) references users (userId) on delete cascade;
+ALTER TABLE Subscribes
+    ADD FOREIGN KEY (clubName) REFERENCES Clubs (clubName) ON DELETE CASCADE;
 
-create table
-    Subscribes(
-        userId varchar(20) not null,
-        clubName varchar(20) not null
-    );
+INSERT INTO Subscribes VALUES
+    ('ytrewq271828', 'Number'),
+    ('ytrewq271828', 'K-Let'),
+    ('ytrewq271828', 'KAIST Times'),
+    ('ytrewq271828', 'Bear Paw'),
+    ('tanit23', 'Number'),
+    ('tanit23', 'K-Let'),
+    ('derick321', 'Number'),
+    ('derick321', 'K-Let'),
+    ('tpdus2155', 'Number'),
+    ('antony', 'Number');
 
-alter table subscribes
-add
-    foreign key (userId) references users (userId) on delete cascade;
+CREATE TABLE Joins (
+    userId VARCHAR(20) NOT NULL,
+    clubName VARCHAR(20) NOT NULL
+);
 
-alter table subscribes
-add
-    foreign key (clubName) references clubs (clubName) on delete cascade;
+ALTER TABLE Joins
+    ADD FOREIGN KEY (userId) REFERENCES Users (userId) ON DELETE CASCADE;
 
-insert into subscribes values('ytrewq271828', 'Number');
+ALTER TABLE Joins
+    ADD FOREIGN KEY (clubName) REFERENCES Clubs (clubName) ON DELETE CASCADE;
 
-insert into subscribes values('ytrewq271828', 'K-Let');
+INSERT INTO Joins VALUES
+    ('ytrewq271828', 'K-Let'),
+    ('tanit23', 'K-Let'),
+    ('tanit23', 'Number'),
+    ('derick321', 'Number'),
+    ('tpdus2155', 'Number'),
+    ('antony', 'Number');
 
-insert into subscribes values('ytrewq271828', 'KAIST Times');
+CREATE TABLE Represents (
+    userId VARCHAR(20) NOT NULL,
+    clubName VARCHAR(20) PRIMARY KEY
+);
 
-insert into subscribes values('ytrewq271828', 'Bear Paw');
+ALTER TABLE Represents
+    ADD FOREIGN KEY (userId) REFERENCES Users (userId) ON DELETE CASCADE;
 
-insert into subscribes values('tanit23', 'Number');
+ALTER TABLE Represents
+    ADD FOREIGN KEY (clubName) REFERENCES Clubs (clubName) ON DELETE CASCADE;
 
-insert into subscribes values('tanit23', 'K-Let');
+INSERT INTO Represents VALUES
+    ('tanit23', 'K-Let'),
+    ('tpdus2155', 'Number');
 
-insert into subscribes values('derick321', 'Number');
+CREATE TABLE HandoverRequests (
+    fromId VARCHAR(20) NOT NULL,
+    toId VARCHAR(20) NOT NULL,
+    clubName VARCHAR(20) PRIMARY KEY
+);
 
-insert into subscribes values('derick321', 'K-Let');
+ALTER TABLE HandoverRequests
+    ADD FOREIGN KEY (fromId) REFERENCES Users (userId) ON DELETE CASCADE;
 
-insert into subscribes values('tpdus2155', 'Number');
+ALTER TABLE HandoverRequests
+    ADD FOREIGN KEY (toId) REFERENCES Users (userId) ON DELETE CASCADE;
 
-insert into subscribes values('antony', 'Number');
+ALTER TABLE HandoverRequests
+    ADD FOREIGN KEY (clubName) REFERENCES Clubs (clubName) ON DELETE CASCADE;
 
-create table
-    Joins(
-        userId varchar(20) not null,
-        clubName varchar(20) not null
-    );
+INSERT INTO HandoverRequests VALUES
+    ('tpdus2155', 'antony', 'Number');
 
-alter table joins
-add
-    foreign key (userId) references users (userId) on delete CASCADE;
-
-alter table joins
-add
-    foreign key (clubName) references clubs (clubName) on delete cascade;
-
-insert into joins values('ytrewq271828', 'K-Let');
-
-insert into joins values('tanit23', 'K-Let');
-
-insert into joins values('tanit23', 'Number');
-
-insert into joins values('derick321', 'Number');
-
-insert into joins values('tpdus2155', 'Number');
-
-insert into joins values('antony', 'Number');
-
-create table
-    Represents(
-        userId varchar(20) not null,
-        clubName varchar(20) primary key
-    );
-
-alter table represents
-add
-    foreign key (userId) references users (userId) on delete cascade;
-
-alter table represents
-add
-    foreign key (clubName) references clubs (clubName) on delete cascade;
-
-insert into represents values('tanit23', 'K-Let');
-
-insert into represents values('tpdus2155', 'Number');
-
-create table
-    HandoverRequests(
-        fromId varchar(20) not null,
-        toId varchar(20) not null,
-        ofClub varchar(20) primary key
-    );
-
-alter table HandoverRequests
-add
-    foreign key (fromId) references users (userId) on delete cascade;
-
-alter table HandoverRequests
-add
-    foreign key (toId) references users (userId) on delete cascade;
-
-alter table HandoverRequests
-add
-    foreign key (ofClub) references clubs (clubName) on delete cascade;
-
-insert into HandoverRequests values('tpdus2155', 'antony', 'Number');
-
-create table
-    AuthCode(
-        userId varchar(20) primary key,
-        authCode int not null,
-        timeAuth timestamp not null
-    );
+CREATE TABLE AuthCodes (
+    userId VARCHAR(20) PRIMARY KEY,
+    code CHAR(6) NOT NULL,
+    issuedAt TIMESTAMP NOT NULL
+);

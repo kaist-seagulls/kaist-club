@@ -47,7 +47,6 @@ const generateCode = () => {
   return randNum.padStart(6, "0")
 }
 
-const connectionDB = mysql.createConnection(options)
 const sessionStore = new MySQLStore(options)
 
 app.use(
@@ -59,9 +58,6 @@ app.use(
   }),
 )
 
-//app.use(history());
-//app.use('/api/v1/get-clubs-related',router);
-
 // parse application/x-www-form-urlencoded
 // { extended: true } : support nested object
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -69,18 +65,22 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // parse application/json
 app.use(bodyParser.json())
 
-app.get("/", (_req, res) => res.send("Hello World!"))
-
 const findUserByUserId = async (conn, userId) => {
-  const SQL_FIND_USER_BY_USERID = "SELECT * FROM users WHERE userId = ?"
+  const SQL_FIND_USER_BY_USERID = "SELECT * FROM Users WHERE userId = ?"
   const rows = await conn.execute(SQL_FIND_USER_BY_USERID, [userId])
   return rows
 }
-const SQL_FIND_AUTHCODE_BY_USERID = "SELECT * FROM authCode WHERE userId = ?"
-const SQL_NEW_AUTHCODE = "INSERT INTO authCode(userId, authCode, timeAuth) VALUES (?, ?, NOW())"
-const SQL_RENEW_AUTHCODE_BY_USERID = "UPDATE authCode SET authCode = ?, timeAuth = NOW() WHERE userId = ?"
+const SQL_FIND_AUTHCODE_BY_USERID = "SELECT * FROM AuthCodes WHERE userId = ?"
+const SQL_NEW_AUTHCODE = "INSERT INTO AuthCodes (userId, code, issuedAt) VALUES (?, ?, NOW())"
+const SQL_RENEW_AUTHCODE_BY_USERID = "UPDATE AuthCodes SET code = ?, issuedAt = NOW() WHERE userId = ?"
 
 app.post("/api/v1/send-auth-code", (req, res) => {
+  if (req.session.mode === "i") {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "signedIn",
+    })
+    return
+  }
   const userId = req.body.userId
   doTransaction(res, async (conn) => {
     const userRows = (await findUserByUserId(conn, userId))[0]
@@ -97,7 +97,7 @@ app.post("/api/v1/send-auth-code", (req, res) => {
     // ASSUME authRows.length <= 1
     const doesAuthCodeExists = (authRows.length > 0)
     if (doesAuthCodeExists) {
-      const timeElapsed = Date.now() - authRows[0].timeAuth
+      const timeElapsed = Date.now() - authRows[0].issuedAt
       if (timeElapsed < MIN_AUTHCODE_VALID_TIME) {
         await conn.rollback()
         const timeRemaining = MIN_AUTHCODE_VALID_TIME - timeElapsed
@@ -131,7 +131,14 @@ app.post("/api/v1/send-auth-code", (req, res) => {
 })
 
 app.post("/api/v1/check-auth-code", (req, res) => {
+  if (req.session.mode === "i") {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "signedIn",
+    })
+    return
+  }
   const userId = req.body.userId
+  // console.log("check-auth-code")
   doTransaction(res, async (conn) => {
     const findResult = await conn.execute(SQL_FIND_AUTHCODE_BY_USERID, [userId])
     if (findResult[0].length === 0) {
@@ -140,11 +147,11 @@ app.post("/api/v1/check-auth-code", (req, res) => {
       return
     }
     const code = req.body.code
-    const existingCode = findResult[0][0].authCode
-    const timeElapsed = Date.now() - findResult[0][0].timeAuth
-    if (code === existingCode.toString() && timeElapsed < MAX_AUTOCODE_VALID_TIME) {
+    const existingCode = findResult[0][0].code
+    const timeElapsed = Date.now() - findResult[0][0].issuedAt
+    if (code === existingCode && timeElapsed < MAX_AUTOCODE_VALID_TIME) {
       conn.commit()
-      req.session.isLogged = false
+      req.session.mode = "u"
       req.session.userId = userId
       res.status(StatusCodes.NO_CONTENT).end()
       return
@@ -163,9 +170,8 @@ const hashPw = (pw) => {
 app.post("/api/v1/sign-in", (req, res) => {
   const userId = req.body.userId
   const pw = req.body.password
-  console.log("userId: " + userId)
   doTransaction(res, async (conn) => {
-    const SQL_FIND_USER_BY_SIGNIN_INFO = "SELECT * FROM Users WHERE userId = ? AND hashedPW = ?"
+    const SQL_FIND_USER_BY_SIGNIN_INFO = "SELECT * FROM Users WHERE userId = ? AND hashedPw = ?"
     const findResult = await conn.execute(SQL_FIND_USER_BY_SIGNIN_INFO, [userId, hashPw(pw)])
     if (findResult[0].length == 0) {
       await conn.rollback()
@@ -173,59 +179,71 @@ app.post("/api/v1/sign-in", (req, res) => {
       return
     }
     await conn.commit()
-    req.session.isLogged = true
+    req.session.mode = "i"
     req.session.userId = userId
     res.status(StatusCodes.OK).end()
     return
   })
 })
 
-app.post("/api/v1/sign-up", (req, res) => {
-  const userId = req.body.userId
-  const password = req.body.password
-  console.log("userId: " + userId)
-  req.session.isRep = false
-  req.session.isAdmin = false
-  if (connectionDB) {
-    const queryFunc = async (userId) => {
-      const queryPW = "select hashedPW, isRep, isAdmin from users where userId='?';"
-
-      return new Promise((resolve, reject) => {
-
-        connectionDB.execute(queryPW, [userId], (error, subRows) => {
-          console.log("subRows: " + subRows[0].hashedPW)
-          if (subRows.length == 0 || subRows[0].hashedPW != password) {
-            reject(res.status(401).send("There is no account or password is wrong"))
-          } else {
-            resolve(subRows)
-          }
-        })
-      })
-    }
-    const queryAsync = async () => {
-
-      const result = await queryFunc(userId)
-      console.log("result: " + result)
-
-      if (result["isRep"] == 1) {
-        req.session.isRep = true
-        console.log("The user is a representative")
-      }
-
-      if (result["isAdmin"] == 1) {
-        req.session.isAdmin = true
-        console.log("The user is an admin")
-      }
-      req.session.isLogged = true
-      req.session.userId = userId
-      req.session.password = password
-      res.status(200).send("Login Succeed")
-    }
-
-    queryAsync().catch(() => console.log("error occurs"))
-  } else {
-    throw new Error("DB Connection Failed")
+app.post("/api/v1/sign-out", (req, res) => {
+  if (req.session.mode !== "i") {
+    res.status(StatusCodes.UNAUTHORIZED).end()
   }
+  req.session.destroy()
+  res.status(StatusCodes.NO_CONTENT).end()
+})
+
+app.post("/api/v1/sign-up", (req, res) => {
+  // console.log("sign-up")
+  if (req.session.mode === "i") {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "signedIn",
+    })
+    return
+  }
+  if (req.session.mode !== "u") {
+    res.status(StatusCodes.UNAUTHORIZED).json({
+      message: "unauthenticated",
+    })
+    return
+  }
+
+  const userId = req.body.userId
+  if (userId !== req.session.userId) {
+    res.status(StatusCodes.UNAUTHORIZED).json({
+      message: "unauthenticated",
+    })
+    return
+  }
+  const password = req.body.password
+  const hashedPw = hashPw(password)
+  const phone = req.body.phone
+
+  doTransaction(res, async (conn) => {
+    const userRows = (await findUserByUserId(conn, userId))[0]
+    if (userRows.length > 0) {
+      await conn.rollback()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "exists",
+      })
+      return
+    }
+
+    const SQL_ADD_USER = "INSERT INTO Users (userId, phone, hashedPw, isAdmin) VALUES (?, ?, ?, FALSE)"
+    const affectedRows = (await conn.execute(SQL_ADD_USER, [userId, phone, hashedPw]))[0].affectedRows
+    if (affectedRows === 0) {
+      await conn.rollback()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "exists",
+      })
+      return
+    }
+    await conn.commit()
+    req.session.destroy()
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
 })
 
 app.get("/api/v1/get-clubs-related", (req, res) => {
@@ -270,4 +288,4 @@ app.get("/api/v1/get-clubs-related", (req, res) => {
 })
 
 
-app.listen(3000, () => console.log("Example app listening on port 3000!"))
+app.listen(3000, () => console.log("[ Listening on port 3000 ]"))

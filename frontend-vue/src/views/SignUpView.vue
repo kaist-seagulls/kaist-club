@@ -101,23 +101,21 @@ async function auth() {
     }
   }
 }
-function signup() {
+async function signup() {
   if (isStrongPw.value && pwConfirmed.value && code.value) {
-    axios
-      .post("/sign-up", {
-        userId: id,
-        code,
-        password: pw,
-        phone,
-      })
-      .then(() => {
-        goSignin()
-      })
-      .err(err => {
-        alert(err)
-        console.log(err)
-      })
-    // goSignin()
+    try {
+      await axios.post(
+        prefix + "sign-up",
+        {
+          userId: id.value,
+          password: pw.value,
+          phone: phone.value,
+        },
+      )
+      goSignin()
+    } catch (e) {
+      alert(e)
+    }
   } else if (!isStrongPw.value || !pwConfirmed.value) {
     alert("Please confirm your new password")
   } else {
