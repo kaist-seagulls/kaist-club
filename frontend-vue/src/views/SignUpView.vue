@@ -1,41 +1,76 @@
 <template>
-  <div class="t-box">
-    <div class="t-title">
-      SignUpView
+  <div class="logo-fixed">
+    <img :src="require('@/assets/KAIST-Logo.wine.svg')" width="100">
+  </div>
+  <div class="flex-log">
+    <div class="heading-log">
+      Sign Up
+    </div>
+    <div class="input-group">
+      <div class="input-heading">
+        <div>
+          Email
+        </div>
+        <div class ="star" id ="email-star">
+          *
+        </div>
+      </div>
+      <div class="many-elements-input">
+        <input class="text-box-default" type="id" v-model="id" />
+        <div class="kaist-mail"> 
+          @kaist.ac.kr
+        </div>
+        <button class="blue-button" @click="askCode()" :disabled="timeLeft">
+          AUTH
+        </button>
+        <span v-if="timeLeft">{{ authStatus }}</span>
+        <input class="text-box-default" id="AUTH-text-box" type="text" v-model="code" />
+        <button class="blue-button" @click="auth()">Confirm</button>
+      </div> 
+    </div>
+    <div class="input-group">
+      <div class="input-heading">
+        <div>
+          Password
+        </div>
+        <div class="star">
+          *
+        </div>
+      </div>
+      <input class="text-box-default" type="password" v-model="pw" />
+      <div class="red-msg" v-if="!isStrongPw">
+        Password must be at least 8 characters including letters and numbers.
+      </div>    
+    </div>
+    <div class="input-group">
+      <div class="input-heading">
+        <div>
+          Confirm password
+        </div>
+        <div class="star">
+            *
+        </div>
+      </div>
+      <input class="text-box-default" type="password" v-model="confirmPw" />
+      <div class="red-msg" v-if="!pwConfirmed">
+          Values do not match
+      </div>
+    </div>
+    <div class="input-group">
+      <div class="input-heading">
+        Phone number
+      </div>
+      <div>
+      <input class="text-box-default" type="tel" v-model="phone" />
+      </div>
     </div>
     <div>
-      <label>
-        <span>Id</span>
-        <input type="id" v-model="id" />
-        <span>@kaist.ac.kr</span>
-      </label>
-      <button @click="askCode()" :disabled="timeLeft">Send a code</button>
-      <span v-if="timeLeft">{{ authStatus }}</span>
-      <input type="text" v-model="code" />
-      <button @click="auth()">Authenticate</button>
-    </div>
-    <div>
-      <span>Password</span>
-      <input type="password" v-model="pw" />
-    </div>
-    <div v-if="!isStrongPw">
-      Password must be at least 8 characters including letters and numbers.
-    </div>
-    <div>
-      <span>Confirm password</span>
-      <input type="password" v-model="confirmPw" />
-    </div>
-    <div v-if="!pwConfirmed">
-      Values do not match.
-    </div>
-    <div>
-      <span>Phone number</span>
-      <input type="tel" v-model="phone" />
-    </div>
-    <div>
-      <button @click="signup()">
+      <button class="big-blue-button" @click="signup()">
         Signup
       </button>
+    </div>
+    <div class="link">
+      <a @click="goSignin()">Sign in</a>
     </div>
   </div>
 </template>
