@@ -322,6 +322,68 @@ app.post("/api/v1/sign-up", (req, res) => {
     return
   })
 })
+const SQL_CHECK_ADMIN = "SELECT clubName FROM Users WHERE userid='?' and isAdmin=true"
+const SQL_READCLUB_ADMIN = "SELECT clubName FROM Clubs"
+const SQL_READREQUEST_ADMIN = "SELECT clubCategory, clubName, descriptions, requestUser FROM Clubrequests"
+const SQL_READHANDOVER_ADMIN = "SELECT * FROM Handoverrequests"
+app.get("/api/v1/get-admin-info", (req, res) => {
+  const sess = req.session
+  const userId = req.session.userId
+  doTransaction(res, async (conn) => {
+    if (sess.islogged === false) {
+      await conn.rollback()
+      res.status(StatusCodes.UNAUTHORIZED).json({
+        message: "Unauthorized access",
+      })
+    }
+    const checkAdminResult = await conn.execute(SQL_CHECK_ADMIN, [userId])[0]
+    if (checkAdminResult.length === 0) {
+      await conn.rollback()
+      res.status(StatusCodes.FORBIDDEN).json({
+        message: "Forbidden",
+      })
+    }
+    const readClubResult = await conn.execute(SQL_READCLUB_ADMIN)[0]
+    const readRequestResult = await conn.execute(SQL_READREQUEST_ADMIN)[0]
+    const readHandoverResult = await conn.execute(SQL_READHANDOVER_ADMIN)[0]
+    if (readClubResult.length === 0 || readRequestResult.length === 0 || readHandoverResult === 0) {
+      await conn.rollback()
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Not found",
+      })
+    }
+    const clubs = []
+    const requests_new_club = []
+    const requests_handover = []
+
+    for (let i = 0; i < readClubResult.length; i++) {
+      clubs.push(readClubResult[i]["clubName"])
+    }
+    for (let j = 0; j < readRequestResult.length; j++) {
+      const dic = {}
+      dic["request_new_club_id"] = j
+      dic["category_name"] = readRequestResult[j]["clubCategory"]
+      dic["club_name"] = readRequestResult[j]["clubName"]
+      dic["club_description"] = readRequestResult[j]["descriptions"]
+      dic["request_user"] = readRequestResult[j]["requestUser"]
+      requests_new_club.push(dic)
+    }
+    for (let k = 0; k < readHandoverResult.length; k++) {
+      const dic = {}
+      dic["request_handover_id"] = k
+      dic["club_name"] = readRequestResult[k]["ofClub"]
+      dic["from_user_name"] = readRequestResult[k]["fromId"]
+      dic["to_user_name"] = readRequestResult[k]["toId"]
+      requests_handover.push(dic)
+    }
+    const returnDic = {}
+    returnDic["clubs"] = clubs
+    returnDic["requests_new_club"] = requests_new_club
+    returnDic["requests_handover"] = requests_handover
+
+    res.status(StatusCodes.OK).send(returnDic)
+  })
+})
 
 app.get("/api/v1/get-user-info", (req, res) => {
   if (!isSignedIn(req)) {
