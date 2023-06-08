@@ -221,7 +221,7 @@ export default createStore({
       let events = payload.events
       let month = payload.month
       let year = payload.year
-      
+
       state.events = events
       state.calendar = []
 
@@ -231,42 +231,42 @@ export default createStore({
       const lastDateofLastMonth = new Date(year, month, 0).getDate()
       let prevYear, prevMonth, nextYear, nextMonth
       if (month > 0) {
-        prevMonth = month-1
+        prevMonth = month - 1
         prevYear = year
       } else {
         prevMonth = 11
-        prevYear = year-1
+        prevYear = year - 1
       }
-      if (month<11) {
-        nextMonth = month+1
+      if (month < 11) {
+        nextMonth = month + 1
         nextYear = year
       } else {
         nextMonth = 0
-        nextYear = year+1
+        nextYear = year + 1
       }
 
-      for (let i=firstDayofMonth; i>0; i--) {
+      for (let i = firstDayofMonth; i > 0; i--) {
         state.calendar.push({
           number: lastDateofLastMonth - i + 1,
-          date: new Date(prevYear, prevMonth, lastDateofLastMonth-i+1),
+          date: new Date(prevYear, prevMonth, lastDateofLastMonth - i + 1),
           events: {},
         })
       }
-      for (let i=1; i<=lastDateofMonth; i++) {
+      for (let i = 1; i <= lastDateofMonth; i++) {
         state.calendar.push({
           number: i,
           date: new Date(year, month, i),
           events: {},
         })
       }
-      for (let i=lastDayofMonth; i<=6; i++) {
+      for (let i = lastDayofMonth; i <= 6; i++) {
         state.calendar.push({
           number: i - lastDayofMonth + 1,
           date: new Date(nextYear, nextMonth, i - lastDayofMonth + 1),
           events: {},
         })
       }
-      
+
       console.log("update calendar completed")
     },
     applyEvents(state) {
@@ -496,7 +496,7 @@ export default createStore({
           month,
         })
         .then((res) => {
-          try{
+          try {
             context.commit("updateCalender", res.data, month, year)
           } finally {
             context.commit("applyEvents")
