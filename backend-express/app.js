@@ -12,7 +12,7 @@ const MySQLStore = require("express-mysql-session")(session)
 const app = express()
 
 const MIN_AUTHCODE_VALID_TIME = 30 * 1000
-// const MAX_AUTOCODE_VALID_TIME = 5 * 60 * 1000
+const MAX_AUTOCODE_VALID_TIME = 5 * 60 * 1000
 
 const options = {
   host: "127.0.0.1",
@@ -127,6 +127,32 @@ app.post("/api/v1/send-auth-code", (req, res) => {
     await conn.commit()
     res.status(StatusCodes.NO_CONTENT).end()
     return
+  })
+})
+
+app.post("/api/v1/check-auth-code", (req, res) => {
+  const userId = req.body.userId
+  doTransaction(res, async (conn) => {
+    const findResult = await conn.execute(SQL_FIND_AUTHCODE_BY_USERID, [userId])
+    if (findResult[0].length === 0) {
+      conn.rollback()
+      res.status(StatusCodes.UNAUTHORIZED).end()
+      return
+    }
+    const code = req.body.code
+    const existingCode = findResult[0][0].authCode
+    const timeElapsed = Date.now() - findResult[0][0].timeAuth
+    if (code === existingCode.toString() && timeElapsed < MAX_AUTOCODE_VALID_TIME) {
+      conn.commit()
+      req.session.isLogged = false
+      req.session.userId = userId
+      res.status(StatusCodes.NO_CONTENT).end()
+      return
+    } else {
+      conn.rollback()
+      res.status(StatusCodes.UNAUTHORIZED).end()
+      return
+    }
   })
 })
 

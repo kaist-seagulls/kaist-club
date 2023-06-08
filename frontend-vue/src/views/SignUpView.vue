@@ -9,9 +9,10 @@
         <input type="id" v-model="id" />
         <span>@kaist.ac.kr</span>
       </label>
-      <button @click="auth()" :disabled="timeLeft">AUTH</button>
-      <input type="text" v-model="code" />
+      <button @click="askCode()" :disabled="timeLeft">Send a code</button>
       <span v-if="timeLeft">{{ authStatus }}</span>
+      <input type="text" v-model="code" />
+      <button @click="auth()">Authenticate</button>
     </div>
     <div>
       <span>Password</span>
@@ -67,10 +68,10 @@ function authTimer() {
   }
 }
 
-function auth() {
+function askCode() {
   if (id.value) {
     axios
-      .post(prefix+"send-auth-code", {
+      .post(prefix + "send-auth-code", {
         userId: id.value,
       })
       .then(() => {
@@ -83,6 +84,21 @@ function auth() {
       })
     // timeLeft.value = 5
     // setTimeout(authTimer, 1000)
+  }
+}
+async function auth() {
+  if (id.value) {
+    if (code.value) {
+      try {
+        await axios.post(
+          prefix + "check-auth-code",
+          { userId: id.value, code: code.value },
+        )
+        alert("Authenticated!")
+      } catch (e) {
+        alert(e)
+      }
+    }
   }
 }
 function signup() {
