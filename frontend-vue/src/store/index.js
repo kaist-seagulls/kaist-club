@@ -294,6 +294,7 @@ export default createStore({
     },
     //Mutations for admin
     updateAdminInfo(state, adminInfo) {
+      console.log(adminInfo.requestsHandover)
       state.currentClubs = adminInfo.clubs
       state.requestsNewClub = {}
       state.requestsHandover = {}
@@ -306,6 +307,7 @@ export default createStore({
         }
       }
       for (const request of adminInfo.requestsHandover) {
+        console.log(request.fromUserName)
         state.requestsHandover[request.requestsHandoverId] = {
           clubName: request.clubName,
           fromUserName: request.fromUserName,
@@ -476,6 +478,7 @@ export default createStore({
         .get(prefix + "get-admin-info")
         .then(res => {
           context.commit("updateAdminInfo", res.data)
+          console.log(res.data)
         })
         .catch(err => {
           alert(err)

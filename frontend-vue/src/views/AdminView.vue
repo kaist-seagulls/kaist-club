@@ -25,12 +25,12 @@
       </div>
     </div>
     <div>REQUEST FOR HANDOVER
-      <div v-for="(club, id) in requestsHandover" v-bind:key="id">  
-        {{ club.name }}
+      <div v-for="(request, id) in requestsHandover" v-bind:key="id">  
+        {{ request.clubName }}
         <div>
-          <span>{{ request.fromUserId }}</span>
+          <span>{{ request.fromUserName }}</span>
           <span> -> </span>
-          <span>{{ request.toUserId }}</span>
+          <span>{{ request.toUserName }}</span>
         </div>
         <span @click="denyHandover(id)">
           deny
