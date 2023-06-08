@@ -4,7 +4,7 @@
     <div>
       {{ filter.name }}
     </div>
-    <button @click="toggleChecked(filter.id)">
+    <button @click="toggleChecked(filter.name)">
       <div v-if="filter.isChecked" style="color: green">V</div>
       <div v-else style="color: red">X</div>
     </button>

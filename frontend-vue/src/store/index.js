@@ -301,11 +301,11 @@ export default createStore({
           alert(err)
         })
     },
-    toggleChecked(context, id) {
-      if (context.state.checked[id]) {
-        context.commit("setUnchecked", id)
+    toggleChecked(context, name) {
+      if (context.state.checked[name]) {
+        context.commit("setUnchecked", name)
       } else {
-        context.commit("setChecked", id)
+        context.commit("setChecked", name)
       }
     },
     toggleJoinedChecked(context) {

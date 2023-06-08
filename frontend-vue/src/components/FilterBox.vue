@@ -21,7 +21,7 @@
           </button>
         </div>
         <div>
-          <FilterOption v-for="filter in filterConfig.joined" :filter="filter" :key="filter.id" />
+          <FilterOption v-for="filter in filterConfig.joined" :filter="filter" :key="filter.name" />
         </div>
         <div>
           Subscribed
@@ -31,7 +31,7 @@
           </button>
         </div>
         <div>
-          <FilterOption v-for="filter in filterConfig.notJoined" :filter="filter" :key="filter.id" />
+          <FilterOption v-for="filter in filterConfig.notJoined" :filter="filter" :key="filter.name" />
         </div>
         <div>
           All
