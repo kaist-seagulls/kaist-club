@@ -4,9 +4,9 @@
       AdminView
     </div>
     <div>CURRENT CLUBS
-      <div v-for="(club, id) in currentClubs" v-bind:key="id">
-        {{ club.name }}
-        <span @click="deleteClub(id)">
+      <div v-for="name in currentClubs" v-bind:key="name">
+        {{ name }}
+        <span @click="deleteClub(name)">
           delete
         </span>
       </div>
