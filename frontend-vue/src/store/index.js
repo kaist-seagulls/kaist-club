@@ -490,22 +490,31 @@ export default createStore({
     async fetchCalendar(context, payload) {
       let month = payload.month
       let year = payload.year
-      axios
-        .get(prefix + "get-schedule", {
-          year,
-          month,
-        })
-        .then((res) => {
-          try{
-            context.commit("updateCalender", res.data, month, year)
-          } finally {
-            context.commit("applyEvents")
-          }
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        })
+      let events = [
+        { clubName: "Number", title: "event1", schedule: {startDate: new Date(), endDate: new Date()}},
+        { clubName: "Number", title: "event2", schedule: {startDate: new Date(2023, 5, 7), endDate: new Date(2023, 5, 15)} },
+      ]
+      // axios
+      //   .get(prefix + "get-schedule", {
+      //     year,
+      //     month,
+      //   })
+      //   .then((res) => {
+      //     try{
+      //       context.commit("updateCalender", res.data, month, year)
+      //     } finally {
+      //       context.commit("applyEvents")
+      //     }
+      //   })
+      //   .catch(err => {
+      //     alert(err)
+      //     console.log(err)
+      //   })
+      try {
+        context.commit("updateCalendar", {events, month, year})
+      } finally {
+        context.commit("applyEvents")
+      }
     },
     async applyEvents(context) {
       context.commit("applyEvents")
