@@ -156,13 +156,14 @@ app.post("/api/v1/check-auth-code", (req, res) => {
   })
 })
 
+const hashPw = (pw) => {
+  return pw
+}
+
 app.post("/api/v1/sign-in", (req, res) => {
   const userId = req.body.userId
   const pw = req.body.password
   console.log("userId: " + userId)
-  const hashPw = (pw) => {
-    return pw
-  }
   doTransaction(res, async (conn) => {
     const SQL_FIND_USER_BY_SIGNIN_INFO = "SELECT * FROM Users WHERE userId = ? AND hashedPW = ?"
     const findResult = await conn.execute(SQL_FIND_USER_BY_SIGNIN_INFO, [userId, hashPw(pw)])
