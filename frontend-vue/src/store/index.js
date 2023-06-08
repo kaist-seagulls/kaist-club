@@ -172,6 +172,9 @@ export default createStore({
     setNoFilterUnchecked(state) {
       state.noFilter = false
     },
+    setNoFilterChecked(state) {
+      state.noFilter = true
+    },
     // Mutations for admin
     eraseClub(state, name) {
       state.currentClubs.removeAttribute(name)
@@ -327,7 +330,11 @@ export default createStore({
       }
     },
     toggleNoFilter(context) {
-      context.commit("toggleNoFilter")
+      if (context.getters.isNoFilterChecked) {
+        context.commit("setNoFilterUnchecked")
+      } else {
+        context.commit("setNoFilterChecked")
+      }
     },
     // Actions for clubprofile
     fetchClubProfile(context, id) {
