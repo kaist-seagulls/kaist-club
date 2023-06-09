@@ -64,41 +64,55 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // parse application/json
 app.use(bodyParser.json())
 
-const findUserByUserId = async (conn, userId) => {
-  const SQL_FIND_USER_BY_USERID = "SELECT * FROM Users WHERE userId = ?"
-  const rows = await conn.execute(SQL_FIND_USER_BY_USERID, [userId])
-  return rows
+const isSignedIn = (req) => {
+  return req.session.mode === "i"
 }
-const SQL_FIND_AUTHCODE_BY_USERID = "SELECT * FROM AuthCodes WHERE userId = ?"
-const SQL_NEW_AUTHCODE = "INSERT INTO AuthCodes (userId, code, issuedAt) VALUES (?, ?, NOW())"
-const SQL_RENEW_AUTHCODE_BY_USERID = "UPDATE AuthCodes SET code = ?, issuedAt = NOW() WHERE userId = ?"
+
+const signInAs = (req, userId) => {
+  req.session.mode = "i"
+  req.session.userId = userId
+}
+
+const isAuthed = (req) => {
+  return req.session.mode === "u"
+}
+
+const authAs = (req, userId) => {
+  req.session.mode = "u"
+  req.session.userId = userId
+}
+
+const userIdOf = (req) => {
+  return req.session.userId
+}
+
+const sessOut = (req) => {
+  req.session.destroy()
+}
 
 app.post("/api/v1/send-auth-code", (req, res) => {
-  if (req.session.mode === "i") {
+  if (isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "signedIn",
     })
     return
   }
   const userId = req.body.userId
-  doTransaction(res, async (conn) => {
-    const userRows = (await findUserByUserId(conn, userId))[0]
-    // ASSUME userRows.length <= 1
-    if (userRows.length > 0) {
-      await conn.rollback()
+  doTransaction(res, async (D) => {
+    const user = await D.Users.lookup(userId)
+    if (user) {
+      await D.rollback()
       res.status(StatusCodes.CONFLICT).json({
         message: "exists",
       })
       return
     }
 
-    const authRows = (await conn.execute(SQL_FIND_AUTHCODE_BY_USERID, [userId]))[0]
-    // ASSUME authRows.length <= 1
-    const doesAuthCodeExists = (authRows.length > 0)
-    if (doesAuthCodeExists) {
-      const timeElapsed = Date.now() - authRows[0].issuedAt
+    const auth = await D.AuthCodes.lookup(userId)
+    if (auth) {
+      const timeElapsed = Date.now() - auth.issuedAt
       if (timeElapsed < MIN_AUTHCODE_VALID_TIME) {
-        await conn.rollback()
+        await D.rollback()
         const timeRemaining = MIN_AUTHCODE_VALID_TIME - timeElapsed
         res.status(StatusCodes.CONFLICT).json({
           message: "issued",
@@ -109,99 +123,91 @@ app.post("/api/v1/send-auth-code", (req, res) => {
     }
 
     const code = generateCode()
-    let modifyResult = undefined
-    if (doesAuthCodeExists) {
-      modifyResult = await conn.execute(SQL_RENEW_AUTHCODE_BY_USERID, [code, userId])
+    let numAffectedRows = undefined
+    if (auth) {
+      numAffectedRows = await D.AuthCodes.update(userId, code)
     } else {
-      modifyResult = await conn.execute(SQL_NEW_AUTHCODE, [userId, code])
+      numAffectedRows = await D.AuthCodes.create(userId, code)
     }
-    if (modifyResult[0].affectedRows !== 1) {
-      await conn.rollback()
+    if (numAffectedRows !== 1) {
+      await D.rollback()
       res.status(StatusCodes.CONFLICT).end()
       return
     }
 
     const transporter = nodemailer.createTransport(nodemailerTransportConfig)
     await transporter.sendMail(buildMailParams(userId, code))
-    await conn.commit()
+    await D.commit()
     res.status(StatusCodes.NO_CONTENT).end()
     return
   })
 })
 
 app.post("/api/v1/check-auth-code", (req, res) => {
-  if (req.session.mode === "i") {
+  if (isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "signedIn",
     })
     return
   }
   const userId = req.body.userId
-  // console.log("check-auth-code")
-  doTransaction(res, async (conn) => {
-    const findResult = await conn.execute(SQL_FIND_AUTHCODE_BY_USERID, [userId])
-    if (findResult[0].length === 0) {
-      conn.rollback()
+  doTransaction(res, async (D) => {
+    const auth = await D.AuthCodes.lookup(userId)
+    if (!auth) {
+      await D.rollback()
       res.status(StatusCodes.UNAUTHORIZED).end()
       return
     }
     const code = req.body.code
-    const existingCode = findResult[0][0].code
-    const timeElapsed = Date.now() - findResult[0][0].issuedAt
-    if (code === existingCode && timeElapsed < MAX_AUTOCODE_VALID_TIME) {
-      conn.commit()
-      req.session.mode = "u"
-      req.session.userId = userId
+    const timeElapsed = Date.now() - auth.issuedAt
+    if (code === auth.code && timeElapsed < MAX_AUTOCODE_VALID_TIME) {
+      await D.commit()
+      authAs(req, userId)
       res.status(StatusCodes.NO_CONTENT).end()
       return
     } else {
-      conn.rollback()
+      await D.rollback()
       res.status(StatusCodes.UNAUTHORIZED).end()
       return
     }
   })
 })
 
-const hashPw = (pw) => {
-  return pw
-}
-
 app.post("/api/v1/sign-in", (req, res) => {
   const userId = req.body.userId
   const pw = req.body.password
-  doTransaction(res, async (conn) => {
-    const SQL_FIND_USER_BY_SIGNIN_INFO = "SELECT * FROM Users WHERE userId = ? AND hashedPw = ?"
-    const findResult = await conn.execute(SQL_FIND_USER_BY_SIGNIN_INFO, [userId, hashPw(pw)])
-    if (findResult[0].length == 0) {
-      await conn.rollback()
+  doTransaction(res, async (D) => {
+    const user = await D.Users.lookupBySign(userId, pw)
+    if (!user) {
+      await D.rollback()
       res.status(StatusCodes.UNAUTHORIZED).end()
       return
     }
-    await conn.commit()
-    req.session.mode = "i"
-    req.session.userId = userId
+    await D.commit()
+    signInAs(req, userId)
     res.status(StatusCodes.OK).end()
     return
   })
 })
 
 app.post("/api/v1/sign-out", (req, res) => {
-  if (req.session.mode !== "i") {
+  if (!isSignedIn(req)) {
     res.status(StatusCodes.UNAUTHORIZED).end()
+    return
   }
-  req.session.destroy()
+  sessOut(req)
   res.status(StatusCodes.NO_CONTENT).end()
 })
 
 app.post("/api/v1/sign-up", (req, res) => {
   // console.log("sign-up")
-  if (req.session.mode === "i") {
+  if (isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "signedIn",
     })
     return
   }
-  if (req.session.mode !== "u") {
+  if (!isAuthed(req)) {
     res.status(StatusCodes.UNAUTHORIZED).json({
       message: "unauthenticated",
     })
@@ -209,37 +215,35 @@ app.post("/api/v1/sign-up", (req, res) => {
   }
 
   const userId = req.body.userId
-  if (userId !== req.session.userId) {
+  if (userId !== userIdOf(req)) {
     res.status(StatusCodes.UNAUTHORIZED).json({
       message: "unauthenticated",
     })
     return
   }
-  const password = req.body.password
-  const hashedPw = hashPw(password)
+  const pw = req.body.password
   const phone = req.body.phone
 
-  doTransaction(res, async (conn) => {
-    const userRows = (await findUserByUserId(conn, userId))[0]
-    if (userRows.length > 0) {
-      await conn.rollback()
+  doTransaction(res, async (D) => {
+    const user = await D.Users.lookup(userId)
+    if (user) {
+      await D.rollback()
       res.status(StatusCodes.CONFLICT).json({
         message: "exists",
       })
       return
     }
 
-    const SQL_ADD_USER = "INSERT INTO Users (userId, phone, hashedPw, isAdmin) VALUES (?, ?, ?, FALSE)"
-    const affectedRows = (await conn.execute(SQL_ADD_USER, [userId, phone, hashedPw]))[0].affectedRows
+    const affectedRows = await D.Users.create(userId, phone, pw)
     if (affectedRows === 0) {
-      await conn.rollback()
+      await D.rollback()
       res.status(StatusCodes.CONFLICT).json({
         message: "exists",
       })
       return
     }
-    await conn.commit()
-    req.session.destroy()
+    await D.commit()
+    sessOut(req)
     res.status(StatusCodes.NO_CONTENT).end()
     return
   })
@@ -251,20 +255,18 @@ app.get("/api/v1/get-clubs-related", (req, res) => {
     res.status(StatusCodes.UNAUTHORIZED).end()
     return
   }
-  doTransaction(res, async (conn) => {
+  doTransaction(res, async (D) => {
+    const joinedClubsResult = await D.Joins.filterByUser(userId)
     const joinedClubs = []
-    const SQL_FIND_JOINED = "SELECT clubName FROM joins WHERE userId = ?"
-    const joinedClubsResult = await conn.execute(SQL_FIND_JOINED, [userId])
-    for (const club of joinedClubsResult[0]) {
+    for (const club of joinedClubsResult) {
       joinedClubs.push({
         name: club.clubName,
         isJoined: true,
       })
     }
-    const SQL_FIND_SUBSCRIBED = "SELECT clubName FROM subscribes WHERE userId = ?"
-    const subscribedClubsResult = await conn.execute(SQL_FIND_SUBSCRIBED, [userId])
+    const subscribedClubsResult = await D.Subscribes.filterByUser(userId)
     const subscribedClubs = []
-    for (const club of subscribedClubsResult[0]) {
+    for (const club of subscribedClubsResult) {
       let joined = false
       for (const joinedClub of joinedClubs) {
         if (club.clubName === joinedClub.name) {
@@ -281,7 +283,7 @@ app.get("/api/v1/get-clubs-related", (req, res) => {
       })
     }
     const relatedClubs = subscribedClubs.concat(joinedClubs)
-    await conn.commit()
+    await D.commit()
     res.status(StatusCodes.OK).json(relatedClubs)
   })
 })
