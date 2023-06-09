@@ -12,15 +12,21 @@ const layout = computed(() => useRoute().meta.layout)
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+:root {
+  --color-g5: #000000;
+}
+body {
+  margin: 0
+}
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
 }
 
 .t-box {
-  border: 1px solid black;
+  border: 1px solid var(--color-g5);
   padding: 5px;
   margin: 5px;
 }
@@ -40,4 +46,180 @@ const layout = computed(() => useRoute().meta.layout)
 .t-flex {
   display: flex;
 }
+/* Log */
+.logo-fixed{
+  position:fixed;
+  top:0;
+  left:0;
+}
+.flex-log{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform: translate(-50%,-50%);
+  display:flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-right: auto;
+  margin-left: auto;
+  width: 600px;
+}
+.heading-log{
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 58px;
+  color: #000000;
+
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 70px;
+  margin-bottom: 10px;
+}
+.input-group{
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+.many-elements-input{
+  display:flex;
+}
+.input-heading{
+  display: flex;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 22px;
+  color: #808080;
+}
+.big-blue-button{
+  /* button */
+  background-color: #18408C;
+  border-radius: 5px;
+  border:none;
+  height: 30pt;
+  padding:0;
+  width:100%;
+  margin-top: 15pt;
+  margin-bottom: 10pt;
+  /* text */
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 24px;
+  color: #FFFFFF;
+  cursor: pointer;
+}
+.blue-button{
+  /* button */
+  background-color: #18408C;
+  border-radius: 5px;
+  border:none;
+  padding-left:10px;
+  padding-right:10px;
+  margin-left:10px;
+  /* text */
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 24px;
+  color: #FFFFFF;
+  cursor: pointer;
+}
+.text-box-default{
+  border: 1px solid #D8D8D8;
+  border-radius: 5px;
+  height: 25pt;
+  padding:0;
+  width:100%;
+}
+.text-box-default:focus{
+  border: 1px solid #D8D8D8;
+  background: #F8F8F8;
+  border-radius: 5px;
+  height: 25pt;
+  padding-left: 10px;
+  width:100%;
+}
+.text-box-wrong{
+  border: 1px solid #FF4646;
+  background: #FFF3F3;
+  border-radius: 5px;
+  height: 25pt;
+  padding-left: 10px;
+  width:100%;
+}
+
+.link{
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300;
+  font-size: 15px;
+  line-height: 22px;
+  text-decoration-line: underline;
+  color: #698FC1;
+
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+
+  cursor: pointer;
+}
+.kaist-mail{
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 22px;
+  color: #303030;
+}
+#forgot-pw{
+  margin-right:0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.no-red-msg{
+  display:flex;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300;
+  font-size: 10px;
+  line-height: 15px;
+  visibility: hidden;
+}
+.red-msg{
+  display:flex;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300;
+  font-size: 10px;
+  line-height: 15px;
+  color: #FF4646;
+}
+#AUTH-text-box{
+  width:80px;
+  margin-left:10px;
+}
+.star{
+  width:100%;
+  text-align: right;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 22px;
+  color: #FF4646;
+}
+#email-star{
+  width:215px;
+}
+/* LOG fin */
 </style>

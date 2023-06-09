@@ -23,12 +23,16 @@
       <button @click="goUserProfile()">User Profile</button>
     </div>
     <div>
+      <button @click="signOut()">CALL POST /api/v1/sign-out</button>
+    </div>
+    <div>
       ToFill: NavBar Inners
     </div>
   </div>
 </template>
 
 <script setup>
+import axios from "axios"
 import { ref } from "vue"
 import { useRouter, useRoute } from "vue-router"
 
@@ -69,5 +73,13 @@ function goCalendar() {
 }
 function goUserProfile() {
   router.push("/mypage")
+}
+async function signOut() {
+  try {
+    await axios.post("/api/v1/sign-out")
+    router.push("/signin")
+  } catch (e) {
+    alert(e)
+  }
 }
 </script>
