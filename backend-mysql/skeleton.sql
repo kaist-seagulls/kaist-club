@@ -18,27 +18,27 @@ INSERT INTO Users
 VALUES (
         'ytrewq271828',
         '01098342208',
-        'klasjfdkljsdkljfsda',
+        'q1234567890',
         TRUE
     ), (
         'tanit23',
         '01066826915',
-        'sfadlksadflkjsadkljs',
+        'q1234567890',
         FALSE
     ), (
         'derick321',
         '01004470447',
-        'laiowjeivona',
+        'q1234567890',
         TRUE
     ), (
         'tpdus2155',
         '01000960096',
-        'kasdjfklajseijija',
+        'q1234567890',
         FALSE
     ), (
         'antony',
         '01005770577',
-        'qwerqwerqwer',
+        'q1234567890',
         FALSE
     );
 
