@@ -288,5 +288,31 @@ app.get("/api/v1/get-clubs-related", (req, res) => {
   })
 })
 
+app.get("/api/v1/get-user-info", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).end()
+    return
+  }
+  const userId = userIdOf(req)
+  doTransaction(res, async (D) => {
+    const user = await D.Users.lookup(userId)
+    if (!user) {
+      await D.rollback()
+      sessOut(req)
+      res.status(StatusCodes.UNAUTHORIZED).end()
+      return
+    }
+    const phone = user.phone
+    const isAdmin = user.isAdmin
+    const represent = await D.Represents.lookupByUser(userId)
+    const representingClub = represent ? represent.clubName : null
+    res.status(StatusCodes.OK).json({
+      userId,
+      phone,
+      isAdmin,
+      representingClub,
+    })
+  })
+})
 
 app.listen(3000, () => console.log("[ Listening on port 3000 ]"))

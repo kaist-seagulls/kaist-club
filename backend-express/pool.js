@@ -99,6 +99,19 @@ function buildDataController(conn) {
         return result[0]
       },
     },
+    Represents: {
+      lookupByUser: async (userId) => {
+        const result = await conn.execute(
+          "SELECT * FROM Represents WHERE userId = ?",
+          [userId],
+        )
+        if (result[0].length == 0) {
+          return null
+        } else {
+          return result[0][0]
+        }
+      },
+    },
   }
 }
 

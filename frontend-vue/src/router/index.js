@@ -18,6 +18,7 @@ import SignInView from "@/views/SignInView.vue"
 import SignUpView from "@/views/SignUpView.vue"
 import UserProfileView from "@/views/UserProfileView.vue"
 import NotFoundView from "@/views/NotFoundView.vue"
+import axios from "axios"
 
 const routes = [
   {
@@ -112,6 +113,25 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
+})
+
+router.beforeEach((to, from, next) => {
+  console.log("beforeEach", to, from)
+  const cont = async () => {
+    try {
+      const userInfo = (await axios.get("/api/v1/get-user-info")).data
+      const userId = userInfo.userId
+      const isAdminString = userInfo.isAdmin ? "an ADMIN" : "NOT an ADMIN"
+      const phone = userInfo.phone
+      const representingClubString = userInfo.representingClub ? userInfo.representingClub : "NO CLUB"
+      alert(`SIGNED IN AS ${userId}, ${isAdminString}, ${phone}, representing ${representingClubString}`)
+      next()
+    } catch {
+      alert("NOT SIGNED IN")
+      next()
+    }
+  }
+  cont()
 })
 
 export default router
