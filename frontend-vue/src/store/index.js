@@ -17,6 +17,7 @@ export default createStore({
     applicants: [],
     events: {},
     calendar: [],
+    eventIndex: 0,
   },
   getters: {
     // Getters for filter
@@ -268,21 +269,34 @@ export default createStore({
       console.log("update calendar completed")
     },
     applyEvents(state) {
-      let eventIndex = 0
-      for (const i in state.events) {
-        for (const key in state.calendar) {
-          if (isIncluded(state.calendar[key], state.events[i]) && state.checked[state.events[i].clubId]) {
-            state.calendar[key].events[eventIndex] = state.events[i]
+      state.eventIndex = 0
+      let checkedEvents = state.events.filter((e) => state.checked[e.clubName])
+      checkedEvents = checkedEvents.sort((a, b) => {
+        if (a.start.getDate() - b.start.getDate()) return 1
+        else return -1
+      })
+      let tempDate = new Date(2000, 8, 28)
+      
+      while (checkedEvents.length > 0) {
+        state.eventIndex++
+        for (const i in checkedEvents) {
+          let event = checkedEvents[i]
+          // if an event conflicts with the previously added event, skip the event.
+          if (event.start <= tempDate) {
+            continue
+          }
+          // Apply event
+          for (const j in state.calendar) {
+            if (contains(event, state.calendar[j].date)) {
+              state.calendar[j].events[eventIndex] = event
+              checkedEvents.splice(i, 1)
+            }
           }
         }
-        eventIndex++
+        lastIndex = new Date(2000, 8, 28)
       }
-      function isIncluded(day, e) {
-        const date = day.date
-        const startDate = e.startDate
-        const endDate = e.endDate
-        if (startDate <= date && date <= endDate) return true
-        return false
+      function contains(event, date) {
+        return event.start <= date && date <= event.end
       }
     },
   },
