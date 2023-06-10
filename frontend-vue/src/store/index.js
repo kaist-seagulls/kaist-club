@@ -268,7 +268,7 @@ export default createStore({
       }
       console.log("update calendar completed")
     },
-    applyEvents(state) {
+    applyEvents(state) {// TODO: Refactoring needed
       state.eventIndex = 0
       let checkedEvents = state.events.filter((e) => state.checked[e.clubName])
       checkedEvents = checkedEvents.sort((a, b) => {
@@ -281,7 +281,7 @@ export default createStore({
         state.eventIndex++
         for (const i in checkedEvents) {
           let event = checkedEvents[i]
-          // if an event conflicts with the previously added event, skip the event.
+          // If an event conflicts with the previously added event, skip the event.
           if (event.start <= tempDate) {
             continue
           }
