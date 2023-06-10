@@ -183,6 +183,13 @@ function buildDataController(conn) {
         )
         return result[0]
       },
+      checkAlreadyJoined: async (userId, clubName) => {
+        const result = await conn.execute(
+          "SELECT userId, clubName from joins WHERE userId=? and clubName=?",
+          [userId, clubName],
+        )
+        return result[0]
+      },
     },
     Subscribes: {
       filterByUser: async (userId) => {
@@ -196,6 +203,20 @@ function buildDataController(conn) {
         const result = await conn.execute(
           "SELECT clubName FROM Subscribes WHERE userId = ? AND clubName NOT IN (SELECT clubName FROM Joins WHERE userId = ?)",
           [userId, userId],
+        )
+        return result[0]
+      },
+      addSubscription: async (userId, clubName) => {
+        const result = await conn.execute(
+          "INSERT INTO Subscribes VALUES(?,?)",
+          [userId, clubName],
+        )
+        return result
+      },
+      deleteSubscription: async (userId, clubName) => {
+        const result = await conn.execute(
+          "DELETE FROM Subscribes WHERE userId=? AND clubName=?",
+          [userId, clubName],
         )
         return result[0]
       },

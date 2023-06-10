@@ -611,4 +611,62 @@ app.post("/api/v1/reset-password", (req, res) => {
   })
 })
 
+app.post("/api/v1/create-subscription", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).end()
+    return
+  }
+  const userId = userIdOf(req)
+  const clubName = req.clubName
+  doTransaction(res, async (D) => {
+    const joinedUser = await D.Joins.checkAlreadyJoined(userId, clubName)
+    if (joinedUser.length !== 0) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "Joined",
+      })
+      return
+    }
+    else {
+      const addSubscription = await D.Subscribes.addSubscription(userId, clubName)
+      if (addSubscription instanceof Error) {
+        await D.rollback()
+        res.status(StatusCodes.CONFLICT).json({
+          message: "Already Subscribed",
+        })
+        return
+      }
+    }
+    res.status(StatusCodes.NO_CONTENT)
+  })
+})
+app.post("/api/v1/delete-subscription", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).end()
+    return
+  }
+  const userId = userIdOf(req)
+  const clubName = req.clubName
+  doTransaction(res, async (D) => {
+    const joinedUser = await D.Joins.checkAlreadyJoined(userId, clubName)
+    if (joinedUser.length !== 0) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "Joined",
+      })
+      return
+    }
+    else {
+      const addSubscription = await D.Subscribes.deleteSubscription(userId, clubName)
+      if (addSubscription instanceof Error) {
+        await D.rollback()
+        res.status(StatusCodes.CONFLICT).json({
+          message: "Deleting Subscription Failed",
+        })
+        return
+      }
+    }
+    res.status(StatusCodes.NO_CONTENT)
+  })
+})
 app.listen(3000, () => console.log("[ Listening on port 3000 ]"))
