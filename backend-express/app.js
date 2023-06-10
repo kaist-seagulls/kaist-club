@@ -249,16 +249,20 @@ app.post("/api/v1/check-auth-code", (req, res) => {
 })
 
 app.post("/api/v1/sign-in", (req, res) => {
+  console.log("ssdsdsd")
   const userId = req.body.userId
   const pw = req.body.password
   doTransaction(res, async (D) => {
+    console.log("ssdsdsd")
     const user = await D.Users.lookupBySign(userId, pw)
     if (!user) {
       await D.rollback()
       res.status(StatusCodes.UNAUTHORIZED).end()
       return
     }
+    console.log("ssdsdsd")
     await D.commit()
+    console.log("ssdsdsd")
     signInAs(req, userId)
     res.status(StatusCodes.NO_CONTENT).end()
     return
@@ -416,6 +420,56 @@ app.get("/api/v1/get-user-info", (req, res) => {
     })
   })
 })
+//const SQL_CHECK_REP = "SELECT * FROM Represents WHERE userId=?"
+//const SQL_CHECK_JOINREQUESTS = "SELECT userId from JoinRequest where clubName=?"
+//const SQL_CHECK_USERS = "SELECT userId from Joins WHERE clubName=?"
+
+app.get("/api/v1/get-club-management-info", (req, res) => {
+
+  const sess = req.session
+  const userId = req.session.userId
+
+  doTransaction(res, async (D) => {
+    if (sess.islogged === false) {
+      await D.rollback()
+      res.status(StatusCodes.UNAUTHORIZED).json({
+        message: "Unauthorized access",
+      })
+      return
+    }
+    console.log("asdksdaklsdakl")
+    const checkRepResult = await D.Represents.getClubName(userId)
+    if (checkRepResult.length === 0) {
+      await D.rollback()
+      res.status(StatusCodes.FORBIDDEN).json({
+        message: "Forbidden",
+      })
+      return
+    }
+    const clubName = checkRepResult[0]["clubName"]
+    const applicants = []
+    const checkJoinRequests = await D.JoinRequests.getUsers(clubName)
+
+    for (let i = 0; i < checkJoinRequests.length; i++) {
+      applicants.push(checkJoinRequests[i]["userId"])
+    }
+    const members = []
+    const checkMembers = await D.Joins.selectUser(clubName)
+
+    for (let j = 0; j < checkMembers.length; j++) {
+      members.push(checkMembers[j]["userId"])
+    }
+
+    const clubManagementInfo = {}
+    clubManagementInfo["applicants"] = applicants
+    clubManagementInfo["members"] = members
+    const returnDic = {}
+    returnDic["clubManagementInfo"] = clubManagementInfo
+    await D.commit()
+    res.status(StatusCodes.OK).json(returnDic)
+  })
+})
+
 
 const localToUTC = (localDate) => {
   if (localDate === null) {

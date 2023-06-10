@@ -183,6 +183,13 @@ function buildDataController(conn) {
         )
         return result[0]
       },
+      selectUser: async (clubName) => {
+        const result = await conn.execute(
+          "SELECT userId from Joins WHERE clubName=?",
+          [clubName],
+        )
+        return result[0]
+      },
       checkAlreadyJoined: async (userId, clubName) => {
         const result = await conn.execute(
           "SELECT userId, clubName from joins WHERE userId=? and clubName=?",
@@ -233,11 +240,25 @@ function buildDataController(conn) {
           return result[0][0]
         }
       },
+      getClubName: async (userId) => {
+        const result = await conn.execute(
+          "SELECT * FROM Represents WHERE userId=?",
+          [userId],
+        )
+        return result[0]
+      },
     },
     JoinRequests: {
       filterByClub: async (clubName) => {
         const result = await conn.execute(
           "SELECT userId, reqTime FROM JoinRequests WHERE clubName = ?",
+          [clubName],
+        )
+        return result[0]
+      },
+      getUsers: async (clubName) => {
+        const result = await conn.execute(
+          "SELECT userId from JoinRequest where clubName=?",
           [clubName],
         )
         return result[0]
@@ -386,15 +407,15 @@ function buildDataController(conn) {
 }
 
 /*
- * async doTransaction(
- *   res: response,
- *   task: async (connection) -> void
- * ) -> void
- *  
- * In `task`:
- *   (1) Handle every exception except for SERVICE_UNAVAILABLE.
- *   (2) Do commit or rollback appropriately.
- */
+   * async doTransaction(
+   *   res: response,
+   *   task: async (connection) -> void
+   * ) -> void
+   *  
+   * In `task`:
+   *   (1) Handle every exception except for SERVICE_UNAVAILABLE.
+   *   (2) Do commit or rollback appropriately.
+   */
 const doTransaction = async (res, task) => {
   try {
     // If throw: -> sendGeneralError
