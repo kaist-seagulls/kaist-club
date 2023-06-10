@@ -11,7 +11,7 @@ const MySQLStore = require("express-mysql-session")(session)
 const app = express()
 
 const MIN_AUTHCODE_VALID_TIME = 30 * 1000
-const MAX_AUTOCODE_VALID_TIME = 5 * 60 * 1000
+const MAX_AUTHCODE_VALID_TIME = 5 * 60 * 1000
 
 const options = {
   host: "127.0.0.1",
@@ -160,7 +160,7 @@ app.post("/api/v1/check-auth-code", (req, res) => {
     }
     const code = req.body.code
     const timeElapsed = Date.now() - auth.issuedAt
-    if (code === auth.code && timeElapsed < MAX_AUTOCODE_VALID_TIME) {
+    if (code === auth.code && timeElapsed < MAX_AUTHCODE_VALID_TIME) {
       await D.commit()
       authAs(req, userId)
       res.status(StatusCodes.NO_CONTENT).end()
@@ -257,36 +257,107 @@ app.get("/api/v1/get-clubs-related", (req, res) => {
   }
   doTransaction(res, async (D) => {
     const joinedClubsResult = await D.Joins.filterByUser(userId)
-    const joinedClubs = []
+    const relatedClubs = []
     for (const club of joinedClubsResult) {
-      joinedClubs.push({
+      relatedClubs.push({
         name: club.clubName,
         isJoined: true,
       })
     }
-    const subscribedClubsResult = await D.Subscribes.filterByUser(userId)
-    const subscribedClubs = []
+    const subscribedClubsResult = await D.Subscribes.filterByUserNotJoined(userId)
     for (const club of subscribedClubsResult) {
-      let joined = false
-      for (const joinedClub of joinedClubs) {
-        if (club.clubName === joinedClub.name) {
-          joined = true
-          break
-        }
-      }
-      if (joined) {
-        continue
-      }
-      subscribedClubs.push({
+      relatedClubs.push({
         name: club.clubName,
         isJoined: false,
       })
     }
-    const relatedClubs = subscribedClubs.concat(joinedClubs)
     await D.commit()
     res.status(StatusCodes.OK).json(relatedClubs)
   })
 })
 
+app.get("/api/v1/get-user-info", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).end()
+    return
+  }
+  const userId = userIdOf(req)
+  doTransaction(res, async (D) => {
+    const user = await D.Users.lookup(userId)
+    if (!user) {
+      await D.rollback()
+      sessOut(req)
+      res.status(StatusCodes.UNAUTHORIZED).end()
+      return
+    }
+    const phone = user.phone
+    const isAdmin = user.isAdmin
+    const represent = await D.Represents.lookupByUser(userId)
+    const representingClub = represent ? represent.clubName : null
+    res.status(StatusCodes.OK).json({
+      userId,
+      phone,
+      isAdmin,
+      representingClub,
+    })
+  })
+})
+
+app.get("/api/v1/retrieve", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).end()
+    return
+  }
+  const userId = userIdOf(req)
+  doTransaction(res, async (D) => {
+    let relatedClubs = undefined
+    if (req.body.relatedClubs) {
+      relatedClubs = {
+        joined: [],
+        subscribed: [],
+      }
+      let result = await D.Joins.filterByUser(userId)
+      for (const club of result) {
+        relatedClubs.joined.push(club.clubName)
+      }
+      result = await D.Subscribes.filterByUserNotJoined(userId)
+      for (const club of result) {
+        relatedClubs.subscribed.push(club.clubName)
+      }
+    }
+
+    let events = undefined
+    if (req.body.events) {
+      const start = req.body.events.start
+      const end = req.body.events.end
+      events = []
+      const result = await D.Posts.filterByUserRange(userId, start, end)
+      for (const event of result) {
+        events.push({
+          postId: event.postId,
+          clubName: event.clubName,
+          clubColor: event.color,
+          title: event.title,
+          start: event.scheduleStart,
+          end: event.scheduleEnd,
+          isRepresented: event.isRepresented,
+        })
+      }
+    }
+
+    // let search = undefined
+    // if (req.body.search) {
+    //   const q = req.body.search.q
+    //   const filter = req.body.search.filter
+
+    // }
+    await D.commit()
+    res.status(StatusCodes.OK).json({
+      relatedClubs,
+      events,
+    })
+    return
+  })
+})
 
 app.listen(3000, () => console.log("[ Listening on port 3000 ]"))
