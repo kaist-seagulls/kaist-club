@@ -304,6 +304,7 @@ app.get("/api/v1/get-user-info", (req, res) => {
 })
 
 app.get("/api/v1/retrieve", (req, res) => {
+  console.log("request.body: ", req.body)
   if (!isSignedIn(req)) {
     res.status(StatusCodes.UNAUTHORIZED).end()
     return

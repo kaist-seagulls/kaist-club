@@ -15,7 +15,7 @@ export default createStore({
     userInfo: {},
     members: [],
     applicants: [],
-    events: {},
+    events: [],
     calendar: [],
     eventIndex: 0,
   },
@@ -220,9 +220,9 @@ export default createStore({
     // Mutations for calendar
     updateCalendar(state, payload) {
       let events = payload.events
+      state.events = events
       let month = payload.month
       let year = payload.year
-      state.events = events
       state.calendar = []
 
       const firstDayofMonth = new Date(year, month).getDay()
@@ -288,12 +288,13 @@ export default createStore({
           // Apply event
           for (const j in state.calendar) {
             if (contains(event, state.calendar[j].date)) {
-              state.calendar[j].events[eventIndex] = event
+              state.calendar[j].events[state.eventIndex] = event
               checkedEvents.splice(i, 1)
             }
           }
+          tempDate = event.end
         }
-        lastIndex = new Date(2000, 8, 28)
+        tempDate = new Date(2000, 8, 28)
       }
       function contains(event, date) {
         return event.start <= date && date <= event.end
@@ -502,31 +503,45 @@ export default createStore({
     async fetchCalendar(context, payload) {
       let month = payload.month
       let year = payload.year
-      let events = [
-        { clubName: "Number", title: "event1", schedule: { startDate: new Date(), endDate: new Date() } },
-        { clubName: "Number", title: "event2", schedule: { startDate: new Date(2023, 5, 7), endDate: new Date(2023, 5, 15) } },
-      ]
-      // axios
-      //   .get(prefix + "get-schedule", {
-      //     year,
-      //     month,
-      //   })
-      //   .then((res) => {
-      //     try{
-      //       context.commit("updateCalender", res.data, month, year)
-      //     } finally {
-      //       context.commit("applyEvents")
-      //     }
-      //   })
-      //   .catch(err => {
-      //     alert(err)
-      //     console.log(err)
-      //   })
-      try {
-        context.commit("updateCalendar", { events, month, year })
-      } finally {
-        context.commit("applyEvents")
+      // let events = [
+      //   { clubName: "Number", title: "event1", schedule: { startDate: new Date(), endDate: new Date() } },
+      //   { clubName: "Number", title: "event2", schedule: { startDate: new Date(2023, 5, 7), endDate: new Date(2023, 5, 15) } },
+      // ]
+      axios
+        .get(prefix + "retrieve", {
+          relatedClubs: {},
+          events: {
+            start: firstDateOfCalendar(year, month),
+            end: endDayOfCalendar(year, month),
+          },
+        })
+        .then((res) => {
+          try{
+            console.log(res)
+            context.commit("updateRelatedClubs", res.data)
+            context.commit("updateCalender", {events: res.data.events, month, year})
+          } finally {
+            context.commit("applyEvents")
+          }
+        })
+        .catch(err => {
+          alert(err)
+          console.log(err)
+        })
+
+      function firstDateOfCalendar(year, month) {
+        const firstDayofMonth = new Date(year, month - 1).getDay()
+        return new Date(Date.UTC(year, month - 1, 1 - firstDayofMonth))
       }
+      function endDayOfCalendar(year, month) {
+        const lastDayofMonth = new Date(year, month, 0).getDay()
+        return new Date(Date.UTC(year, month, 6 - lastDayofMonth))
+      }
+      // try {
+      //   context.commit("updateCalendar", { events, month, year })
+      // } finally {
+      //   context.commit("applyEvents")
+      // }
     },
     async applyEvents(context) {
       context.commit("applyEvents")
