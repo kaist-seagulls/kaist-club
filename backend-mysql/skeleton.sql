@@ -46,26 +46,31 @@ CREATE TABLE
     Clubs (
         clubName VARCHAR(20) PRIMARY KEY,
         descriptions VARCHAR(100) NOT NULL,
-        categoryName VARCHAR(30) NOT NULL
+        categoryName VARCHAR(30) NOT NULL,
+        color CHAR(7) NOT NULL
     );
 
 INSERT INTO Clubs
 VALUES (
         'Number',
         'KAIST Musical club',
-        'Performance'
+        'Performance',
+        '#ff0000'
     ), (
         'K-Let',
         'KAIST Leadership Executing Team',
-        'Social'
+        'Social',
+        '#00ff00'
     ), (
         'KAIST Times',
         'KAIST Korean Newspaper',
-        'Association'
+        'Association',
+        '#0000ff'
     ), (
         'Bear Paw',
         'KAIST Handmaking',
-        'Arts'
+        'Arts',
+        '#ffff00'
     );
 
 CREATE TABLE

@@ -257,32 +257,20 @@ app.get("/api/v1/get-clubs-related", (req, res) => {
   }
   doTransaction(res, async (D) => {
     const joinedClubsResult = await D.Joins.filterByUser(userId)
-    const joinedClubs = []
+    const relatedClubs = []
     for (const club of joinedClubsResult) {
-      joinedClubs.push({
+      relatedClubs.push({
         name: club.clubName,
         isJoined: true,
       })
     }
-    const subscribedClubsResult = await D.Subscribes.filterByUser(userId)
-    const subscribedClubs = []
+    const subscribedClubsResult = await D.Subscribes.filterByUserNotJoined(userId)
     for (const club of subscribedClubsResult) {
-      let joined = false
-      for (const joinedClub of joinedClubs) {
-        if (club.clubName === joinedClub.name) {
-          joined = true
-          break
-        }
-      }
-      if (joined) {
-        continue
-      }
-      subscribedClubs.push({
+      relatedClubs.push({
         name: club.clubName,
         isJoined: false,
       })
     }
-    const relatedClubs = subscribedClubs.concat(joinedClubs)
     await D.commit()
     res.status(StatusCodes.OK).json(relatedClubs)
   })
@@ -312,6 +300,63 @@ app.get("/api/v1/get-user-info", (req, res) => {
       isAdmin,
       representingClub,
     })
+  })
+})
+
+app.get("/api/v1/retrieve", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).end()
+    return
+  }
+  const userId = userIdOf(req)
+  doTransaction(res, async (D) => {
+    let relatedClubs = undefined
+    if (req.body.relatedClubs) {
+      relatedClubs = {
+        joined: [],
+        subscribed: [],
+      }
+      let result = await D.Joins.filterByUser(userId)
+      for (const club of result) {
+        relatedClubs.joined.push(club.clubName)
+      }
+      result = await D.Subscribes.filterByUserNotJoined(userId)
+      for (const club of result) {
+        relatedClubs.subscribed.push(club.clubName)
+      }
+    }
+
+    let events = undefined
+    if (req.body.events) {
+      const start = req.body.events.start
+      const end = req.body.events.end
+      events = []
+      const result = await D.Posts.filterByUserRange(userId, start, end)
+      for (const event of result) {
+        events.push({
+          postId: event.postId,
+          clubName: event.clubName,
+          clubColor: event.color,
+          title: event.title,
+          start: event.scheduleStart,
+          end: event.scheduleEnd,
+          isRepresented: event.isRepresented,
+        })
+      }
+    }
+
+    // let search = undefined
+    // if (req.body.search) {
+    //   const q = req.body.search.q
+    //   const filter = req.body.search.filter
+
+    // }
+    await D.commit()
+    res.status(StatusCodes.OK).json({
+      relatedClubs,
+      events,
+    })
+    return
   })
 })
 

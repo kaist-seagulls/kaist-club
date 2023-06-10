@@ -98,6 +98,13 @@ function buildDataController(conn) {
         )
         return result[0]
       },
+      filterByUserNotJoined: async (userId) => {
+        const result = await conn.execute(
+          "SELECT clubName FROM Subscribes WHERE userId = ? AND clubName NOT IN (SELECT clubName FROM Joins WHERE userId = ?)",
+          [userId, userId],
+        )
+        return result[0]
+      },
     },
     Represents: {
       lookupByUser: async (userId) => {
@@ -110,6 +117,37 @@ function buildDataController(conn) {
         } else {
           return result[0][0]
         }
+      },
+    },
+    Posts: {
+      filterByUserRange: async (userId, start, end) => {
+        const result = await conn.execute(
+          `
+            SELECT
+              postId, clubName, color,
+              title, scheduleStart, scheduleEnd,
+              isRepresented
+            FROM
+              (
+                SELECT
+                  clubName,
+                  (clubName IN
+                    (SELECT clubName FROM Represents WHERE userId = ?)
+                  ) AS isRepresented,
+                  (clubName IN
+                    (SELECT clubName FROM Joins WHERE userId = ?)
+                  ) AS isJoined
+                FROM Subscribes WHERE userId = ?
+              ) AS A
+              NATURAL JOIN Clubs
+              NATURAL JOIN Posts
+            WHERE
+              (scheduleEnd >= ? OR scheduleStart <= ?)
+              AND (isJoined OR (NOT isOnly))
+          `,
+          [userId, userId, userId, start, end],
+        )
+        return result[0]
       },
     },
   }
