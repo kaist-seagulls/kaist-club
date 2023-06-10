@@ -142,7 +142,7 @@ function buildDataController(conn) {
               NATURAL JOIN Clubs
               NATURAL JOIN Posts
             WHERE
-              (scheduleEnd >= ? OR scheduleStart <= ?)
+              (scheduleEnd >= ? AND scheduleStart <= ?)
               AND (isJoined OR (NOT isOnly))
           `,
           [userId, userId, userId, start, end],
