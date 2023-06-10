@@ -328,33 +328,51 @@ app.get("/api/v1/retrieve", (req, res) => {
 
     let events = undefined
     if (req.body.events) {
-      const start = req.body.events.start
-      const end = req.body.events.end
-      events = []
-      const result = await D.Posts.filterByUserRange(userId, start, end)
-      for (const event of result) {
-        events.push({
-          postId: event.postId,
-          clubName: event.clubName,
-          clubColor: event.color,
-          title: event.title,
-          start: event.scheduleStart,
-          end: event.scheduleEnd,
-          isRepresented: event.isRepresented,
-        })
+      const startString = req.body.events.start
+      const endString = req.body.events.end
+      if (startString && endString) {
+        const start = new Date(startString)
+        const end = new Date(endString)
+        events = []
+        const result = await D.Posts.filterByUserRange(userId, start, end)
+        for (const event of result) {
+          events.push({
+            postId: event.postId,
+            clubName: event.clubName,
+            clubColor: event.color,
+            title: event.title,
+            start: event.scheduleStart,
+            end: event.scheduleEnd,
+            isRepresented: event.isRepresented,
+          })
+        }
       }
     }
 
-    // let search = undefined
-    // if (req.body.search) {
-    //   const q = req.body.search.q
-    //   const filter = req.body.search.filter
+    let search = undefined
+    if (req.body.search) {
+      const q = req.body.search.q
+      const pageString = req.body.search.page
+      const page = Number(pageString)
+      if (!isNaN(page)) {
+        const filterRaw = req.body.search.filter
+        if (filterRaw.length === 0) {
+          search = await D.Posts.filterByQPage(userId, q, page)
+        } else {
+          const filter = []
+          for (const clubName of filterRaw) {
+            filter.push(clubName)
+          }
+          search = await D.Posts.filterByQFilterPage(userId, q, filter, page)
+        }
+      }
+    }
 
-    // }
     await D.commit()
     res.status(StatusCodes.OK).json({
       relatedClubs,
       events,
+      search,
     })
     return
   })
