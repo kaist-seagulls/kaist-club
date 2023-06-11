@@ -25,8 +25,6 @@ export default createStore({
     applicants: [],
     events: [],
     boundaryDates: null,
-    calendar: [],
-    eventIndex: 0,
   },
   getters: {
     // Getters for filter
@@ -89,9 +87,6 @@ export default createStore({
     // Getters for calendar
     events(state) {
       return state.events
-    },
-    calendar(state) {
-      return state.calendar
     },
     calendarRepresentation(state) {
       if (state.boundaryDates === null) {
