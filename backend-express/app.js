@@ -353,12 +353,12 @@ app.get("/api/v1/retrieve", (req, res) => {
     }
 
     let search = undefined
-    if (req.body.search) {
-      const q = req.body.search.q
-      const pageString = req.body.search.page
+    if (req.query.search) {
+      const q = req.query.search.q
+      const pageString = req.query.search.page
       const page = Number(pageString)
       if (!isNaN(page)) {
-        const filterRaw = req.body.search.filter
+        const filterRaw = req.query.search.filter
         if (filterRaw.length === 0) {
           search = await D.Posts.filterByQPage(userId, q, page)
         } else {
