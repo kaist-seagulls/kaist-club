@@ -311,7 +311,7 @@ app.get("/api/v1/retrieve", (req, res) => {
   const userId = userIdOf(req)
   doTransaction(res, async (D) => {
     let relatedClubs = undefined
-    if (req.body.relatedClubs) {
+    if (req.query.relatedClubs) {
       relatedClubs = {
         joined: [],
         subscribed: [],
@@ -327,25 +327,28 @@ app.get("/api/v1/retrieve", (req, res) => {
     }
 
     let events = undefined
-    if (req.body.events) {
-      const startString = req.body.events.start
-      const endString = req.body.events.end
-      if (startString && endString) {
-        const start = new Date(startString)
-        const end = new Date(endString)
-        events = []
-        const result = await D.Posts.filterByUserRange(userId, start, end)
-        for (const event of result) {
-          events.push({
-            postId: event.postId,
-            clubName: event.clubName,
-            clubColor: event.color,
-            title: event.title,
-            start: event.scheduleStart,
-            end: event.scheduleEnd,
-            isRepresented: event.isRepresented,
-          })
-        }
+    if (req.query.events) {
+      const localToUTC = (localDate) => {
+        return new Date(Date.UTC(
+          localDate.getFullYear(),
+          localDate.getMonth(),
+          localDate.getDate(),
+        ))
+      }
+      const start = req.query.events.start
+      const end = req.query.events.end
+      events = []
+      const result = await D.Posts.filterByUserRange(userId, start, end)
+      for (const event of result) {
+        events.push({
+          postId: event.postId,
+          clubName: event.clubName,
+          clubColor: event.color,
+          title: event.title,
+          start: localToUTC(event.scheduleStart),
+          end: localToUTC(event.scheduleEnd),
+          isRepresented: event.isRepresented,
+        })
       }
     }
 

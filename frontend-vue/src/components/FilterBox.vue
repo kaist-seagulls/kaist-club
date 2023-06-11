@@ -70,8 +70,5 @@ export default {
       toggleNoFilter: "toggleNoFilter",
     }),
   },
-  beforeMount() {
-    this.fetchRelatedClubs()
-  },
 }
 </script>

@@ -64,7 +64,7 @@ function goCreateClub() {
 }
 function goCalendar() {
   const today = new Date()
-  const month = today.getMonth().toString()
+  const month = (today.getMonth() + 1).toString()
   const year = today.getFullYear().toString()
   router.push({
     name: "calendar",

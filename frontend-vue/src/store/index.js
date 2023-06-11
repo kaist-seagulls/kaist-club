@@ -1,11 +1,19 @@
 import { createStore } from "vuex"
 import axios from "axios"
+import qs from "qs"
+
+axios.defaults.paramsSerializer = params => {
+  return qs.stringify(params)
+}
 
 const prefix = "/api/v1/"
 
 export default createStore({
   state: {
-    relatedClubs: {},
+    relatedClubs: {
+      joined: [],
+      subscribed: [],
+    },
     checked: {},
     noFilter: false,
     currentClubs: [],
@@ -15,44 +23,44 @@ export default createStore({
     userInfo: {},
     members: [],
     applicants: [],
-    events: {},
+    events: [],
+    boundaryDates: null,
     calendar: [],
+    eventIndex: 0,
   },
   getters: {
     // Getters for filter
     filterConfig(state) {
-      const config = {}
-      config.joined = []
-      config.notJoined = []
-      for (const [name, club] of Object.entries(state.relatedClubs)) {
-        if (club.isJoined) {
-          config.joined.push(
-            { name, isChecked: state.checked[name] },
-          )
-        } else {
-          config.notJoined.push(
-            { name, isChecked: state.checked[name] },
-          )
-        }
+      const config = {
+        joined: [],
+        notJoined: [],
+      }
+      for (const club of state.relatedClubs.joined) {
+        config.joined.push({
+          name: club,
+          isChecked: state.checked[club],
+        })
+      }
+      for (const club of state.relatedClubs.subscribed) {
+        config.notJoined.push({
+          name: club,
+          isChecked: state.checked[club],
+        })
       }
       return config
     },
     isAllJoinedChecked(state) {
-      for (const [name, club] of Object.entries(state.relatedClubs)) {
-        if (club.isJoined) {
-          if (!state.checked[name]) {
-            return false
-          }
+      for (const club of state.relatedClubs.joined) {
+        if (!state.checked[club]) {
+          return false
         }
       }
       return true
     },
     isAllNotJoinedChecked(state) {
-      for (const [name, club] of Object.entries(state.relatedClubs)) {
-        if (!club.isJoined) {
-          if (!state.checked[name]) {
-            return false
-          }
+      for (const club of state.relatedClubs.subscribed) {
+        if (!state.checked[club]) {
+          return false
         }
       }
       return true
@@ -85,20 +93,162 @@ export default createStore({
     calendar(state) {
       return state.calendar
     },
+    calendarRepresentation(state) {
+      if (state.boundaryDates === null) {
+        return null
+      }
+      const start = state.boundaryDates.start
+      const end = state.boundaryDates.end
+
+      const idxMap = {}
+      const weeks = []
+      let week = undefined
+      let day = 0
+      let weekNumber = 0
+      for (
+        let date = new Date(start);
+        date <= end;
+        date.setUTCDate(date.getUTCDate() + 1)
+      ) {
+        if (day === 0) {
+          week = {
+            weekNumber,
+            days: [],
+            weekEventStackOffset: undefined,
+            weekEventStackSize: undefined,
+          }
+        }
+        const uY = date.getUTCFullYear()
+        const uM = date.getUTCMonth() + 1
+        const uDt = date.getUTCDate()
+        const uDy = date.getUTCDay()
+        if (!idxMap[uY]) {
+          idxMap[uY] = {}
+        }
+        if (!idxMap[uY][uM]) {
+          idxMap[uY][uM] = {}
+        }
+        idxMap[uY][uM][uDt] = [weekNumber, day]
+        const d = {
+          year: uY,
+          month: uM,
+          date: uDt,
+          day: uDy,
+          fullDate: new Date(date),
+          events: [],
+        }
+        week.days.push(d)
+        if (day === 6) {
+          weeks.push(week)
+          weekNumber += 1
+          day = 0
+        } else {
+          day += 1
+        }
+      }
+
+      const truncStart = (eventStart) => {
+        if (eventStart < start) {
+          return start
+        } else {
+          return eventStart
+        }
+      }
+      const truncEnd = (eventEnd) => {
+        if (eventEnd > end) {
+          return end
+        } else {
+          return eventEnd
+        }
+      }
+
+      let eventStackSize = 0
+      let checkedEvents = state.events.filter((event) => {
+        return state.checked[event.clubName] && event.start < end && event.end > start
+      })
+      if (checkedEvents.length > 0) {
+        checkedEvents.sort((a, b) => {
+          if (a.start < b.start) {
+            return -1
+          } else {
+            return 1
+          }
+        })
+        while (checkedEvents.length > 0) {
+          const remainingEvents = []
+          let cursor = start
+          for (const i in checkedEvents) {
+            const event = checkedEvents[i]
+            const tStart = truncStart(event.start)
+            const tEnd = truncEnd(event.end)
+            if (tStart < cursor) {
+              remainingEvents.push(event)
+              continue
+            }
+            let date = new Date(tStart)
+            for (
+              ;
+              date <= tEnd;
+              date.setUTCDate(date.getUTCDate() + 1)
+            ) {
+              const idx = idxMap[date.getUTCFullYear()][date.getUTCMonth() + 1][date.getUTCDate()]
+              const weekNumber = idx[0]
+              const dayNumber = idx[1]
+              weeks[weekNumber].days[dayNumber].events[eventStackSize] = event
+            }
+            cursor = date
+          }
+          checkedEvents = remainingEvents
+          eventStackSize += 1
+        }
+      }
+      for (const week of weeks) {
+        let eimin = undefined
+        for (let ei = 0; ei < eventStackSize; ei += 1) {
+          for (const day of week.days) {
+            if (day.events[ei] !== undefined) {
+              eimin = ei
+              break
+            }
+          }
+          if (eimin !== undefined) {
+            break
+          }
+        }
+        if (eimin !== undefined) {
+          week.weekEventStackOffset = eimin
+          let eimax = undefined
+          for (let ei = eventStackSize - 1; ei >= 0; ei -= 1) {
+            for (const day of week.days) {
+              if (day.events[ei] !== undefined) {
+                eimax = ei
+                break
+              }
+            }
+            if (eimax !== undefined) {
+              break
+            }
+          }
+          week.weekEventStackSize = eimax - eimin + 1
+        }
+      }
+      return {
+        eventStackSize,
+        weeks,
+      }
+    },
   },
   mutations: {
     // Mutations for filter
-    updateRelatedClubs(state, clubs) {
-      const relatedClubs = {}
+    updateRelatedClubs(state, relatedClubs) {
+      console.log("UPDATE_RELATED_CLUBS")
+      const clubs = relatedClubs.joined.concat(relatedClubs.subscribed)
       const checked = {}
       for (const club of clubs) {
-        relatedClubs[club.name] = {
-          isJoined: club.isJoined,
-        }
-        if (state.checked[club.name] === undefined) {
-          checked[club.name] = true
+        if (state.checked[club] === undefined) {
+          checked[club] = true
         } else {
-          checked[club.name] = state.checked[club.name]
+          checked[club] = state.checked[club]
         }
       }
       state.relatedClubs = relatedClubs
@@ -111,31 +261,23 @@ export default createStore({
       state.checked[name] = false
     },
     setAllJoinedChecked(state) {
-      for (const [name, club] of Object.entries(state.relatedClubs)) {
-        if (club.isJoined) {
-          state.checked[name] = true
-        }
+      for (const club of state.relatedClubs.joined) {
+        state.checked[club] = true
       }
     },
     setAllJoinedUnchecked(state) {
-      for (const [name, club] of Object.entries(state.relatedClubs)) {
-        if (club.isJoined) {
-          state.checked[name] = false
-        }
+      for (const club of state.relatedClubs.joined) {
+        state.checked[club] = false
       }
     },
     setAllNotJoinedChecked(state) {
-      for (const [name, club] of Object.entries(state.relatedClubs)) {
-        if (!club.isJoined) {
-          state.checked[name] = true
-        }
+      for (const club of state.relatedClubs.subscribed) {
+        state.checked[club] = true
       }
     },
     setAllNotJoinedUnchecked(state) {
-      for (const [name, club] of Object.entries(state.relatedClubs)) {
-        if (!club.isJoined) {
-          state.checked[name] = false
-        }
+      for (const club of state.relatedClubs.subscribed) {
+        state.checked[club] = false
       }
     },
     setAllChecked(state) {
@@ -216,76 +358,15 @@ export default createStore({
         state.applicants.splice(index, 1)
       }
     },
-    // Mutations for calendar
-    updateCalendar(state, payload) {
-      let events = payload.events
-      let month = payload.month
-      let year = payload.year
-
-      state.events = events
-      state.calendar = []
-
-      const firstDayofMonth = new Date(year, month).getDay()
-      const lastDateofMonth = new Date(year, month + 1, 0).getDate()
-      const lastDayofMonth = new Date(year, month, lastDateofMonth).getDay()
-      const lastDateofLastMonth = new Date(year, month, 0).getDate()
-      let prevYear, prevMonth, nextYear, nextMonth
-      if (month > 0) {
-        prevMonth = month - 1
-        prevYear = year
-      } else {
-        prevMonth = 11
-        prevYear = year - 1
+    updateEvents(state, payload) {
+      for (const event of payload) {
+        event.start = new Date(event.start)
+        event.end = new Date(event.end)
       }
-      if (month < 11) {
-        nextMonth = month + 1
-        nextYear = year
-      } else {
-        nextMonth = 0
-        nextYear = year + 1
-      }
-
-      for (let i = firstDayofMonth; i > 0; i--) {
-        state.calendar.push({
-          number: lastDateofLastMonth - i + 1,
-          date: new Date(prevYear, prevMonth, lastDateofLastMonth - i + 1),
-          events: {},
-        })
-      }
-      for (let i = 1; i <= lastDateofMonth; i++) {
-        state.calendar.push({
-          number: i,
-          date: new Date(year, month, i),
-          events: {},
-        })
-      }
-      for (let i = lastDayofMonth; i <= 6; i++) {
-        state.calendar.push({
-          number: i - lastDayofMonth + 1,
-          date: new Date(nextYear, nextMonth, i - lastDayofMonth + 1),
-          events: {},
-        })
-      }
-
-      console.log("update calendar completed")
+      state.events = payload
     },
-    applyEvents(state) {
-      let eventIndex = 0
-      for (const i in state.events) {
-        for (const key in state.calendar) {
-          if (isIncluded(state.calendar[key], state.events[i]) && state.checked[state.events[i].clubId]) {
-            state.calendar[key].events[eventIndex] = state.events[i]
-          }
-        }
-        eventIndex++
-      }
-      function isIncluded(day, e) {
-        const date = day.date
-        const startDate = e.startDate
-        const endDate = e.endDate
-        if (startDate <= date && date <= endDate) return true
-        return false
-      }
+    updateBoundaryDates(state, payload) {
+      state.boundaryDates = payload
     },
   },
   actions: {
@@ -334,6 +415,8 @@ export default createStore({
         context.commit("setNoFilterUnchecked")
       } else {
         context.commit("setNoFilterChecked")
+        context.commit("setAllJoinedChecked")
+        context.commit("setAllNotJoinedChecked")
       }
     },
     // Actions for clubprofile
@@ -490,25 +573,38 @@ export default createStore({
     async fetchCalendar(context, payload) {
       let month = payload.month
       let year = payload.year
+      let firstDayOfWeek = payload.firstDayOfWeek
+      if (firstDayOfWeek === undefined) {
+        firstDayOfWeek = 0
+      }
+      const startDayOfMonth = (new Date(Date.UTC(year, month - 1))).getUTCDay()
+      const startRelDayOfMonth = (startDayOfMonth + 7 - firstDayOfWeek) % 7
+      const start = new Date(Date.UTC(year, month - 1, 1 - startRelDayOfMonth))
+      const endDayOfMonth = (new Date(Date.UTC(year, month, 0))).getUTCDay()
+      const endRelDayOfMonth = (endDayOfMonth + 7 - firstDayOfWeek) % 7
+      const end = new Date(Date.UTC(year, month, 6 - endRelDayOfMonth))
+      context.commit("updateBoundaryDates", {
+        start,
+        end,
+      })
       axios
-        .get(prefix + "get-schedule", {
-          year,
-          month,
+        .get(prefix + "retrieve", {
+          params: {
+            relatedClubs: true,
+            events: {
+              start,
+              end,
+            },
+          },
         })
         .then((res) => {
-          try {
-            context.commit("updateCalender", res.data, month, year)
-          } finally {
-            context.commit("applyEvents")
-          }
+          context.commit("updateRelatedClubs", res.data.relatedClubs)
+          context.commit("updateEvents", res.data.events)
         })
         .catch(err => {
           alert(err)
           console.log(err)
         })
-    },
-    async applyEvents(context) {
-      context.commit("applyEvents")
     },
   },
   modules: {
