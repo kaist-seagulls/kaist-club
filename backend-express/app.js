@@ -90,6 +90,32 @@ const sessOut = (req) => {
   req.session.destroy()
 }
 
+app.post("/api/v1/request-newclub", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "Not signed in",
+    })
+  }
+  const userId = req.body.userId
+  const categoryName = req.body.categoryName
+  const clubName = req.body.clubName
+  const description = req.body.description
+  const logoImg = req.body.logoImg
+  const headerImg = req.body.headerImg
+  doTransaction(res, async (D) => {
+    const numAddRows = await D.CreationRequests.addRequest(categoryName, clubName, description, logoImg, headerImg, userId)
+    if (!numAddRows) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "Conflict occurred",
+      })
+      return
+    }
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
+})
+
 app.post("/api/v1/send-auth-code", (req, res) => {
   if (isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({

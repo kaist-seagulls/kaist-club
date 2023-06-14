@@ -154,7 +154,9 @@ CREATE TABLE
         userId VARCHAR(20) NOT NULL,
         descriptions VARCHAR(100) NOT NULL,
         reqTime TIMESTAMP NOT NULL,
-        categoryName VARCHAR(30) NOT NULL
+        categoryName VARCHAR(30) NOT NULL,
+        logoImg LONGBLOB,
+        headerImg LONGBLOB
     );
 
 ALTER TABLE CreationRequests
@@ -171,13 +173,17 @@ VALUES (
         'antony',
         'KAIST English Literature club',
         "2023-07-07 07:07:07",
-        'Arts'
+        'Arts',
+        Null,
+        Null
     ), (
         'KISA',
         'ytrewq271828',
         'KAIST International Students Association',
         "2023-09-09 09:09:09",
-        'Association'
+        'Association',
+        Null,
+        Null
     );
 
 CREATE TABLE

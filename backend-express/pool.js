@@ -104,6 +104,15 @@ function buildDataController(conn) {
         return result[0]
       },
     },
+    CreationRequests: {
+      addRequest: async (categoryName, clubName, description, headerImg, logoImg, userId) => {
+        const result = await conn.execute(
+          "INSERT INTO CreationRequests VALUES (?, ?, ?, NOW(), ?, ?, ?)",
+          [clubName, userId, description, categoryName, logoImg, headerImg],
+        )
+        return result[0].affectedRows
+      },
+    },
     AuthCodes: {
       lookup: async (userId) => {
         const result = await conn.execute(
