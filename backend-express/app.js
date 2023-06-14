@@ -204,7 +204,6 @@ app.post("/api/v1/sign-out", (req, res) => {
 })
 
 app.post("/api/v1/sign-up", (req, res) => {
-  // console.log("sign-up")
   if (isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "signedIn",
@@ -444,7 +443,6 @@ app.post("/api/v1/reset-password", (req, res) => {
     })
     return
   }
-  console.log("authed")
 
   const userId = req.body.userId
   if (userId !== userIdOf(req)) {
@@ -454,7 +452,6 @@ app.post("/api/v1/reset-password", (req, res) => {
     return
   }
   const pw = req.body.password
-  console.log("conforms")
 
   doTransaction(res, async (D) => {
     const user = await D.Users.lookup(userId)
@@ -465,9 +462,7 @@ app.post("/api/v1/reset-password", (req, res) => {
       })
       return
     }
-    console.log("checked")
     const numAffectedRows = await D.Users.updatePw(userId, pw)
-    console.log(numAffectedRows)
     if (numAffectedRows !== 1) {
       await D.rollback()
       res.status(StatusCodes.CONFLICT).end()
