@@ -31,7 +31,7 @@
         Wrong password
       </div>
     </div>
-    <div class="link" id="forgot-pW">
+    <div class="link" id="forgot-pw">
       <a @click="goForgotPassword()">Forgot password?</a>
     </div>
     <div>

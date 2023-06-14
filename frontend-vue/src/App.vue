@@ -133,8 +133,10 @@ body {
   border: 1px solid #D8D8D8;
   border-radius: 5px;
   height: 25pt;
-  padding:0;
+  padding-right:10px;
+  padding-left: 10px;
   width:100%;
+  box-sizing: border-box;
 }
 .text-box-default:focus{
   border: 1px solid #D8D8D8;
@@ -152,7 +154,11 @@ body {
   padding-left: 10px;
   width:100%;
 }
-
+#forgot-pw{
+  margin-right:0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
 .link{
   font-family: 'Inter';
   font-style: normal;
@@ -181,11 +187,7 @@ body {
   line-height: 22px;
   color: #303030;
 }
-#forgot-pw{
-  margin-right:0;
-  margin-top: 0;
-  margin-bottom: 0;
-}
+
 .no-red-msg{
   display:flex;
   font-family: 'Inter';
