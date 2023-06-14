@@ -64,10 +64,10 @@ function buildDataController(conn) {
         )
         return result[0].affectedRows
       },
-      updatePW: async (userId, newPW) => {
+      updatePw: async (userId, newPw) => {
         const result = await conn.execute(
-          "UPDATE Users SET hashedPW=? WHERE userId=?",
-          [userId, hashPw(newPW)],
+          "UPDATE Users SET hashedPw = ? WHERE userId = ?",
+          [hashPw(newPw), userId],
         )
         return result[0].affectedRows
       },
@@ -97,13 +97,6 @@ function buildDataController(conn) {
           [code, userId],
         )
         return result[0].affectedRows
-      },
-      delete: async (userId, code) => {
-        const result = await conn.execute(
-          "DELETE FROM Authcodes WHERE userId=? AND code=?",
-          [userId, code],
-        )
-        return result
       },
     },
     Joins: {

@@ -97,10 +97,14 @@ app.post("/api/v1/send-auth-code", (req, res) => {
     })
     return
   }
+  const purpose = req.body.purpose
   const userId = req.body.userId
   doTransaction(res, async (D) => {
     const user = await D.Users.lookup(userId)
-    if (user) {
+    if (
+      (purpose === "signUp" && user) ||
+      (purpose === "forgotPassword" && !user)
+    ) {
       await D.rollback()
       res.status(StatusCodes.CONFLICT).json({
         message: "exists",
@@ -382,28 +386,50 @@ app.get("/api/v1/retrieve", (req, res) => {
 })
 
 app.post("/api/v1/reset-password", (req, res) => {
-  const userId = req.userId
-  const code = req.code
-  const password = req.password
+  if (isSignedIn(req)) {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "signedIn",
+    })
+    return
+  }
+  if (!isAuthed(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).json({
+      message: "unauthenticated",
+    })
+    return
+  }
+  console.log("authed")
+
+  const userId = req.body.userId
+  if (userId !== userIdOf(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).json({
+      message: "unauthenticated",
+    })
+    return
+  }
+  const pw = req.body.password
+  console.log("conforms")
 
   doTransaction(res, async (D) => {
-    const lookupRows = await D.AuthCodes.lookup(userId)
-    if (lookupRows["code"] !== code) {
+    const user = await D.Users.lookup(userId)
+    if (!user) {
       await D.rollback()
-      res.status(StatusCodes.UNAUTHORIZED).end()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "doesn't exist",
+      })
+      return
     }
-    const deleteAuthRows = await D.Authcodes.delete(userId, code)
-    if (deleteAuthRows instanceof Error) {
+    console.log("checked")
+    const numAffectedRows = await D.Users.updatePw(userId, pw)
+    console.log(numAffectedRows)
+    if (numAffectedRows !== 1) {
       await D.rollback()
       res.status(StatusCodes.CONFLICT).end()
+      return
     }
-    const updateAuthRowsNum = await D.Authcodes.update(userId, password)
-    if (updateAuthRowsNum === 0) {
-      await D.rollback()
-      res.status(StatusCodes.CONFLICT).end()
-    }
+    await D.commit()
     res.status(StatusCodes.NO_CONTENT).end()
-
+    return
   })
 })
 
