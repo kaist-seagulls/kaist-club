@@ -11,13 +11,13 @@
         <div>
           Email
         </div>
-        <div class ="star" id ="email-star">
+        <div class="star" id="email-star">
           *
         </div>
       </div>
       <div class="many-elements-input">
         <input class="text-box-default" type="id" v-model="id" />
-        <div class="kaist-mail"> 
+        <div class="kaist-mail">
           @kaist.ac.kr
         </div>
         <button class="blue-button" @click="askCode()" :disabled="timeLeft">
@@ -26,7 +26,7 @@
         <span v-if="timeLeft">{{ authStatus }}</span>
         <input class="text-box-default" id="AUTH-text-box" type="text" v-model="code" />
         <button class="blue-button" @click="auth()">Confirm</button>
-      </div> 
+      </div>
     </div>
     <div class="input-group">
       <div class="input-heading">
@@ -40,7 +40,7 @@
       <input class="text-box-default" type="password" v-model="pw" />
       <div class="red-msg" v-if="!isStrongPw">
         Password must be at least 8 characters including letters and numbers.
-      </div>    
+      </div>
     </div>
     <div class="input-group">
       <div class="input-heading">
@@ -48,12 +48,12 @@
           Confirm password
         </div>
         <div class="star">
-            *
+          *
         </div>
       </div>
       <input class="text-box-default" type="password" v-model="confirmPw" />
       <div class="red-msg" v-if="!pwConfirmed">
-          Values do not match
+        Values do not match
       </div>
     </div>
     <div class="input-group">
@@ -61,7 +61,7 @@
         Phone number
       </div>
       <div>
-      <input class="text-box-default" type="tel" v-model="phone" />
+        <input class="text-box-default" type="tel" v-model="phone" />
       </div>
     </div>
     <div>
@@ -108,9 +108,10 @@ function askCode() {
     axios
       .post(prefix + "send-auth-code", {
         userId: id.value,
+        purpose: "signUp",
       })
       .then(() => {
-        timeLeft.value = 5
+        timeLeft.value = 30
         setTimeout(authTimer, 1000)
       })
       .catch(err => {

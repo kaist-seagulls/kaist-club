@@ -45,6 +45,7 @@ import { useRouter } from "vue-router"
 
 const router = useRouter()
 
+const prefix = "/api/v1"
 
 const id = ref("")
 const newPw = ref("")
@@ -64,26 +65,29 @@ function authTimer() {
 }
 function auth() {
   if (id.value) {
-    // axios
-    //   .post('/check-auth-code')
-    //   .then(() => {
-    //     timeLeft = 5
-    //     setTimeout(authTimer, 1000)
-    //     authStatus = computed(() => {return 'wait for resend: ' + timeLeft})
-    //   })
-    //   .catch(err => {
-    //     alert(err)
-    //     console.log(err)
-    //   })
-    timeLeft.value = 30
-    setTimeout(authTimer, 1000)
+    axios
+      .post(prefix + "/send-auth-code", {
+        userId: id.value,
+        purpose: "forgotPassword",
+      })
+      .then(() => {
+        timeLeft.value = 30
+        setTimeout(authTimer, 1000)
+      })
+      .catch(err => {
+        alert(err)
+        console.log(err)
+      })
   }
 }
 function confirm() {
   axios
-    .post("/check-auth-code", {
-      userId: id,
-      code,
+    .post(prefix + "/check-auth-code", {
+      userId: id.value,
+      code: code.value,
+    })
+    .then(() => {
+      alert("AUTHENTICATED!")
     })
     .catch((err) => {
       // TODO: add a logic for getting remaining time for resending auth.
@@ -94,15 +98,14 @@ function confirm() {
 function changePw() {
   if (newPw.value && pwConfirmed.value && code.value) {
     axios
-      .post("/reset-password", {
-        userId: id,
-        code,
-        password: newPw,
+      .post(prefix + "/reset-password", {
+        userId: id.value,
+        password: newPw.value,
       })
       .then(() => {
         goSignin()
       })
-      .err(err => {
+      .catch(err => {
         alert(err)
         console.log(err)
       })
