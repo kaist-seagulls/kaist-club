@@ -79,6 +79,31 @@ function buildDataController(conn) {
         return result[0].affectedRows
       },
     },
+    Clubs: {
+      lookup: async (clubName) => {
+        const result = await conn.execute(
+          "SELECT * FROM Clubs WHERE clubName = ?",
+          [clubName],
+        )
+        if (result[0].length == 0) {
+          return null
+        } else {
+          return result[0][0]
+        }
+      },
+      filterByQ: async (q) => {
+        const escapedQ = "%" + escapeQ(q) + "%"
+        const result = await conn.execute(
+          `
+            SELECT clubName, categoryName
+            FROM Clubs
+            WHERE clubName LIKE ? OR categoryName LIKE ?
+          `,
+          [escapedQ, escapedQ],
+        )
+        return result[0]
+      },
+    },
     AuthCodes: {
       lookup: async (userId) => {
         const result = await conn.execute(
@@ -114,6 +139,13 @@ function buildDataController(conn) {
         )
         return result[0]
       },
+      filterByClub: async (clubName) => {
+        const result = await conn.execute(
+          "SELECT userId FROM Joins WHERE clubName = ?",
+          [clubName],
+        )
+        return result[0]
+      },
     },
     Subscribes: {
       filterByUser: async (userId) => {
@@ -144,7 +176,27 @@ function buildDataController(conn) {
         }
       },
     },
+    JoinRequests: {
+      filterByClub: async (clubName) => {
+        const result = await conn.execute(
+          "SELECT userId, reqTime FROM JoinRequests WHERE clubName = ?",
+          [clubName],
+        )
+        return result[0]
+      },
+    },
     Posts: {
+      lookupFilterByClub: async (postId, clubName) => {
+        const result = await conn.execute(
+          "SELECT * FROM Posts WHERE postId = ? AND clubName = ?",
+          [postId, clubName],
+        )
+        if (result[0].length == 0) {
+          return null
+        } else {
+          return result[0][0]
+        }
+      },
       filterByUserRange: async (userId, start, end) => {
         const result = await conn.execute(
           `

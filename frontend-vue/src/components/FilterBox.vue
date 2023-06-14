@@ -64,7 +64,6 @@ export default {
   },
   methods: {
     ...mapActions({
-      fetchRelatedClubs: "fetchRelatedClubs",
       toggleJoinedChecked: "toggleJoinedChecked",
       toggleNotJoinedChecked: "toggleNotJoinedChecked",
       toggleNoFilter: "toggleNoFilter",

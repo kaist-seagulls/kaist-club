@@ -265,13 +265,13 @@ CREATE TABLE
     );
 
 create table
-    JoinRequest(
+    JoinRequests(
         userId varchar(20) primary key,
         clubName varchar(20) not null,
         reqTime timestamp not null
     );
 
-insert into JoinRequest
+insert into JoinRequests
 values (
         'ytrewq271828',
         "KAIST Times",

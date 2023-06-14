@@ -252,33 +252,6 @@ app.post("/api/v1/sign-up", (req, res) => {
   })
 })
 
-app.get("/api/v1/get-clubs-related", (req, res) => {
-  const userId = req.session.userId
-  if (userId === undefined) {
-    res.status(StatusCodes.UNAUTHORIZED).end()
-    return
-  }
-  doTransaction(res, async (D) => {
-    const joinedClubsResult = await D.Joins.filterByUser(userId)
-    const relatedClubs = []
-    for (const club of joinedClubsResult) {
-      relatedClubs.push({
-        name: club.clubName,
-        isJoined: true,
-      })
-    }
-    const subscribedClubsResult = await D.Subscribes.filterByUserNotJoined(userId)
-    for (const club of subscribedClubsResult) {
-      relatedClubs.push({
-        name: club.clubName,
-        isJoined: false,
-      })
-    }
-    await D.commit()
-    res.status(StatusCodes.OK).json(relatedClubs)
-  })
-})
-
 app.get("/api/v1/get-user-info", (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.UNAUTHORIZED).end()
@@ -306,6 +279,16 @@ app.get("/api/v1/get-user-info", (req, res) => {
   })
 })
 
+const localToUTC = (localDate) => {
+  if (localDate === null) {
+    return null
+  }
+  return new Date(Date.UTC(
+    localDate.getFullYear(),
+    localDate.getMonth(),
+    localDate.getDate(),
+  ))
+}
 app.get("/api/v1/retrieve", (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.UNAUTHORIZED).end()
@@ -313,64 +296,145 @@ app.get("/api/v1/retrieve", (req, res) => {
   }
   const userId = userIdOf(req)
   doTransaction(res, async (D) => {
+    let representingClub = undefined
+
     let relatedClubs = undefined
-    if (req.query.relatedClubs) {
+    if (req.query.relatedClubs !== undefined) {
       relatedClubs = {
         joined: [],
         subscribed: [],
       }
-      let result = await D.Joins.filterByUser(userId)
-      for (const club of result) {
-        relatedClubs.joined.push(club.clubName)
+      {
+        let result = await D.Joins.filterByUser(userId)
+        for (const club of result) {
+          relatedClubs.joined.push(club.clubName)
+        }
       }
-      result = await D.Subscribes.filterByUserNotJoined(userId)
-      for (const club of result) {
-        relatedClubs.subscribed.push(club.clubName)
+      {
+        let result = await D.Subscribes.filterByUserNotJoined(userId)
+        for (const club of result) {
+          relatedClubs.subscribed.push(club.clubName)
+        }
       }
     }
 
     let events = undefined
-    if (req.query.events) {
-      const localToUTC = (localDate) => {
-        return new Date(Date.UTC(
-          localDate.getFullYear(),
-          localDate.getMonth(),
-          localDate.getDate(),
-        ))
-      }
+    if (req.query.events instanceof Object) {
+      events = []
       const start = req.query.events.start
       const end = req.query.events.end
-      events = []
-      const result = await D.Posts.filterByUserRange(userId, start, end)
-      for (const event of result) {
-        events.push({
-          postId: event.postId,
-          clubName: event.clubName,
-          clubColor: event.color,
-          title: event.title,
-          start: localToUTC(event.scheduleStart),
-          end: localToUTC(event.scheduleEnd),
-          isRepresented: event.isRepresented,
-        })
+      if (
+        typeof (start) === "string" &&
+        typeof (end) === "string"
+      ) {
+        const result = await D.Posts.filterByUserRange(userId, start, end)
+        for (const event of result) {
+          events.push({
+            postId: event.postId,
+            clubName: event.clubName,
+            clubColor: event.color,
+            title: event.title,
+            start: localToUTC(event.scheduleStart),
+            end: localToUTC(event.scheduleEnd),
+            isRepresented: event.isRepresented,
+          })
+        }
       }
     }
 
     let search = undefined
-    if (req.query.search) {
-      const q = req.query.search.q
-      const pageString = req.query.search.page
-      const page = Number(pageString)
-      if (!isNaN(page)) {
-        const filterRaw = req.query.search.filter
-        if (filterRaw.length === 0) {
-          search = await D.Posts.filterByQPage(userId, q, page)
-        } else {
-          const filter = []
-          for (const clubName of filterRaw) {
-            filter.push(clubName)
-          }
-          search = await D.Posts.filterByQFilterPage(userId, q, filter, page)
+    if (req.query.search !== undefined) {
+      search = {
+        clubs: [],
+        posts: [],
+      }
+      let q = req.query.search.q
+      if (q === undefined) {
+        q = ""
+      }
+      if (typeof (q) === "string") {
+        if (q.length > 0) {
+          search.clubs = await D.Clubs.filterByQ(q)
         }
+        let page = req.query.search.page
+        if (typeof (page) !== "string") {
+          page = 1
+        } else {
+          page = Number(page)
+          if (!Number.isInteger(page)) {
+            page = 1
+          }
+        }
+        const filter = req.query.search.filter
+        if (Array.isArray(filter)) {
+          if (filter.length === 0) {
+            search.posts = await D.Posts.filterByQPage(userId, q, page)
+          } else {
+            search.posts = await D.Posts.filterByQFilterPage(userId, q, filter, page)
+          }
+        }
+      }
+    }
+
+    let clubProfile = undefined
+    if (typeof (req.query.clubProfile) === "string") {
+      const clubName = req.query.clubProfile
+      const club = await D.Clubs.lookup(clubName)
+      if (club) {
+        clubProfile = {
+          descriptions: club.descriptions,
+          categoryName: club.categoryName,
+        }
+      } else {
+        clubProfile = null
+      }
+    }
+
+    let post = undefined
+    if (typeof (req.query.post) === "string") {
+      const postId = Number(req.query.post)
+      if (Number.isInteger(postId)) {
+        if (!representingClub) {
+          const representing = await D.Represents.lookupByUser(userId)
+          representingClub = representing.clubName
+        }
+        if (representingClub) {
+          const result = await D.Posts.lookupFilterByClub(postId, representingClub)
+          if (result) {
+            post = {
+              clubName: result.clubName,
+              title: result.title,
+              contents: result.contents,
+              start: localToUTC(result.scheduleStart),
+              end: localToUTC(result.scheduleEnd),
+              isRecruit: result.isRecruit,
+              isOnly: result.isOnly,
+            }
+          } else {
+            post = null
+          }
+        } else {
+          post = null
+        }
+      } else {
+        post = null
+      }
+    }
+
+    let clubManageInfo = undefined
+    if (typeof (req.query.clubManageInfo) === "string") {
+      const clubName = req.query.clubManageInfo
+      if (!representingClub) {
+        const representing = await D.Represents.lookupByUser(userId)
+        representingClub = representing.clubName
+      }
+      if (representingClub === clubName) {
+        clubManageInfo = {}
+        clubManageInfo.applicants = await D.JoinRequests.filterByClub(clubName)
+        const joinsResult = await D.Joins.filterByClub(clubName)
+        clubManageInfo.members = joinsResult.map((row) => row.userId)
+      } else {
+        clubManageInfo = null
       }
     }
 
@@ -379,6 +443,9 @@ app.get("/api/v1/retrieve", (req, res) => {
       relatedClubs,
       events,
       search,
+      clubProfile,
+      post,
+      clubManageInfo,
     })
     return
   })
