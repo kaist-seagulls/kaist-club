@@ -92,6 +92,7 @@ body {
   font-size: 15px;
   line-height: 22px;
   color: #808080;
+  white-space: nowrap;
 }
 .big-blue-button{
   /* button */
