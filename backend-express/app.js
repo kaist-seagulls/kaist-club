@@ -381,4 +381,30 @@ app.get("/api/v1/retrieve", (req, res) => {
   })
 })
 
+app.post("/api/v1/reset-password", (req, res) => {
+  const userId = req.userId
+  const code = req.code
+  const password = req.password
+
+  doTransaction(res, async (D) => {
+    const lookupRows = await D.AuthCodes.lookup(userId)
+    if (lookupRows["code"] !== code) {
+      await D.rollback()
+      res.status(StatusCodes.UNAUTHORIZED).end()
+    }
+    const deleteAuthRows = await D.Authcodes.delete(userId, code)
+    if (deleteAuthRows instanceof Error) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).end()
+    }
+    const updateAuthRowsNum = await D.Authcodes.update(userId, password)
+    if (updateAuthRowsNum === 0) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).end()
+    }
+    res.status(StatusCodes.NO_CONTENT).end()
+
+  })
+})
+
 app.listen(3000, () => console.log("[ Listening on port 3000 ]"))
