@@ -385,6 +385,52 @@ app.get("/api/v1/retrieve", (req, res) => {
   })
 })
 
+app.post("/api/v1/update-user-phone", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).end()
+    return
+  }
+  const userId = userIdOf(req)
+  const phone = req.body.phone
+  doTransaction(res, async (D) => {
+    const numAffectedRows = await D.Users.updatePhone(userId, phone)
+    if (numAffectedRows !== 1) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).end()
+      return
+    }
+    await D.commit()
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
+})
+
+app.post("/api/v1/update-user-password", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).end()
+    return
+  }
+  const userId = userIdOf(req)
+  const oldPw = req.body.oldPw
+  doTransaction(res, async (D) => {
+    const user = await D.Users.lookupBySign(userId, oldPw)
+    if (!user) {
+      await D.rollback()
+      res.status(StatusCodes.UNAUTHORIZED).end()
+      return
+    }
+    const newPw = req.body.newPw
+    const numAffectedRows = await D.Users.updatePw(userId, newPw)
+    if (numAffectedRows !== 1) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).end()
+    }
+    await D.commit()
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
+})
+
 app.post("/api/v1/reset-password", (req, res) => {
   if (isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({

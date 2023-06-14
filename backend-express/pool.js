@@ -64,6 +64,13 @@ function buildDataController(conn) {
         )
         return result[0].affectedRows
       },
+      updatePhone: async (userId, phone) => {
+        const result = await conn.execute(
+          "UPDATE Users SET phone = ? WHERE userId = ?",
+          [phone, userId],
+        )
+        return result[0].affectedRows
+      },
       updatePw: async (userId, newPw) => {
         const result = await conn.execute(
           "UPDATE Users SET hashedPw = ? WHERE userId = ?",
