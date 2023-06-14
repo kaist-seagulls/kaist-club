@@ -189,7 +189,7 @@ app.post("/api/v1/sign-in", (req, res) => {
     }
     await D.commit()
     signInAs(req, userId)
-    res.status(StatusCodes.OK).end()
+    res.status(StatusCodes.NO_CONTENT).end()
     return
   })
 })
@@ -238,8 +238,8 @@ app.post("/api/v1/sign-up", (req, res) => {
       return
     }
 
-    const affectedRows = await D.Users.create(userId, phone, pw)
-    if (affectedRows === 0) {
+    const numAffectedRows = await D.Users.create(userId, phone, pw)
+    if (numAffectedRows === 0) {
       await D.rollback()
       res.status(StatusCodes.CONFLICT).json({
         message: "exists",
