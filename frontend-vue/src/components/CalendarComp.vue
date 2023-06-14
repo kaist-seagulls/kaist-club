@@ -69,8 +69,5 @@ export default {
     month: String,
     year: String,
   },
-  onUpdated() {
-    console.log("UPDATED calendar component")
-  },
 }
 </script>
