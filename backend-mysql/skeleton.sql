@@ -150,7 +150,8 @@ ADD
 
 CREATE TABLE
     CreationRequests (
-        clubName VARCHAR(20) PRIMARY KEY,
+        requestId INT AUTO_INCREMENT PRIMARY KEY,
+        clubName VARCHAR(20),
         userId VARCHAR(20) NOT NULL,
         descriptions VARCHAR(100) NOT NULL,
         reqTime TIMESTAMP NOT NULL,
@@ -169,6 +170,7 @@ ADD
 
 INSERT INTO CreationRequests
 VALUES (
+        0,
         'Shakespeare',
         'antony',
         'KAIST English Literature club',
@@ -177,6 +179,7 @@ VALUES (
         Null,
         Null
     ), (
+        0,
         'KISA',
         'ytrewq271828',
         'KAIST International Students Association',

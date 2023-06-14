@@ -96,7 +96,7 @@ app.post("/api/v1/request-newclub", (req, res) => {
       message: "Not signed in",
     })
   }
-  const userId = req.body.userId
+  const userId = req.session.userId
   const categoryName = req.body.categoryName
   const clubName = req.body.clubName
   const description = req.body.description
@@ -110,6 +110,51 @@ app.post("/api/v1/request-newclub", (req, res) => {
         message: "Conflict occurred",
       })
       return
+    }
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
+})
+
+app.post("/api/v1/accept-newclub", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).json({
+      message: "Not signed in",
+    })
+    return
+  }
+  const userId = req.session.userId
+  const requestId = req.body.newClubRequestId
+
+  doTransaction(res, async (D) => {
+    const isAdmin = await D.Users.isAdmin(userId)
+    if (!isAdmin) {
+      res.status(StatusCodes.FORBIDDEN).json({
+        message: "Not an admin",
+      })
+    }
+
+    const clubInfo = await D.CreationRequests.readRequest(requestId)
+    if (!clubInfo) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Not found",
+      })
+    }
+    const clubName = clubInfo["clubName"]
+    const description = clubInfo["descriptions"]
+    const categoryName = clubInfo["categoryName"]
+    const deleteInfo = await D.CreationRequests.deleteRequest(requestId)
+    if (!deleteInfo) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Not found",
+      })
+    }
+
+    const createClub = await D.Clubs.createClub(clubName, description, categoryName)
+    if (!createClub) {
+      res.status(StatusCodes.CONFLICT).json({
+        message: "Adding club to DB failed",
+      })
     }
     res.status(StatusCodes.NO_CONTENT).end()
     return

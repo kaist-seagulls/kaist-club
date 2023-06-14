@@ -34,6 +34,38 @@ function buildDataController(conn) {
     commit: async () => {
       await conn.commit()
     },
+    Clubs: {
+      createClub: async (clubName, description, categoryName) => {
+        const result = await conn.execute(
+          "INSERT INTO Clubs VALUES (?, ?, ?)",
+          [clubName, description, categoryName],
+        )
+        return result[0].affectedRows
+      },
+      lookup: async (clubName) => {
+        const result = await conn.execute(
+          "SELECT * FROM Clubs WHERE clubName = ?",
+          [clubName],
+        )
+        if (result[0].length == 0) {
+          return null
+        } else {
+          return result[0][0]
+        }
+      },
+      filterByQ: async (q) => {
+        const escapedQ = "%" + escapeQ(q) + "%"
+        const result = await conn.execute(
+          `
+            SELECT clubName, categoryName
+            FROM Clubs
+            WHERE clubName LIKE ? OR categoryName LIKE ?
+          `,
+          [escapedQ, escapedQ],
+        )
+        return result[0]
+      },
+    },
     Users: {
       lookup: async (userId) => {
         const result = await conn.execute(
@@ -78,30 +110,12 @@ function buildDataController(conn) {
         )
         return result[0].affectedRows
       },
-    },
-    Clubs: {
-      lookup: async (clubName) => {
+      isAdmin: async (userId) => {
         const result = await conn.execute(
-          "SELECT * FROM Clubs WHERE clubName = ?",
-          [clubName],
+          "SELECT isAdmin FROM Users WHERE userId=?",
+          [userId],
         )
-        if (result[0].length == 0) {
-          return null
-        } else {
-          return result[0][0]
-        }
-      },
-      filterByQ: async (q) => {
-        const escapedQ = "%" + escapeQ(q) + "%"
-        const result = await conn.execute(
-          `
-            SELECT clubName, categoryName
-            FROM Clubs
-            WHERE clubName LIKE ? OR categoryName LIKE ?
-          `,
-          [escapedQ, escapedQ],
-        )
-        return result[0]
+        return result[0][0]["isAdmin"]
       },
     },
     CreationRequests: {
@@ -109,6 +123,20 @@ function buildDataController(conn) {
         const result = await conn.execute(
           "INSERT INTO CreationRequests VALUES (?, ?, ?, NOW(), ?, ?, ?)",
           [clubName, userId, description, categoryName, logoImg, headerImg],
+        )
+        return result[0].affectedRows
+      },
+      readRequest: async (requestId) => {
+        const result = await conn.execute(
+          "SELECT * FROM CreationRequests WHERE requestId=?",
+          [requestId],
+        )
+        return result[0][0]
+      },
+      deleteRequest: async (requestId) => {
+        const result = await conn.execute(
+          "DELETE FROM CreationRequests WHERE requestId=?",
+          [requestId],
         )
         return result[0].affectedRows
       },
