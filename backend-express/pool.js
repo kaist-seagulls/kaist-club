@@ -235,7 +235,7 @@ function buildDataController(conn) {
         const posts = await conn.execute(
           `
             SELECT
-              clubName, title, contents,
+              postId, clubName, title, contents,
               scheduleStart, scheduleEnd, isRecruit, isOnly
             FROM
               (
@@ -287,7 +287,7 @@ function buildDataController(conn) {
         const posts = await conn.execute(
           `
             SELECT
-              clubName, title, contents,
+              postId, clubName, title, contents,
               scheduleStart, scheduleEnd, isRecruit, isOnly
             FROM
               (

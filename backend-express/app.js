@@ -289,6 +289,7 @@ const localToUTC = (localDate) => {
     localDate.getDate(),
   ))
 }
+
 app.get("/api/v1/retrieve", (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.UNAUTHORIZED).end()
@@ -366,12 +367,10 @@ app.get("/api/v1/retrieve", (req, res) => {
           }
         }
         const filter = req.query.search.filter
-        if (Array.isArray(filter)) {
-          if (filter.length === 0) {
-            search.posts = await D.Posts.filterByQPage(userId, q, page)
-          } else {
-            search.posts = await D.Posts.filterByQFilterPage(userId, q, filter, page)
-          }
+        if (!Array.isArray(filter) || filter.length === 0) {
+          search.posts = await D.Posts.filterByQPage(userId, q, page)
+        } else {
+          search.posts = await D.Posts.filterByQFilterPage(userId, q, filter, page)
         }
       }
     }
