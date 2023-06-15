@@ -291,6 +291,7 @@ const localToUTC = (localDate) => {
 }
 
 app.get("/api/v1/retrieve", (req, res) => {
+  console.log("retrieve")
   if (!isSignedIn(req)) {
     res.status(StatusCodes.UNAUTHORIZED).end()
     return
@@ -341,6 +342,7 @@ app.get("/api/v1/retrieve", (req, res) => {
           })
         }
       }
+      console.log(events)
     }
 
     let search = undefined

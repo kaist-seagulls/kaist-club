@@ -227,6 +227,7 @@ export default createStore({
           week.weekEventStackSize = eimax - eimin + 1
         }
       }
+      console.log(weeks)
       return {
         eventStackSize,
         weeks,
