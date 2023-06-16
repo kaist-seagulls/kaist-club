@@ -389,9 +389,9 @@ app.get("/api/v1/retrieve", (req, res) => {
       }
     }
 
-    let post = undefined
-    if (typeof (req.query.post) === "string") {
-      const postId = Number(req.query.post)
+    let postEdit = undefined
+    if (typeof (req.query.postEdit) === "string") {
+      const postId = Number(req.query.postEdit)
       if (Number.isInteger(postId)) {
         if (!representingClub) {
           const representing = await D.Represents.lookupByUser(userId)
@@ -400,7 +400,7 @@ app.get("/api/v1/retrieve", (req, res) => {
         if (representingClub) {
           const result = await D.Posts.lookupFilterByClub(postId, representingClub)
           if (result) {
-            post = {
+            postEdit = {
               clubName: result.clubName,
               title: result.title,
               contents: result.contents,
@@ -410,13 +410,13 @@ app.get("/api/v1/retrieve", (req, res) => {
               isOnly: result.isOnly,
             }
           } else {
-            post = null
+            postEdit = null
           }
         } else {
-          post = null
+          postEdit = null
         }
       } else {
-        post = null
+        postEdit = null
       }
     }
 
@@ -443,7 +443,7 @@ app.get("/api/v1/retrieve", (req, res) => {
       events,
       search,
       clubProfile,
-      post,
+      postEdit,
       clubManageInfo,
     })
     return
