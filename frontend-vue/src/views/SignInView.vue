@@ -2,12 +2,12 @@
   <div class="logo-fixed">
     <img :src="require('@/assets/KAIST-Logo.wine.svg')" width="100">
   </div>
-  <div class="flex-log"> 
+  <div class="flex-log">
     <div class="heading-log">
       Sign In
     </div>
     <div class="input-group">
-      <div class="input-heading"> 
+      <div class="input-heading">
         Email
       </div>
       <div class="many-elements-input">
@@ -43,39 +43,40 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from "vue"
+<script>
 import axios from "axios"
-import { useRouter } from "vue-router"
 
-const router = useRouter()
 const prefix = "api/v1/"
 
-const id = ref("")
-const pw = ref("")
-
-function goForgotPassword() {
-  router.push("/forgotpassword")
-}
-function goHome() {
-  router.push("/")
-}
-function goSignup() {
-  router.push("/signup")
-}
-function login() {
-  axios
-    .post(prefix + "sign-in", {
-      userId: id.value,
-      password: pw.value,
-    })
-    .then(() => {
-      goHome()
-    })
-    .catch(err => {
-      alert(err)
-      console.log(err)
-    })
-  // goHome()
+export default {
+  name: "SignInView",
+  data() {
+    return {
+      id: "",
+      pw: "",
+    }
+  },
+  methods: {
+    goForgotPassword() {
+      this.$router.push("/forgotpassword")
+    },
+    goHome() {
+      this.$router.push("/")
+    },
+    goSignup() {
+      this.$router.push("/singup")
+    },
+    async login() {
+      try {
+        await axios.post(prefix + "sign-in", {
+          userId: this.id,
+          password: this.pw,
+        })
+        this.goHome()
+      } catch (e) {
+        alert(e)
+      }
+    },
+  },
 }
 </script>
