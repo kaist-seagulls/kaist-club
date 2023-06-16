@@ -27,6 +27,7 @@
 
 <script>
 import { useRouter } from "vue-router"
+import api from "@/api"
 const router = useRouter()
 const strongPassword = /(?=.{8,})(?=.*[0-9])((?=.*[a-z])|(?=.*[A-Z]))/
 
@@ -46,26 +47,19 @@ export default {
     },
   },
   methods: {
-    goSignin() {
-      router.push("/signin")
+    goMain() {
+      router.push("/")
     },
-    changePw() {
+    async changePw() {
       if (this.newPw && this.pwConfirmed) {
-        // axios
-        //   .post("/reset-password", {
-        //     userId: id,
-        //     code,
-        //     password: newPw,
-        //   })
-        //   .then(() => {
-        //     goSignin()
-        //   })
-        //   .err(err => {
-        //     alert(err)
-        //     console.log(err)
-        //   })
-        alert("Password changed. Go to signin page.")
-        this.goSignin()
+        try {
+          await api.updateUserPassword(this.oldPw, this.newPw)
+          alert("Password changed successfully")
+          this.goMain()
+        } catch (err) {
+          alert(err)
+          console.log(err)
+        }
       } else if (!this.newPw || !this.pwConfirmed) {
         alert("Please confirm your new password")
       } else {

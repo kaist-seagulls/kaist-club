@@ -32,7 +32,7 @@
 </template>
 
 <script >
-import axios from "axios"
+import api from "@/api"
 
 export default {
   name: "NavBar",
@@ -78,7 +78,7 @@ export default {
     },
     async signOut() {
       try {
-        await axios.post("/api/v1/sign-out")
+        await api.signOut()
         this.$router.push("/signin")
       } catch (e) {
         alert(e)
