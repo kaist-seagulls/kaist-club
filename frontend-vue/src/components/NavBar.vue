@@ -4,7 +4,7 @@
       NavBar
     </div>
     <div>
-      <input :value="query" @input="updateQuery" />
+      <input v-model="q" />
       <button @click="goSearch()">Search</button>
     </div>
     <div>
@@ -37,21 +37,20 @@ import axios from "axios"
 export default {
   name: "NavBar",
   components: {},
-  props: {
-    query: String,
+  data() {
+    return {
+      q: "",
+    }
   },
   methods: {
-    updateQuery(event) {
-      this.$emit("update:query", event.target.value)
-    },
     goSearch() {
-      if (this.q.value === "") {
+      if (this.q === "") {
         this.$router.push("/")
       } else {
         this.$router.push({
           name: "main",
           query: {
-            q: this.q.value,
+            q: this.q,
           },
         })
       }
