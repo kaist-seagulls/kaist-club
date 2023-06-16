@@ -85,10 +85,9 @@
 </template>
 
 <script>
-import axios from "axios"
+import api from "@/api"
 
 const strongPassword = /(?=.{8,})(?=.*[0-9])((?=.*[a-z])|(?=.*[A-Z]))/
-const prefix = "/api/v1"
 
 export default {
   name: "ForgotPasswordView",
@@ -121,10 +120,7 @@ export default {
       if (this.id) {
         console.log(this.id)
         try {
-          await axios.post(prefix + "/send-auth-code", {
-            userId: this.id,
-            purpose: "forgotPassword",
-          })
+          await api.sendAuthCode(this.id, "forgotPassword")
           this.timeLeft = 30
           setTimeout(this.authTimer, 1000)
         } catch (e) {
@@ -134,10 +130,7 @@ export default {
     },
     async confirm() {
       try {
-        await axios.post(prefix + "/check-auth-code", {
-          userId: this.id,
-          code: this.code,
-        })
+        await api.checkAuthCode(this.id, this.code)
         this.isAuthenticated = true
         alert("AUTHENTICATED!")
       } catch (e) {
@@ -155,10 +148,7 @@ export default {
         alert("Please check your password confirmation")
       } else {
         try {
-          await axios.post(prefix + "/reset-password", {
-            userId: this.id,
-            password: this.newPw,
-          })
+          await api.resetPassword(this.id, this.newPw)
           this.goSignin()
         } catch (e) {
           alert(e)
