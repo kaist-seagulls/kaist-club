@@ -403,4 +403,37 @@ body {
 }
 
 /* Calendar fin */
+/* Admin start */
+.flex-admin {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 30px;
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.admin-heading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 800;
+  font-size: 25px;
+  color: #000000;
+}
+
+.admin-columns {
+  display: flex;
+  flex-direction: column;
+  padding-left: 20px;
+  padding-right: 20px;
+  flex-grow: 1;
+  box-sizing: border-box;
+  overflow-y: scroll;
+}
+
+
+/* Admin fin */
 </style>
