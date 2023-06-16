@@ -1,11 +1,5 @@
 import { createStore } from "vuex"
-import axios from "axios"
-import qs from "qs"
 import api from "@/api"
-
-axios.defaults.paramsSerializer = params => {
-  return qs.stringify(params)
-}
 
 const getIntervalOfCalendar = (year, month, firstDayOfWeek) => {
   const startDayOfMonth = (new Date(Date.UTC(year, month - 1))).getUTCDay()
