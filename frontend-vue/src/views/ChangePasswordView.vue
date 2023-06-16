@@ -4,6 +4,10 @@
       ChangePasswordView
     </div>
     <div>
+      <span>Old pw</span>
+      <input type="password" v-model="oldPw" />
+    </div>
+    <div>
       <span>New pw</span>
       <input type="password" v-model="newPw" />
     </div>
@@ -36,6 +40,7 @@ export default {
     return {
       newPw: "",
       confirmNewPw: "",
+      oldPw: "",
     }
   },
   computed: {
