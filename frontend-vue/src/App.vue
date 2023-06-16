@@ -191,6 +191,27 @@ body {
   width: 100%;
 }
 
+.red-msg {
+  display: flex;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300;
+  font-size: 10px;
+  line-height: 15px;
+  color: #FF4646;
+}
+
+.dimmed-msg {
+  display: flex;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300;
+  font-size: 10px;
+  line-height: 15px;
+  color: #FF4646;
+  visibility: hidden;
+}
+
 .text-box-wrong {
   border: 1px solid #FF4646;
   background: #FFF3F3;
@@ -236,26 +257,9 @@ body {
   color: #303030;
 }
 
-.dimmed-msg {
-  display: flex;
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 300;
-  font-size: 10px;
-  line-height: 15px;
-  color: #FF4646;
-  visibility: hidden;
-}
 
-.red-msg {
-  display: flex;
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 300;
-  font-size: 10px;
-  line-height: 15px;
-  color: #FF4646;
-}
+
+
 
 #AUTH-text-box {
   width: 80px;
@@ -397,5 +401,4 @@ body {
   visibility: hidden;
 }
 
-/* Calendar fin */
-</style>
+/* Calendar fin */</style>

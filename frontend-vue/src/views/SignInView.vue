@@ -16,7 +16,7 @@
           @kaist.ac.kr
         </div>
       </div>
-      <div class="no-red-msg">
+      <div class="dimmed-msg">
         Invalid Id
       </div>
     </div>
@@ -27,7 +27,7 @@
       <div>
         <input class="text-box-default" type="password" v-model="pw" />
       </div>
-      <div class="no-red-msg">
+      <div class="dimmed-msg">
         Wrong password
       </div>
     </div>
