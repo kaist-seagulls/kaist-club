@@ -1,6 +1,7 @@
 import { createStore } from "vuex"
 import axios from "axios"
 import qs from "qs"
+import api from "@/api"
 
 axios.defaults.paramsSerializer = params => {
   return qs.stringify(params)
@@ -376,15 +377,9 @@ export default createStore({
   actions: {
     // Actions for filter
     async fetchRelatedClubs(context) {
-      axios
-        .get(prefix + "get-clubs-related")
-        .then(res => {
-          context.commit("updateRelatedClubs", res.data)
-        })
-        .catch(err => {
-          console.log(err)
-          alert(err)
-        })
+      console.log("fetchRelatedClubs")
+      api.fetchRelatedClubs()
+      console.log(context.state.relatedClubs)
     },
     toggleChecked(context, name) {
       if (context.state.checked[name]) {
@@ -424,18 +419,18 @@ export default createStore({
       }
     },
     // Actions for clubprofile
-    fetchClubProfile(context, id) {
-      let apiAddress = prefix + "getdata/assets/logos" + id
-      axios
-        .get(apiAddress) // example api address
-        .then((res) => {
-          context.commit("updateClubInfo", res.data)
-        })
-        .catch((err) => {
-          alert(err)
-          console.log(err)
-        })
-    },
+    // fetchClubProfile(context, id) {
+    //   let apiAddress = prefix + "getdata/assets/logos" + id
+    //   axios
+    //     .get(apiAddress) // example api address
+    //     .then((res) => {
+    //       context.commit("updateClubInfo", res.data)
+    //     })
+    //     .catch((err) => {
+    //       alert(err)
+    //       console.log(err)
+    //     })
+    // },
     async acceptJoin(context, id) {
       let userInfo = context.state.userInfo
       axios
@@ -568,6 +563,21 @@ export default createStore({
         start,
         end,
       })
+      try {
+        let res = await api.retrieve({
+          relatedClubs: true,
+          events: {
+            start,
+            end,
+          },
+        })
+        context.commit("updateRelatedClubs", res.data.relatedClubs)
+        context.commit("updateEvents", res.data.events)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
+      /*
       axios
         .get(prefix + "retrieve", {
           params: {
@@ -585,7 +595,8 @@ export default createStore({
         .catch(err => {
           alert(err)
           console.log(err)
-        })
+        }) 
+        */
     },
     // Actions for userInfo
     // fetchUserInfo(context) {
