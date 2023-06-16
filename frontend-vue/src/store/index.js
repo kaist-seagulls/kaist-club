@@ -16,7 +16,7 @@ export default createStore({
     },
     checked: {},
     noFilter: false,
-    currentClubs: [],
+    currentClubs: {},
     requestsNewClub: {},
     requestsHandover: {},
     clubProfile: {},
@@ -287,9 +287,12 @@ export default createStore({
     },
     //Mutations for admin
     updateAdminInfo(state, adminInfo) {
-      state.currentClubs = adminInfo.clubs
+      state.currentClubs = {}
       state.requestsNewClub = {}
       state.requestsHandover = {}
+      for (const club of adminInfo.currentClubs) {
+        state.currentClubs[club.clubId] = club.clubName
+      }
       for (const request of adminInfo.requestsNewClub) {
         state.requestsNewClub[request.requestNewClubId] = {
           categoryName: request.categoryName,
@@ -463,18 +466,6 @@ export default createStore({
           console(err)
         })
     },
-    async requestHandover(context, id) {
-      let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "request-handover/" + userInfo.representing, id)
-        .then(() => {
-          alert(`Handover request completed: ${userInfo.userId} -> ${id}`)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
-    },
     // Actions for admin
     async fetchAdminInfo(context) {
       axios
@@ -601,6 +592,18 @@ export default createStore({
     //       console.log(err)
     //     })
     // },
+    async requestHandover(context, id) {
+      let userInfo = context.state.userInfo
+      axios
+        .post(prefix + "request-handover/" + userInfo.representing, id)
+        .then(() => {
+          alert(`Handover request completed: ${userInfo.userId} -> ${id}`)
+        })
+        .catch((err) => {
+          alert(err)
+          console(err)
+        })
+    },
   },
   modules: {
   },

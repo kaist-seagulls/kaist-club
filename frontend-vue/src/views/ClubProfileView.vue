@@ -3,17 +3,45 @@
     <div class="t-title">
       ClubProfileView (id={{ props.id }})
     </div>
+    <img src="example-api-address">
     <div>
-      ToFill: ClubProfileView Inners
+      Club Name: {{ clubProfile.name }}
+    </div>
+    <div>
+      Category: {{ clubProfile.category-id }}
+    </div>
+    <div>
+      Description: {{ clubProfile.description }}
     </div>
   </div>
 </template>
 
-<script setup>
-import { defineProps } from "vue"
+<script>
+import axios from "axios"
+import { mapGetters, mapActions } from "vuex"
 
-const props = defineProps({
-  id: String,
-})
-
+export default {
+  name: "ClubProfileView",
+  props: {
+    id: String,
+  },
+  computed: {
+    ...mapGetters({
+      clubProfile: "clubProfile",
+    }),
+  },
+  methods: {
+    fetchLogoImg() {
+      axios
+        .get("api/v1/get-image-example")
+        .then()
+    },
+    ...mapActions({
+      fetchClubProfile: "fetchClubProfile",
+    }),
+  },
+  beforeMount() {
+    this.fetchClubProfile(this.id)
+  },
+}
 </script>
