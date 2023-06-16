@@ -44,9 +44,7 @@
 </template>
 
 <script>
-import axios from "axios"
-
-const prefix = "api/v1/"
+import api from "@/api"
 
 export default {
   name: "SignInView",
@@ -68,10 +66,7 @@ export default {
     },
     async login() {
       try {
-        await axios.post(prefix + "sign-in", {
-          userId: this.id,
-          password: this.pw,
-        })
+        await api.signIn(this.id, this.pw)
         this.goHome()
       } catch (e) {
         alert(e)
