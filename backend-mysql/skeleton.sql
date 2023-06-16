@@ -150,11 +150,14 @@ ADD
 
 CREATE TABLE
     CreationRequests (
-        clubName VARCHAR(20) PRIMARY KEY,
+        requestId INT AUTO_INCREMENT PRIMARY KEY,
+        clubName VARCHAR(20),
         userId VARCHAR(20) NOT NULL,
         descriptions VARCHAR(100) NOT NULL,
         reqTime TIMESTAMP NOT NULL,
-        categoryName VARCHAR(30) NOT NULL
+        categoryName VARCHAR(30) NOT NULL,
+        logoImg LONGBLOB,
+        headerImg LONGBLOB
     );
 
 ALTER TABLE CreationRequests
@@ -167,17 +170,23 @@ ADD
 
 INSERT INTO CreationRequests
 VALUES (
+        0,
         'Shakespeare',
         'antony',
         'KAIST English Literature club',
         "2023-07-07 07:07:07",
-        'Arts'
+        'Arts',
+        Null,
+        Null
     ), (
+        0,
         'KISA',
         'ytrewq271828',
         'KAIST International Students Association',
         "2023-09-09 09:09:09",
-        'Association'
+        'Association',
+        Null,
+        Null
     );
 
 CREATE TABLE
