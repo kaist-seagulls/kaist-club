@@ -103,7 +103,7 @@ app.post("/api/v1/request-newclub", (req, res) => {
   const logoImg = req.body.logoImg
   const headerImg = req.body.headerImg
   doTransaction(res, async (D) => {
-    const numAddRows = await D.CreationRequests.addRequest(categoryName, clubName, description, logoImg, headerImg, userId)
+    const numAddRows = await D.CreationRequests.insertRequest(categoryName, clubName, description, logoImg, headerImg, userId)
     if (!numAddRows) {
       await D.rollback()
       res.status(StatusCodes.CONFLICT).json({
@@ -134,7 +134,7 @@ app.post("/api/v1/accept-newclub", (req, res) => {
       })
     }
 
-    const clubInfo = await D.CreationRequests.readRequest(requestId)
+    const clubInfo = await D.CreationRequests.lookupByRequestId(requestId)
     if (!clubInfo) {
       res.status(StatusCodes.NOT_FOUND).json({
         message: "Not found",
@@ -150,7 +150,7 @@ app.post("/api/v1/accept-newclub", (req, res) => {
       })
     }
 
-    const createClub = await D.Clubs.createClub(clubName, description, categoryName)
+    const createClub = await D.Clubs.insertClub(clubName, description, categoryName)
     if (!createClub) {
       res.status(StatusCodes.CONFLICT).json({
         message: "Adding club to DB failed",
@@ -161,6 +161,110 @@ app.post("/api/v1/accept-newclub", (req, res) => {
   })
 })
 
+app.post("/api/v1/deny-newclub", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).json({
+      message: "Not signed in",
+    })
+    return
+  }
+  const userId = req.session.userId
+  const requestId = req.body.newClubRequestId
+
+  doTransaction(res, async (D) => {
+    const isAdmin = await D.Users.isAdmin(userId)
+    if (isAdmin) {
+      res.status(StatusCodes.FORBIDDEN).json({
+        message: "Not an admin",
+      })
+      return
+    }
+    const deleteInfo = await D.CreationRequests.deleteRequest(requestId)
+    if (!deleteInfo) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Not found",
+      })
+    }
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
+})
+
+app.post("/api/v1/update-club-profile", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).json({
+      message: "Not signed in",
+    })
+    return
+  }
+  const userId = req.session.userId
+  const clubProfileNew = req.body.clubProfile
+  doTransaction(res, async (D) => {
+    const clubName = await D.Represents.lookupByUser(userId)
+    if (!clubName || clubName !== clubProfileNew["name"]) {
+      res.status(StatusCodes.FORBIDDEN).json({
+        message: "Not a representative",
+      })
+      return
+    }
+    const clubRow = await D.Clubs.lookup(clubName)
+    if (!clubRow.length) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Representing club does not exist",
+      })
+      return
+    }
+    const clubDescription = clubProfileNew["description"]
+    const clubCategory = clubRow["category-id"]
+    const clubColor = clubRow["color"]
+
+    const updateResult = await D.Clubs.update(clubDescription, clubCategory, clubColor, clubName)
+    if (!updateResult) {
+      res.status(StatusCodes.CONFLICT).json({
+        message: "Conflict during update",
+      })
+      return
+    }
+
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
+})
+
+app.post("/api/v1/delete-club", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "Not signed In",
+    })
+    return
+  }
+  const userId = req.session.userId
+  const clubName = req.body.clubName
+  doTransaction(res, async (D) => {
+    const isAdmin = await D.Users.isAdmin(userId)
+    if (!isAdmin) {
+      res.status(StatusCodes.FORBIDDEN).json({
+        message: "Not an admin",
+      })
+    }
+    const clubRow = await D.Clubs.lookup(clubName)
+    if (!clubRow.length) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Club not found",
+      })
+    }
+    const deleteResult = await D.Clubs.delete(clubName)
+    if (!deleteResult) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Club not found",
+      })
+    }
+
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
+
+})
 app.post("/api/v1/send-auth-code", (req, res) => {
   if (isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
@@ -202,7 +306,7 @@ app.post("/api/v1/send-auth-code", (req, res) => {
     if (auth) {
       numAffectedRows = await D.AuthCodes.update(userId, code)
     } else {
-      numAffectedRows = await D.AuthCodes.create(userId, code)
+      numAffectedRows = await D.AuthCodes.insert(userId, code)
     }
     if (numAffectedRows !== 1) {
       await D.rollback()
@@ -312,7 +416,7 @@ app.post("/api/v1/sign-up", (req, res) => {
       return
     }
 
-    const numAffectedRows = await D.Users.create(userId, phone, pw)
+    const numAffectedRows = await D.Users.insert(userId, phone, pw)
     if (numAffectedRows === 0) {
       await D.rollback()
       res.status(StatusCodes.CONFLICT).json({
@@ -438,7 +542,7 @@ app.get("/api/v1/get-club-management-info", (req, res) => {
       return
     }
     console.log("asdksdaklsdakl")
-    const checkRepResult = await D.Represents.getClubName(userId)
+    const checkRepResult = await D.Represents.lookupByClubName(userId)
     if (checkRepResult.length === 0) {
       await D.rollback()
       res.status(StatusCodes.FORBIDDEN).json({
@@ -448,13 +552,13 @@ app.get("/api/v1/get-club-management-info", (req, res) => {
     }
     const clubName = checkRepResult[0]["clubName"]
     const applicants = []
-    const checkJoinRequests = await D.JoinRequests.getUsers(clubName)
+    const checkJoinRequests = await D.JoinRequests.lookupByClubName(clubName)
 
     for (let i = 0; i < checkJoinRequests.length; i++) {
       applicants.push(checkJoinRequests[i]["userId"])
     }
     const members = []
-    const checkMembers = await D.Joins.selectUser(clubName)
+    const checkMembers = await D.Joins.filterby(clubName)
 
     for (let j = 0; j < checkMembers.length; j++) {
       members.push(checkMembers[j]["userId"])
@@ -749,8 +853,8 @@ app.post("/api/v1/create-subscription", (req, res) => {
       return
     }
     else {
-      const addSubscription = await D.Subscribes.addSubscription(userId, clubName)
-      if (addSubscription instanceof Error) {
+      const insertSubscription = await D.Subscribes.insertSubscription(userId, clubName)
+      if (!insertSubscription) {
         await D.rollback()
         res.status(StatusCodes.CONFLICT).json({
           message: "Already Subscribed",
@@ -779,7 +883,7 @@ app.post("/api/v1/delete-subscription", (req, res) => {
     }
     else {
       const addSubscription = await D.Subscribes.deleteSubscription(userId, clubName)
-      if (addSubscription instanceof Error) {
+      if (!addSubscription) {
         await D.rollback()
         res.status(StatusCodes.CONFLICT).json({
           message: "Deleting Subscription Failed",

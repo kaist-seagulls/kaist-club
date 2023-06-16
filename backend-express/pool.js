@@ -35,7 +35,7 @@ function buildDataController(conn) {
       await conn.commit()
     },
     Clubs: {
-      createClub: async (clubName, description, categoryName) => {
+      insertClub: async (clubName, description, categoryName) => {
         const result = await conn.execute(
           "INSERT INTO Clubs VALUES (?, ?, ?)",
           [clubName, description, categoryName],
@@ -65,6 +65,24 @@ function buildDataController(conn) {
         )
         return result[0]
       },
+      update: async (clubDescription, clubCategory, clubColor, clubName) => {
+        const result = await conn.execute(
+          `
+            UPDATE Clubs 
+            SET descriptions=?, categoryName=?, color=?
+            WHERE clubName = ?
+          `,
+          [clubDescription, clubCategory, clubColor, clubName],
+        )
+        return result[0].affectedRows
+      },
+      delete: async (clubName) => {
+        const result = await conn.execute(
+          "DELETE FROM Clubs WHERE clubName=?",
+          [clubName],
+        )
+        return result[0].affectedRows
+      },
     },
     Users: {
       lookup: async (userId) => {
@@ -89,7 +107,7 @@ function buildDataController(conn) {
           return result[0][0]
         }
       },
-      create: async (userId, phone, pw) => {
+      insert: async (userId, phone, pw) => {
         const result = await conn.execute(
           "INSERT INTO Users (userId, phone, hashedPw, isAdmin) VALUES (?, ?, ?, FALSE)",
           [userId, phone, hashPw(pw)],
@@ -119,14 +137,14 @@ function buildDataController(conn) {
       },
     },
     CreationRequests: {
-      addRequest: async (categoryName, clubName, description, headerImg, logoImg, userId) => {
+      insertRequest: async (categoryName, clubName, description, headerImg, logoImg, userId) => {
         const result = await conn.execute(
           "INSERT INTO CreationRequests VALUES (?, ?, ?, NOW(), ?, ?, ?)",
           [clubName, userId, description, categoryName, logoImg, headerImg],
         )
         return result[0].affectedRows
       },
-      readRequest: async (requestId) => {
+      lookupByRequestId: async (requestId) => {
         const result = await conn.execute(
           "SELECT * FROM CreationRequests WHERE requestId=?",
           [requestId],
@@ -153,7 +171,7 @@ function buildDataController(conn) {
           return result[0][0]
         }
       },
-      create: async (userId, code) => {
+      insert: async (userId, code) => {
         const result = await conn.execute(
           "INSERT INTO AuthCodes (userId, code, issuedAt) VALUES (?, ?, NOW())",
           [userId, code],
@@ -183,13 +201,7 @@ function buildDataController(conn) {
         )
         return result[0]
       },
-      selectUser: async (clubName) => {
-        const result = await conn.execute(
-          "SELECT userId from Joins WHERE clubName=?",
-          [clubName],
-        )
-        return result[0]
-      },
+
       checkAlreadyJoined: async (userId, clubName) => {
         const result = await conn.execute(
           "SELECT userId, clubName from joins WHERE userId=? and clubName=?",
@@ -213,19 +225,19 @@ function buildDataController(conn) {
         )
         return result[0]
       },
-      addSubscription: async (userId, clubName) => {
+      insertSubscription: async (userId, clubName) => {
         const result = await conn.execute(
           "INSERT INTO Subscribes VALUES(?,?)",
           [userId, clubName],
         )
-        return result
+        return result[0].affectedRows
       },
       deleteSubscription: async (userId, clubName) => {
         const result = await conn.execute(
           "DELETE FROM Subscribes WHERE userId=? AND clubName=?",
           [userId, clubName],
         )
-        return result[0]
+        return result[0].affectedRows
       },
     },
     Represents: {
@@ -240,7 +252,7 @@ function buildDataController(conn) {
           return result[0][0]
         }
       },
-      getClubName: async (userId) => {
+      lookupByClubName: async (userId) => {
         const result = await conn.execute(
           "SELECT * FROM Represents WHERE userId=?",
           [userId],
@@ -256,7 +268,7 @@ function buildDataController(conn) {
         )
         return result[0]
       },
-      getUsers: async (clubName) => {
+      lookupByClubName: async (clubName) => {
         const result = await conn.execute(
           "SELECT userId from JoinRequest where clubName=?",
           [clubName],
