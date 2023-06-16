@@ -4,7 +4,6 @@
       CalendarView (month={{ props.month }}, year={{ props.year }})
     </div>
     <div>
-      ToFill: CalendarView Inners
       <CalendarComp :month="month" :year="year" />
     </div>
   </div>

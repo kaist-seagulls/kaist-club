@@ -1,26 +1,36 @@
 <template>
-  <div>
-    calendar component
-  </div>
-  <div>
-    <div style="display: flex">
-      <button @click=goPrev()>PREV</button>
-      <div>{{ year }} - {{ month }}</div>
-      <button @click=goNext()>NEXT</button>
+  <div class="calendar-view">
+    <div class="calendar-heading">
+      <button @click=goPrev()>◀</button>
+      <div class="calendar-heading-text">{{ monthString[month - 1] }} {{ year }} </div>
+      <button @click=goNext()>▶</button>
     </div>
-    <div v-if="calendarRepresentation">
-      <div v-for="week in calendarRepresentation.weeks" :key="week">
-        <h1>WEEK {{ week.weekNumber }}</h1>
-        <div v-for="day in week.days" :key="day">
-          <h3>
-            {{ day.year }}-{{ day.month }}-{{ day.date }}-{{ dayString[day.day] }}
-          </h3>
-          <div v-for="(e, eventIdx) in day.events" :key="eventIdx">
-            {{ e ? ("EVENT " + String(eventIdx) + ": " + e.title) : "" }}
+    <div class="calendar">
+      <div class="day-of-week">Sun</div>
+      <div class="day-of-week">Mon</div>
+      <div class="day-of-week">Tue</div>
+      <div class="day-of-week">Wed</div>
+      <div class="day-of-week">Thu</div>
+      <div class="day-of-week">Fri</div>
+      <div class="day-of-week">Sat</div>
+      <template v-if="calendarRepresentation">
+        <template v-for="week in calendarRepresentation.weeks" :key="week">
+          <div v-for="day in week.days" :key="day">
+            <div class="calendar-flex" id="dimmed-date" v-if="day.month !== Number(month)">
+              {{ day.date }}
+            </div>
+            <div class="calendar-flex" v-else>
+              {{ day.date }}
+            </div>
+            <div v-for="(e, eventIdx) in day.events" :key="eventIdx">
+              {{ e ? ("EVENT " + String(eventIdx) + ": " + e.title) : "" }}
+            </div>
           </div>
-        </div>
-      </div>
+        </template>
+      </template>
     </div>
+
+
   </div>
 </template>
 <script>
@@ -31,6 +41,7 @@ export default {
   data() {
     return {
       dayString: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      monthString: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
     }
   },
   computed: {
@@ -68,9 +79,6 @@ export default {
   props: {
     month: String,
     year: String,
-  },
-  onUpdated() {
-    console.log("UPDATED calendar component")
   },
 }
 </script>

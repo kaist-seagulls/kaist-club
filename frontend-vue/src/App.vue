@@ -13,12 +13,15 @@ const layout = computed(() => useRoute().meta.layout)
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
 :root {
   --color-g5: #000000;
 }
+
 body {
   margin: 0
 }
+
 #app {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -46,25 +49,28 @@ body {
 .t-flex {
   display: flex;
 }
+
 /* Log */
-.logo-fixed{
-  position:fixed;
-  top:0;
-  left:0;
+.logo-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
 }
-.flex-log{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform: translate(-50%,-50%);
-  display:flex;
+
+.flex-log {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
   flex-direction: column;
   align-items: stretch;
   margin-right: auto;
   margin-left: auto;
   width: 600px;
 }
-.heading-log{
+
+.heading-log {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 600;
@@ -77,14 +83,17 @@ body {
   margin-top: 70px;
   margin-bottom: 10px;
 }
-.input-group{
+
+.input-group {
   margin-top: 5px;
   margin-bottom: 5px;
 }
-.many-elements-input{
-  display:flex;
+
+.many-elements-input {
+  display: flex;
 }
-.input-heading{
+
+.input-heading {
   display: flex;
   font-family: 'Inter';
   font-style: normal;
@@ -94,14 +103,15 @@ body {
   color: #808080;
   white-space: nowrap;
 }
-.big-blue-button{
+
+.big-blue-button {
   /* button */
   background-color: #18408C;
   border-radius: 5px;
-  border:none;
+  border: none;
   height: 30pt;
-  padding:0;
-  width:100%;
+  padding: 0;
+  width: 100%;
   margin-top: 15pt;
   margin-bottom: 10pt;
   /* text */
@@ -113,14 +123,15 @@ body {
   color: #FFFFFF;
   cursor: pointer;
 }
-.blue-button{
+
+.blue-button {
   /* button */
   background-color: #18408C;
   border-radius: 5px;
-  border:none;
-  padding-left:10px;
-  padding-right:10px;
-  margin-left:10px;
+  border: none;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-left: 10px;
   /* text */
   font-family: 'Inter';
   font-style: normal;
@@ -130,37 +141,42 @@ body {
   color: #FFFFFF;
   cursor: pointer;
 }
-.text-box-default{
+
+.text-box-default {
   border: 1px solid #D8D8D8;
   border-radius: 5px;
   height: 25pt;
-  padding-right:10px;
+  padding-right: 10px;
   padding-left: 10px;
-  width:100%;
+  width: 100%;
   box-sizing: border-box;
 }
-.text-box-default:focus{
+
+.text-box-default:focus {
   border: 1px solid #D8D8D8;
   background: #F8F8F8;
   border-radius: 5px;
   height: 25pt;
   padding-left: 10px;
-  width:100%;
+  width: 100%;
 }
-.text-box-wrong{
+
+.text-box-wrong {
   border: 1px solid #FF4646;
   background: #FFF3F3;
   border-radius: 5px;
   height: 25pt;
   padding-left: 10px;
-  width:100%;
+  width: 100%;
 }
-#forgot-pw{
-  margin-right:0;
+
+#forgot-pw {
+  margin-right: 0;
   margin-top: 0;
   margin-bottom: 0;
 }
-.link{
+
+.link {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 300;
@@ -176,7 +192,8 @@ body {
 
   cursor: pointer;
 }
-.kaist-mail{
+
+.kaist-mail {
   display: flex;
   align-items: center;
   margin-left: 10px;
@@ -189,8 +206,8 @@ body {
   color: #303030;
 }
 
-.no-red-msg{
-  display:flex;
+.no-red-msg {
+  display: flex;
   font-family: 'Inter';
   font-style: normal;
   font-weight: 300;
@@ -198,8 +215,9 @@ body {
   line-height: 15px;
   visibility: hidden;
 }
-.red-msg{
-  display:flex;
+
+.red-msg {
+  display: flex;
   font-family: 'Inter';
   font-style: normal;
   font-weight: 300;
@@ -207,12 +225,14 @@ body {
   line-height: 15px;
   color: #FF4646;
 }
-#AUTH-text-box{
-  width:80px;
-  margin-left:10px;
+
+#AUTH-text-box {
+  width: 80px;
+  margin-left: 10px;
 }
-.star{
-  width:100%;
+
+.star {
+  width: 100%;
   text-align: right;
   font-family: 'Inter';
   font-style: normal;
@@ -221,8 +241,90 @@ body {
   line-height: 22px;
   color: #FF4646;
 }
-#email-star{
-  width:215px;
+
+#email-star {
+  width: 215px;
 }
+
 /* LOG fin */
+/* Calendar start */
+
+.calendar-view {
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-right: auto;
+  margin-left: auto;
+  width: 600px;
+}
+
+.calendar-heading {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.calendar {
+  display: grid;
+  grid-template: repeat(5, 1fr)/repeat(7, 1fr);
+}
+
+.calendar-heading-text {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 58px;
+  color: #000000;
+
+  margin: 10px;
+}
+
+.day-of-week {
+  justify-content: space-around;
+  border: 1px #303030;
+}
+
+.days {
+  display: flex;
+  justify-content: space-around;
+}
+
+th {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 17px;
+  line-height: 58px;
+  color: #000000;
+}
+
+.day-of-week {
+  display: flex;
+  justify-content: center;
+  padding: 5px;
+  background-color: #F8F8F8;
+}
+
+.calendar-flex {
+  display: flex;
+  justify-content: center;
+  padding: 5px;
+}
+
+.day-of-week:nth-child(7n+1) {
+  color: #A4423E;
+}
+
+.day-of-week:nth-child(7n) {
+  color: #0D2959;
+}
+
+
+#dimmed-date {
+  visibility: hidden;
+}
+
+/* Calendar fin */
 </style>
