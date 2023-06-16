@@ -8,8 +8,15 @@
     <slot />
   </div>
 </template>
-<script setup>
+<script>
 import NavBar from "@/components/NavBar.vue"
 import FilterBox from "@/components/FilterBox.vue"
 
+export default {
+  name: "AdminView",
+  components: {
+    NavBar,
+    FilterBox,
+  },
+}
 </script>
