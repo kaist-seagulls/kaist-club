@@ -94,9 +94,8 @@
 </template>
 
 <script>
-import axios from "axios"
+import api from "@/api"
 
-const prefix = "/api/v1/"
 const strongPassword = /(?=.{8,})(?=.*[0-9])((?=.*[a-z])|(?=.*[A-Z]))/
 
 export default {
@@ -132,10 +131,7 @@ export default {
     async askCode() {
       if (this.id) {
         try {
-          await axios.post(prefix + "send-auth-code", {
-            userId: this.id,
-            purpose: "signUp",
-          })
+          await api.sendAuthCode(this.id, "signUp")
           this.timeLeft = 30
           setTimeout(this.authTimer, 1000)
         } catch (e) {
@@ -147,10 +143,7 @@ export default {
       if (this.id) {
         if (this.code) {
           try {
-            await axios.post(prefix + "check-auth-code", {
-              userId: this.id,
-              code: this.code,
-            })
+            await api.checkAuthCode(this.id, this.code)
             this.isAuthenticated = true
             alert("AUTHENTICATED!")
           } catch (e) {
@@ -168,11 +161,7 @@ export default {
         alert("Please check your password confirmation")
       } else {
         try {
-          await axios.post(prefix + "/sign-up", {
-            userId: this.id,
-            password: this.pw,
-            phone: this.phone,
-          })
+          await api.signUp(this.id, this.code, this.pw, this.phone)
           this.goSignin()
         } catch (e) {
           alert(e)

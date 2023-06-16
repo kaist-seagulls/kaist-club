@@ -170,6 +170,7 @@ app.post("/api/v1/send-auth-code", (req, res) => {
   }
   const purpose = req.body.purpose
   const userId = req.body.userId
+  console.log(req.body)
   doTransaction(res, async (D) => {
     const user = await D.Users.lookup(userId)
     if (
@@ -275,6 +276,7 @@ app.post("/api/v1/sign-out", (req, res) => {
 })
 
 app.post("/api/v1/sign-up", (req, res) => {
+  console.log(req.body)
   if (isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "signedIn",

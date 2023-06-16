@@ -7,8 +7,6 @@ axios.defaults.paramsSerializer = params => {
   return qs.stringify(params)
 }
 
-const prefix = "/api/v1/"
-
 const getIntervalOfCalendar = (year, month, firstDayOfWeek) => {
   const startDayOfMonth = (new Date(Date.UTC(year, month - 1))).getUTCDay()
   const startRelDayOfMonth = (startDayOfMonth + 7 - firstDayOfWeek) % 7
@@ -569,14 +567,12 @@ export default createStore({
         const firstDayOfWeek = payload.firstDayOfWeek ? payload.firstDayOfWeek : 0
         const [start, end] = getIntervalOfCalendar(year, month, firstDayOfWeek)
         try {
-          const res = await axios.get(prefix + "retrieve", {
-            params: {
-              requiredAuthority: "i",
-              relatedClubs: true,
-              events: {
-                start,
-                end,
-              },
+          const res = await api.retrieve({
+            requiredAuthority: "i",
+            relatedClubs: true,
+            events: {
+              start,
+              end,
             },
           })
           context.commit("updateBoundaryDates", { start, end })
@@ -589,12 +585,10 @@ export default createStore({
         }
       } else if (viewName === "club") {
         try {
-          const res = await axios.get(prefix + "retrieve", {
-            params: {
-              requiredAuthority: "i",
-              relatedClubs: true,
-              clubProfile: to.params.clubName,
-            },
+          const res = await api.retrieve({
+            requiredAuthority: "i",
+            relatedClubs: true,
+            clubProfile: to.params.clubName,
           })
           context.commit("updateRelatedClubs", res.data.relatedClubs)
           if (!res.data.clubProfile) {
