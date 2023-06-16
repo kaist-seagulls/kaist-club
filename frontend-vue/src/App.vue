@@ -132,6 +132,7 @@ body {
   padding-left: 10px;
   padding-right: 10px;
   margin-left: 10px;
+  width: 130px;
   /* text */
   font-family: 'Inter';
   font-style: normal;
@@ -142,8 +143,37 @@ body {
   cursor: pointer;
 }
 
+.blue-button-blocked {
+  /* button */
+  background-color: #0D2959;
+  border-radius: 5px;
+  border: none;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-left: 10px;
+  width: 130px;
+  /* text */
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 24px;
+  color: #000000;
+}
+
 .text-box-default {
   border: 1px solid #D8D8D8;
+  border-radius: 5px;
+  height: 25pt;
+  padding-right: 10px;
+  padding-left: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.text-box-blocked {
+  border: 1px solid #000000;
+  background: #808080;
   border-radius: 5px;
   height: 25pt;
   padding-right: 10px;
@@ -206,13 +236,14 @@ body {
   color: #303030;
 }
 
-.no-red-msg {
+.dimmed-msg {
   display: flex;
   font-family: 'Inter';
   font-style: normal;
   font-weight: 300;
   font-size: 10px;
   line-height: 15px;
+  color: #FF4646;
   visibility: hidden;
 }
 

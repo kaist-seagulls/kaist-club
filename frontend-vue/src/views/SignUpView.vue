@@ -70,7 +70,9 @@
       </button>
     </div>
     <div class="link">
-      <a @click="goSignin()">Sign in</a>
+      <a @click="goSignin()">
+        Sign in
+      </a>
     </div>
   </div>
 </template>
