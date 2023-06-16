@@ -75,90 +75,93 @@
   </div>
 </template>
 
-<script setup>
+<script>
 import axios from "axios"
-import { ref, computed } from "vue"
-import { useRouter } from "vue-router"
-
-const router = useRouter()
 
 const prefix = "/api/v1/"
-
-const id = ref("")
-const pw = ref("")
-const confirmPw = ref("")
-const phone = ref("")
-const code = ref("")
-const authStatus = computed(() => "wait for resend: " + timeLeft.value + "s")
-const timeLeft = ref(0)
-
 const strongPassword = /(?=.{8,})(?=.*[0-9])((?=.*[a-z])|(?=.*[A-Z]))/
-const isStrongPw = computed(() => strongPassword.test(pw.value))
-const pwConfirmed = computed(() => pw.value === confirmPw.value)
 
-function authTimer() {
-  if (timeLeft.value) {
-    timeLeft.value--
-    setTimeout(authTimer, 1000)
-  }
-}
-
-function askCode() {
-  if (id.value) {
-    axios
-      .post(prefix + "send-auth-code", {
-        userId: id.value,
-        purpose: "signUp",
-      })
-      .then(() => {
-        timeLeft.value = 30
-        setTimeout(authTimer, 1000)
-      })
-      .catch(err => {
-        alert(err)
-        console.log(err)
-      })
-    // timeLeft.value = 5
-    // setTimeout(authTimer, 1000)
-  }
-}
-async function auth() {
-  if (id.value) {
-    if (code.value) {
-      try {
-        await axios.post(
-          prefix + "check-auth-code",
-          { userId: id.value, code: code.value },
-        )
-        alert("Authenticated!")
-      } catch (e) {
-        alert(e)
+export default {
+  data() {
+    return {
+      id: "",
+      pw: "",
+      confirmPw: "",
+      phone: "",
+      code: "",
+      timeLeft: 0,
+    }
+  },
+  computed: {
+    authStatus() {
+      return "wait for resend: " + this.timeLeft
+    },
+    isStrongPw() {
+      return strongPassword.test(this.pw)
+    },
+    pwConfirmed() {
+      return this.pw === this.confirmPw
+    },
+  },
+  methods: {
+    authTimer() {
+      if (this.timeLeft) {
+        this.timeLeft -= 1
+        setTimeout(this.authTimer, 1000)
       }
-    }
-  }
-}
-async function signup() {
-  if (isStrongPw.value && pwConfirmed.value && code.value) {
-    try {
-      await axios.post(
-        prefix + "sign-up",
-        {
-          userId: id.value,
-          password: pw.value,
-          phone: phone.value,
-        },
-      )
-      goSignin()
-    } catch (e) {
-      alert(e)
-    }
-  } else if (!isStrongPw.value || !pwConfirmed.value) {
-    alert("Please confirm your new password")
-  } else {
-    alert("Type the authentication code: Please check your email box")
-  }
-}
-function goSignin() {
-  router.push("/signin")
+    },
+    async askCode() {
+      if (this.id) {
+        try {
+          await axios.post(prefix + "send-auth-code", {
+            userId: this.id,
+            purpose: "signUp",
+          })
+          this.timeLeft = 30
+          setTimeout(this.authTimer, 1000)
+        } catch (e) {
+          alert(e)
+        }
+      }
+    },
+    async auth() {
+      if (this.id) {
+        if (this.code) {
+          try {
+            await axios.post(prefix + "check-auth-code", {
+              userId: this.id,
+              code: this.code,
+            })
+            alert("AUTHENTICATED!")
+          } catch (e) {
+            alert(e)
+          }
+        }
+      }
+    },
+    async signup() {
+      if (!this.pw) {
+        alert("Enter your password")
+      } else if (!this.isStrongPw) {
+        alert("Please check your password is valid")
+      } else if (!this.pwConfirmed) {
+        alert("Please check your password confirmation")
+      } else {
+        try {
+          await axios.post(prefix + "/sign-up", {
+            userId: this.id,
+            password: this.pw,
+            phone: this.phone,
+          })
+          this.goSignin()
+        } catch (e) {
+          alert(e)
+        }
+      }
+    },
+    goSignin() {
+      this.$router.push("/signin")
+    },
+  },
 }
 </script>
