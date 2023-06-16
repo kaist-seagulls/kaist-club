@@ -7,7 +7,7 @@ axios.defaults.paramsSerializer = params => {
 
 const prefix = "/api/v1/"
 
-async function requestNewClub(categoryId, clubName, description) {
+async function requestNewclub(categoryId, clubName, description) {
   return await axios.post(prefix + "request-newclub", { categoryId, clubName, description })
 }
 async function acceptNewclub(newClubRequestId) {
@@ -34,14 +34,14 @@ async function denyHandover(requestHandoverId) {
 async function requestJoin(clubName) {
   return await axios.post(prefix + "request-join/" + clubName)
 }
-async function acceptJoin(clubName, clubId) {
-  return await axios.post(prefix + "accept-join/" + clubName, { clubId })
+async function acceptJoin(clubName, userId) {
+  return await axios.post(prefix + "accept-join/" + clubName, { userId })
 }
-async function denyJoin(clubName, clubId) {
-  return await axios.post(prefix + "deny-join/" + clubName, { clubId })
+async function denyJoin(clubName, userId) {
+  return await axios.post(prefix + "deny-join/" + clubName, { userId })
 }
-async function getOuttaMyClubDude(clubName, clubId) {
-  return await axios.post(prefix + "get-outta-my-club-dude/" + clubName, { clubId })
+async function getOuttaMyClubDude(clubName, userId) {
+  return await axios.post(prefix + "get-outta-my-club-dude/" + clubName, { userId })
 }
 async function createPost(clubName, postInfo) {
   return await axios.post(prefix + "create-post/" + clubName, { postInfo })
@@ -94,7 +94,7 @@ async function retrieve(params) {
 
 export default {
   retrieve,
-  requestNewClub,
+  requestNewclub,
   acceptNewclub,
   denyNewclub,
   updateClubProfile,

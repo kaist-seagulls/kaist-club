@@ -433,117 +433,88 @@ export default createStore({
     // },
     async acceptJoin(context, id) {
       let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "accept-join/" + userInfo.representing, id)
-        .then(() => {
-          context.commit("eraseApplicant", id)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
+      try {
+        await api.acceptJoin(userInfo.representing, id)
+        context.commit("eraseApplicant", id)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
     async denyJoin(context, id) {
       let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "deny-join/" + userInfo.representing, id)
-        .then(() => {
-          context.commit("eraseApplicant", id)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
+      try {
+        await api.denyJoin(userInfo.representing, id)
+        context.commit("eraseApplicant", id)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
     async getOuttaMyClubDude(context, id) {
       let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "get-outta-my-club-dude/" + userInfo.representing, id)
-        .then(() => {
-          context.commit("eraseMember", id)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
+      try {
+        await api.getOuttaMyClubDude(userInfo.representing, id)
+        context.commit("eraseApplicant", id)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
     // Actions for admin
     async fetchAdminInfo(context) {
-      axios
-        .get(prefix + "get-admin-info")
-        .then(res => {
-          context.commit("updateAdminInfo", res.data)
-          console.log(res.data)
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        })
+      try {
+        let res = await api.getAdminInfo()
+        context.commit("updateAdminInfo", res.data)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
     async deleteClub(context, name) {
-      axios
-        .post("delete-club", {
-          name,
-        })
-        .then(() => {
-          context.commit("eraseRequestNewClub", name)
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        })
+      try {
+        await api.deleteClub(name)
+        context.commit("eraseClub", name)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
-    async acceptNewClub(context, newClubId) {
-      axios
-        .post("request-newclub", {
-          newclubRequestId: newClubId,
-        })
-        .then(() => {
-          context.commit("eraseRequestNewClub", newClubId)
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        })
+    async acceptNewclub(context, newClubId) {
+      try {
+        await api.acceptNewclub(newClubId)
+        context.commit("eraseRequestNewClub", newClubId)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
-    async denyNewClub(context, newClubId) {
-      axios
-        .post("deny-newclub", {
-          newclubRequestId: newClubId,
-        })
-        .then(() => {
-          context.commit("eraseRequestNewClub", newClubId)
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        })
+    async denyNewclub(context, newClubId) {
+      try {
+        await api.denyNewclub(newClubId)
+        context.commit("eraseRequestNewClub", newClubId)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
     async acceptHandover(context, handoverId) {
-      axios
-        .post("accept-handover", {
-          handoverId,
-        })
-        .then(() => {
-          context.commit("eraseRequestHandover", handoverId)
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        })
+      try {
+        await api.acceptHandover(handoverId)
+        context.commit("eraseRequestHandover", handoverId)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
     async denyHandover(context, handoverId) {
-      axios
-        .post("deny-handover", {
-          handoverId,
-        })
-        .then(() => {
-          context.commit("eraseRequestHandover", handoverId)
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        })
+      try {
+        await api.denyHandover(handoverId)
+        context.commit("eraseRequestHandover", handoverId)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
     // Actions for calendar
     async fetchCalendar(context, payload) {
@@ -577,26 +548,6 @@ export default createStore({
         alert(err)
         console.log(err)
       }
-      /*
-      axios
-        .get(prefix + "retrieve", {
-          params: {
-            relatedClubs: true,
-            events: {
-              start,
-              end,
-            },
-          },
-        })
-        .then((res) => {
-          context.commit("updateRelatedClubs", res.data.relatedClubs)
-          context.commit("updateEvents", res.data.events)
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        }) 
-        */
     },
     // Actions for userInfo
     // fetchUserInfo(context) {
@@ -612,15 +563,13 @@ export default createStore({
     // },
     async requestHandover(context, id) {
       let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "request-handover/" + userInfo.representing, id)
-        .then(() => {
-          alert(`Handover request completed: ${userInfo.userId} -> ${id}`)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
+      try {
+        await api.requestHandover(userInfo.representing, id)
+        alert(`Handover request completed: ${userInfo.userId} -> ${id}`)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
   },
   modules: {

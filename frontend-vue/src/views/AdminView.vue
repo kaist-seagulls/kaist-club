@@ -25,7 +25,7 @@
       </div>
     </div>
     <div>REQUEST FOR HANDOVER
-      <div v-for="(request, id) in requestsHandover" v-bind:key="id">  
+      <div v-for="(request, id) in requestsHandover" v-bind:key="id">
         {{ request.clubName }}
         <div>
           <span>{{ request.fromUserName }}</span>
