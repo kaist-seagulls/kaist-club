@@ -38,86 +38,89 @@
   </div>
 </template>
 
-<script setup>
+<script>
 import axios from "axios"
-import { ref, computed } from "vue"
-import { useRouter } from "vue-router"
-
-const router = useRouter()
-
-const prefix = "/api/v1"
-
-const id = ref("")
-const newPw = ref("")
-const confirmNewPw = ref("")
-const code = ref("")
-const timeLeft = ref(0)
 
 const strongPassword = /(?=.{8,})(?=.*[0-9])((?=.*[a-z])|(?=.*[A-Z]))/
-const isStrongPw = computed(() => strongPassword.test(newPw.value))
-const pwConfirmed = computed(() => newPw.value == confirmNewPw.value)
+const prefix = "/api/v1"
 
-function authTimer() {
-  if (timeLeft.value) {
-    timeLeft.value--
-    setTimeout(authTimer, 1000)
-  }
-}
-function auth() {
-  if (id.value) {
-    axios
-      .post(prefix + "/send-auth-code", {
-        userId: id.value,
-        purpose: "forgotPassword",
-      })
-      .then(() => {
-        timeLeft.value = 30
-        setTimeout(authTimer, 1000)
-      })
-      .catch(err => {
-        alert(err)
-        console.log(err)
-      })
-  }
-}
-function confirm() {
-  axios
-    .post(prefix + "/check-auth-code", {
-      userId: id.value,
-      code: code.value,
-    })
-    .then(() => {
-      alert("AUTHENTICATED!")
-    })
-    .catch((err) => {
-      // TODO: add a logic for getting remaining time for resending auth.
-      alert(err)
-      console.log(err)
-    })
-}
-function changePw() {
-  if (newPw.value && pwConfirmed.value && code.value) {
-    axios
-      .post(prefix + "/reset-password", {
-        userId: id.value,
-        password: newPw.value,
-      })
-      .then(() => {
-        goSignin()
-      })
-      .catch(err => {
-        alert(err)
-        console.log(err)
-      })
-    // goSignin()
-  } else if (!newPw.value || !pwConfirmed.value) {
-    alert("Please confirm your new password")
-  } else {
-    alert("Type the authentication code: Please check your email box")
-  }
-}
-function goSignin() {
-  router.push("/signin")
+export default {
+  name: "ForgotPasswordView",
+  data() {
+    return {
+      id: "",
+      newPw: "",
+      confirmNewPw: "",
+      code: "",
+      timeLeft: 0,
+    }
+  },
+  computed: {
+    isStrongPw() {
+      return strongPassword.test(this.newPw)
+    },
+    pwConfirmed() {
+      return this.newPw === this.confirmNewPw
+    },
+  },
+  methods: {
+    authTimer() {
+      if (this.timeLeft) {
+        this.timeLeft -= 1
+        setTimeout(this.authTimer, 1000)
+      }
+    },
+    async auth() {
+      if (this.id) {
+        console.log(this.id)
+        try {
+          await axios.post(prefix + "/send-auth-code", {
+            userId: this.id,
+            purpose: "forgotPassword",
+          })
+          this.timeLeft = 30
+          setTimeout(this.authTimer, 1000)
+        } catch (e) {
+          alert(e)
+        }
+      }
+    },
+    async confirm() {
+      try {
+        await axios.post(prefix + "/check-auth-code", {
+          userId: this.id,
+          code: this.code,
+        })
+        alert("AUTHENTICATED!")
+      } catch (e) {
+        alert(e)
+      }
+    },
+    async changePw() {
+      if (!this.code) {
+        alert("Type the authentication code: Please check your email box")
+      } else if (!this.newPw) {
+        alert("Enter your new password")
+      } else if (!this.isStrongPw) {
+        alert("Please confirm your new password")
+      } else if (!this.pwConfirmed) {
+        alert("Please check your password confirmation")
+      } else {
+        try {
+          await axios.post(prefix + "/reset-password", {
+            userId: this.id,
+            password: this.newPw,
+          })
+          this.goSignin()
+        } catch (e) {
+          alert(e)
+        }
+      }
+    },
+    goSignin() {
+      this.$router.push("/signin")
+    },
+  },
 }
 
 </script>
