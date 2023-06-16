@@ -219,6 +219,7 @@ body {
   height: 25pt;
   padding-left: 10px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 #forgot-pw {
@@ -401,4 +402,5 @@ body {
   visibility: hidden;
 }
 
-/* Calendar fin */</style>
+/* Calendar fin */
+</style>

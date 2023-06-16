@@ -16,16 +16,25 @@
         </div>
       </div>
       <div class="many-elements-input">
-        <input class="text-box-default" type="id" v-model="id" />
+        <input v-if="isAuthenticated == false" class="text-box-default" type="id" v-model="id" />
+        <input v-else class="text-box-blocked" type="id" v-model="id" />
         <div class="kaist-mail">
           @kaist.ac.kr
         </div>
-        <button class="blue-button" @click="askCode()" :disabled="timeLeft">
+        <button v-if="isAuthenticated == false" class="blue-button" @click="askCode()" :disabled="timeLeft">
+          {{ timeLeft ? timeLeft + 's' : 'AUTH' }}
+        </button>
+        <button v-if="isAuthenticated == true" class="blue-button-blocked" @click="askCode()" disabled>
           AUTH
         </button>
-        <span v-if="timeLeft">{{ authStatus }}</span>
-        <input class="text-box-default" id="AUTH-text-box" type="text" v-model="code" />
-        <button class="blue-button" @click="auth()">Confirm</button>
+        <input v-if="isAuthenticated == false" class="text-box-default" id="AUTH-text-box" type="text" v-model="code" />
+        <input v-else class="text-box-blocked" id="AUTH-text-box" type="text" v-model="code" />
+        <button v-if="isAuthenticated == false" class="blue-button" @click="auth()">
+          Confirm
+        </button>
+        <button v-else class="blue-button-blocked" @click="auth()">
+          Confirm
+        </button>
       </div>
     </div>
     <div class="input-group">
@@ -41,6 +50,9 @@
       <div class="red-msg" v-if="!isStrongPw">
         Password must be at least 8 characters including letters and numbers.
       </div>
+      <div class="dimmed-msg" v-else>
+        Password must be at least 8 characters including letters and numbers.
+      </div>
     </div>
     <div class="input-group">
       <div class="input-heading">
@@ -51,8 +63,12 @@
           *
         </div>
       </div>
-      <input class="text-box-default" type="password" v-model="confirmPw" />
+      <input v-if="!pwConfirmed" class="text-box-wrong" type="password" v-model="confirmPw" />
+      <input v-else class="text-box-default" type="password" v-model="confirmPw" />
       <div class="red-msg" v-if="!pwConfirmed">
+        Values do not match
+      </div>
+      <div class="dimmed-msg" v-else>
         Values do not match
       </div>
     </div>
@@ -92,6 +108,7 @@ export default {
       phone: "",
       code: "",
       timeLeft: 0,
+      isAuthenticated: false,
     }
   },
   computed: {
@@ -134,6 +151,7 @@ export default {
               userId: this.id,
               code: this.code,
             })
+            this.isAuthenticated = true
             alert("AUTHENTICATED!")
           } catch (e) {
             alert(e)

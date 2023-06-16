@@ -17,7 +17,7 @@
         </div>
       </div>
       <div class="dimmed-msg">
-        Invalid Id
+        Invalid Email
       </div>
     </div>
     <div class="input-group">
@@ -64,7 +64,7 @@ export default {
       this.$router.push("/")
     },
     goSignup() {
-      this.$router.push("/singup")
+      this.$router.push("/signup")
     },
     async login() {
       try {
