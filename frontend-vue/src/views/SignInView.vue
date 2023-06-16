@@ -11,7 +11,7 @@
         Email
       </div>
       <div class="many-elements-input">
-        <input class="text-box-default" type="id" v-model="id" />
+        <input class="text-box-default" type="id" v-model="id" @keyup.enter="login()" />
         <div class="kaist-mail">
           @kaist.ac.kr
         </div>
@@ -25,7 +25,7 @@
         Password
       </div>
       <div>
-        <input class="text-box-default" type="password" v-model="pw" />
+        <input class="text-box-default" type="password" v-model="pw" @keyup.enter="login()" />
       </div>
       <div class="dimmed-msg">
         Wrong password
