@@ -52,8 +52,8 @@ async function updatePost(clubName, postId, postInfo) {
 async function deletePost(clubName, postId) {
   return await axios.post(prefix + "delete-post." + clubName + "/" + postId)
 }
-async function sendAuthCode(userId) {
-  return await axios.post(prefix + "send-auth-code", { userId })
+async function sendAuthCode(userId, purpose) {
+  return await axios.post(prefix + "send-auth-code", { userId, purpose })
 }
 async function checkAuthCode(userId, code) {
   return await axios.post(prefix + "check-auth-code", { userId, code })
