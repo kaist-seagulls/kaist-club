@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import axios from "axios"
+import api from "@/api"
 import { mapGetters, mapActions } from "vuex"
 
 export default {
@@ -49,28 +49,26 @@ export default {
     handleFileUpload(event) {
       this.file = event.target.files[0]
     },
-    editClubProfile() {
+    async editClubProfile() {
       let profile = {
         categoryId: this.category,
         name: this.clubProfile.name,
         description: this.description,
       }
-      axios
-        .post("/api/v1/update-club-profile" + this.clubProfile.name, profile)
-        .then(() => {
-          this.$router.push("/club/" + this.clubProfile.name)
-        })
-        .catch((err) => {
-          alert(err)
-          console.log(err)
-        })
+      try {
+        await api.updateClubProfile(this.clubProfile.name, profile)
+        this.$router.push("/club/" + this.clubProfile.name)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
     ...mapActions({
       fetchClubProfile: "fetchClubProfile",
     }),
   },
   beforeMount() {
-    try{
+    try {
       this.fetchClubProfile(this.userInfo.representing)
     } finally {
       this.category = this.clubProfile.category
