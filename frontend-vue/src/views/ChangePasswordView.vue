@@ -30,9 +30,7 @@
 </template>
 
 <script>
-import { useRouter } from "vue-router"
 import api from "@/api"
-const router = useRouter()
 const strongPassword = /(?=.{8,})(?=.*[0-9])((?=.*[a-z])|(?=.*[A-Z]))/
 
 export default {
@@ -48,12 +46,15 @@ export default {
       return strongPassword.test(this.newPw)
     },
     pwConfirmed() {
-      return this.newPw == this.confirmNewPw
+      return this.newPw === this.confirmNewPw
     },
   },
   methods: {
     goMain() {
-      router.push("/")
+      this.$router.push("/")
+    },
+    goSignin() {
+      this.$router.push("/signin")
     },
     async changePw() {
       if (this.newPw && this.pwConfirmed) {

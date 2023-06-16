@@ -249,20 +249,16 @@ app.post("/api/v1/check-auth-code", (req, res) => {
 })
 
 app.post("/api/v1/sign-in", (req, res) => {
-  console.log("ssdsdsd")
   const userId = req.body.userId
   const pw = req.body.password
   doTransaction(res, async (D) => {
-    console.log("ssdsdsd")
     const user = await D.Users.lookupBySign(userId, pw)
     if (!user) {
       await D.rollback()
       res.status(StatusCodes.UNAUTHORIZED).end()
       return
     }
-    console.log("ssdsdsd")
     await D.commit()
-    console.log("ssdsdsd")
     signInAs(req, userId)
     res.status(StatusCodes.NO_CONTENT).end()
     return
@@ -350,7 +346,7 @@ app.get("/api/v1/get-admin-info", (req, res) => {
       })
       return
     }
-    console.log("ADMIN")
+
     const readClubResult = (await conn.execute(SQL_READCLUB_ADMIN))[0]
     const readRequestResult = (await conn.execute(SQL_READREQUEST_ADMIN))[0]
     const readHandoverResult = (await conn.execute(SQL_READHANDOVER_ADMIN))[0]
@@ -437,7 +433,6 @@ app.get("/api/v1/get-club-management-info", (req, res) => {
       })
       return
     }
-    console.log("asdksdaklsdakl")
     const checkRepResult = await D.Represents.getClubName(userId)
     if (checkRepResult.length === 0) {
       await D.rollback()
@@ -483,13 +478,45 @@ const localToUTC = (localDate) => {
 }
 
 app.get("/api/v1/retrieve", (req, res) => {
+  const authority = req.query.requiredAuthority
+  if (authority === "n") {
+    if (isSignedIn(req)) {
+      res.status(StatusCodes.FORBIDDEN).end()
+    } else {
+      res.status(StatusCodes.OK).end()
+    }
+    return
+  }
   if (!isSignedIn(req)) {
     res.status(StatusCodes.UNAUTHORIZED).end()
     return
   }
   const userId = userIdOf(req)
   doTransaction(res, async (D) => {
+    const user = await D.Users.lookup(userId)
+    if (!user) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).end()
+      return
+    }
+    const isAdmin = user.isAdmin
+    if (authority === "a") {
+      if (!isAdmin) {
+        await D.rollback()
+        res.status(StatusCodes.FORBIDDEN).end()
+        return
+      }
+    }
+
     let representingClub = undefined
+    const club = await D.Represents.lookupByUser(userId)
+    if (club) {
+      representingClub = club.clubName
+    } else if (authority === "r") {
+      await D.rollback()
+      res.status(StatusCodes.FORBIDDEN).end()
+      return
+    }
 
     let relatedClubs = undefined
     if (req.query.relatedClubs !== undefined) {
@@ -512,7 +539,7 @@ app.get("/api/v1/retrieve", (req, res) => {
     }
 
     let events = undefined
-    if (req.query.events instanceof Object) {
+    if (typeof (req.query.events) === "object") {
       events = []
       const start = req.query.events.start
       const end = req.query.events.end
@@ -536,34 +563,32 @@ app.get("/api/v1/retrieve", (req, res) => {
     }
 
     let search = undefined
-    if (req.query.search !== undefined) {
+    if (typeof (req.query.search) === "object") {
       search = {
         clubs: [],
         posts: [],
       }
       let q = req.query.search.q
-      if (q === undefined) {
+      if (typeof (q) !== "string") {
         q = ""
       }
-      if (typeof (q) === "string") {
-        if (q.length > 0) {
-          search.clubs = await D.Clubs.filterByQ(q)
-        }
-        let page = req.query.search.page
-        if (typeof (page) !== "string") {
+      if (q.length > 0) {
+        search.clubs = await D.Clubs.filterByQ(q)
+      }
+      let page = req.query.search.page
+      if (typeof (page) !== "string") {
+        page = 1
+      } else {
+        page = Number(page)
+        if (!Number.isInteger(page)) {
           page = 1
-        } else {
-          page = Number(page)
-          if (!Number.isInteger(page)) {
-            page = 1
-          }
         }
-        const filter = req.query.search.filter
-        if (!Array.isArray(filter) || filter.length === 0) {
-          search.posts = await D.Posts.filterByQPage(userId, q, page)
-        } else {
-          search.posts = await D.Posts.filterByQFilterPage(userId, q, filter, page)
-        }
+      }
+      const filter = req.query.search.filter
+      if (!Array.isArray(filter) || filter.length === 0) {
+        search.posts = await D.Posts.filterByQPage(userId, q, page)
+      } else {
+        search.posts = await D.Posts.filterByQFilterPage(userId, q, filter, page)
       }
     }
 
@@ -573,6 +598,7 @@ app.get("/api/v1/retrieve", (req, res) => {
       const club = await D.Clubs.lookup(clubName)
       if (club) {
         clubProfile = {
+          clubName: club.clubName,
           descriptions: club.descriptions,
           categoryName: club.categoryName,
         }
@@ -585,10 +611,6 @@ app.get("/api/v1/retrieve", (req, res) => {
     if (typeof (req.query.postEdit) === "string") {
       const postId = Number(req.query.postEdit)
       if (Number.isInteger(postId)) {
-        if (!representingClub) {
-          const representing = await D.Represents.lookupByUser(userId)
-          representingClub = representing.clubName
-        }
         if (representingClub) {
           const result = await D.Posts.lookupFilterByClub(postId, representingClub)
           if (result) {
@@ -613,24 +635,20 @@ app.get("/api/v1/retrieve", (req, res) => {
     }
 
     let clubManageInfo = undefined
-    if (typeof (req.query.clubManageInfo) === "string") {
-      const clubName = req.query.clubManageInfo
-      if (!representingClub) {
-        const representing = await D.Represents.lookupByUser(userId)
-        representingClub = representing.clubName
-      }
-      if (representingClub === clubName) {
+    if (req.query.clubManageInfo !== undefined) {
+      if (representingClub) {
         clubManageInfo = {}
-        clubManageInfo.applicants = await D.JoinRequests.filterByClub(clubName)
-        const joinsResult = await D.Joins.filterByClub(clubName)
+        clubManageInfo.applicants = await D.JoinRequests.filterByClub(representingClub)
+        const joinsResult = await D.Joins.filterByClub(representingClub)
         clubManageInfo.members = joinsResult.map((row) => row.userId)
-      } else {
-        clubManageInfo = null
       }
     }
 
     await D.commit()
     res.status(StatusCodes.OK).json({
+      userId,
+      representingClub,
+      isAdmin,
       relatedClubs,
       events,
       search,

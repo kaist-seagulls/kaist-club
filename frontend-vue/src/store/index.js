@@ -9,6 +9,16 @@ axios.defaults.paramsSerializer = params => {
 
 const prefix = "/api/v1/"
 
+const getIntervalOfCalendar = (year, month, firstDayOfWeek) => {
+  const startDayOfMonth = (new Date(Date.UTC(year, month - 1))).getUTCDay()
+  const startRelDayOfMonth = (startDayOfMonth + 7 - firstDayOfWeek) % 7
+  const start = new Date(Date.UTC(year, month - 1, 1 - startRelDayOfMonth))
+  const endDayOfMonth = (new Date(Date.UTC(year, month, 0))).getUTCDay()
+  const endRelDayOfMonth = (endDayOfMonth + 7 - firstDayOfWeek) % 7
+  const end = new Date(Date.UTC(year, month, 6 - endRelDayOfMonth))
+  return [start, end]
+}
+
 export default createStore({
   state: {
     relatedClubs: {
@@ -244,7 +254,6 @@ export default createStore({
   mutations: {
     // Mutations for filter
     updateRelatedClubs(state, relatedClubs) {
-      console.log("UPDATE_RELATED_CLUBS")
       const clubs = relatedClubs.joined.concat(relatedClubs.subscribed)
       const checked = {}
       for (const club of clubs) {
@@ -516,37 +525,88 @@ export default createStore({
         console.log(err)
       }
     },
-    // Actions for calendar
-    async fetchCalendar(context, payload) {
-      let month = payload.month
-      let year = payload.year
-      let firstDayOfWeek = payload.firstDayOfWeek
-      if (firstDayOfWeek === undefined) {
-        firstDayOfWeek = 0
+    async fetchData(context, payload) {
+      const to = payload.to
+      const viewName = payload.to.name
+      let requiredAuthority = null
+      if (["admin"].includes(viewName)) {
+        requiredAuthority = "a"  // Signed in + Administrator
+      } else if (
+        [
+          "newpost",
+          "editclub",
+          "manageclub",
+        ].includes(viewName)
+      ) {
+        requiredAuthority = "r"  // Signed in + Representative
+      } else if (
+        [
+          "calendar",
+          "changepassword",
+          "club",
+          "newclub",
+          "main",
+          "mypage",
+        ].includes(viewName)
+      ) {
+        requiredAuthority = "i"  // Signed in
+      } else if (
+        [
+          "forgotpassword",
+          "signin",
+          "signup",
+        ].includes(viewName)
+      ) {
+        requiredAuthority = "n"  // Not signed in
+      } else {
+        return  // Doesn't matter
       }
-      const startDayOfMonth = (new Date(Date.UTC(year, month - 1))).getUTCDay()
-      const startRelDayOfMonth = (startDayOfMonth + 7 - firstDayOfWeek) % 7
-      const start = new Date(Date.UTC(year, month - 1, 1 - startRelDayOfMonth))
-      const endDayOfMonth = (new Date(Date.UTC(year, month, 0))).getUTCDay()
-      const endRelDayOfMonth = (endDayOfMonth + 7 - firstDayOfWeek) % 7
-      const end = new Date(Date.UTC(year, month, 6 - endRelDayOfMonth))
-      context.commit("updateBoundaryDates", {
-        start,
-        end,
-      })
-      try {
-        let res = await api.retrieve({
-          relatedClubs: true,
-          events: {
-            start,
-            end,
-          },
-        })
-        context.commit("updateRelatedClubs", res.data.relatedClubs)
-        context.commit("updateEvents", res.data.events)
-      } catch (err) {
-        alert(err)
-        console.log(err)
+      console.log(requiredAuthority)
+
+      if (viewName === "calendar") {
+        const month = Number(to.params.month)
+        const year = Number(to.params.year)
+        const firstDayOfWeek = payload.firstDayOfWeek ? payload.firstDayOfWeek : 0
+        const [start, end] = getIntervalOfCalendar(year, month, firstDayOfWeek)
+        try {
+          const res = await axios.get(prefix + "retrieve", {
+            params: {
+              requiredAuthority: "i",
+              relatedClubs: true,
+              events: {
+                start,
+                end,
+              },
+            },
+          })
+          context.commit("updateBoundaryDates", { start, end })
+          context.commit("updateRelatedClubs", res.data.relatedClubs)
+          context.commit("updateEvents", res.data.events)
+          console.log(res)
+        } catch (e) {
+          alert(e.response.status)
+          throw e
+        }
+      } else if (viewName === "club") {
+        try {
+          const res = await axios.get(prefix + "retrieve", {
+            params: {
+              requiredAuthority: "i",
+              relatedClubs: true,
+              clubProfile: to.params.clubName,
+            },
+          })
+          context.commit("updateRelatedClubs", res.data.relatedClubs)
+          if (!res.data.clubProfile) {
+            throw 404
+          }
+          context.commit("updateClubProfile", res.data.clubProfile)
+        } catch (e) {
+          if (e !== 404) {
+            alert(e.response.status)
+          }
+          throw e
+        }
       }
     },
     // Actions for userInfo
