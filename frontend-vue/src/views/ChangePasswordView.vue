@@ -4,6 +4,10 @@
       ChangePasswordView
     </div>
     <div>
+      <span>Old pw</span>
+      <input type="password" v-model="oldPw" />
+    </div>
+    <div>
       <span>New pw</span>
       <input type="password" v-model="newPw" />
     </div>
@@ -25,44 +29,49 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from "vue"
-import { useRouter } from "vue-router"
-
-const router = useRouter()
-
-const newPw = ref("")
-const confirmNewPw = ref("")
-
+<script>
+import api from "@/api"
 const strongPassword = /(?=.{8,})(?=.*[0-9])((?=.*[a-z])|(?=.*[A-Z]))/
-const isStrongPw = computed(() => strongPassword.test(newPw.value))
-const pwConfirmed = computed(() => newPw.value == confirmNewPw.value)
 
-function changePw() {
-  if (newPw.value && pwConfirmed.value) {
-    // axios
-    //   .post("/reset-password", {
-    //     userId: id,
-    //     code,
-    //     password: newPw,
-    //   })
-    //   .then(() => {
-    //     goSignin()
-    //   })
-    //   .err(err => {
-    //     alert(err)
-    //     console.log(err)
-    //   })
-    alert("Password changed. Go to signin page.")
-    goSignin()
-  } else if (!newPw.value || !pwConfirmed.value) {
-    alert("Please confirm your new password")
-  } else {
-    alert("Type the authentication code: Please check your email box")
-  }
+export default {
+  data() {
+    return {
+      newPw: "",
+      confirmNewPw: "",
+      oldPw: "",
+    }
+  },
+  computed: {
+    isStrongPw() {
+      return strongPassword.test(this.newPw)
+    },
+    pwConfirmed() {
+      return this.newPw === this.confirmNewPw
+    },
+  },
+  methods: {
+    goMain() {
+      this.$router.push("/")
+    },
+    goSignin() {
+      this.$router.push("/signin")
+    },
+    async changePw() {
+      if (this.newPw && this.pwConfirmed) {
+        try {
+          await api.updateUserPassword(this.oldPw, this.newPw)
+          alert("Password changed successfully")
+          this.goMain()
+        } catch (err) {
+          alert(err)
+          console.log(err)
+        }
+      } else if (!this.newPw || !this.pwConfirmed) {
+        alert("Please confirm your new password")
+      } else {
+        alert("Type the authentication code: Please check your email box")
+      }
+    },
+  },
 }
-function goSignin() {
-  router.push("/signin")
-}
-
 </script>

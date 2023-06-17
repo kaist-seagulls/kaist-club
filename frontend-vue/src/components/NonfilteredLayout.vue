@@ -5,7 +5,13 @@
   <NavBar />
   <slot />
 </template>
-<script setup>
+<script>
 import NavBar from "@/components/NavBar.vue"
+export default {
+  name: "NonfilteredLayout",
+  components: {
+    NavBar,
+  },
+}
 
 </script>

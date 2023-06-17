@@ -132,6 +132,7 @@ body {
   padding-left: 10px;
   padding-right: 10px;
   margin-left: 10px;
+  width: 130px;
   /* text */
   font-family: 'Inter';
   font-style: normal;
@@ -142,8 +143,37 @@ body {
   cursor: pointer;
 }
 
+.blue-button-blocked {
+  /* button */
+  background-color: #0D2959;
+  border-radius: 5px;
+  border: none;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-left: 10px;
+  width: 130px;
+  /* text */
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 24px;
+  color: #000000;
+}
+
 .text-box-default {
   border: 1px solid #D8D8D8;
+  border-radius: 5px;
+  height: 25pt;
+  padding-right: 10px;
+  padding-left: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.text-box-blocked {
+  border: 1px solid #000000;
+  background: #808080;
   border-radius: 5px;
   height: 25pt;
   padding-right: 10px;
@@ -161,6 +191,27 @@ body {
   width: 100%;
 }
 
+.red-msg {
+  display: flex;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300;
+  font-size: 10px;
+  line-height: 15px;
+  color: #FF4646;
+}
+
+.dimmed-msg {
+  display: flex;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300;
+  font-size: 10px;
+  line-height: 15px;
+  color: #FF4646;
+  visibility: hidden;
+}
+
 .text-box-wrong {
   border: 1px solid #FF4646;
   background: #FFF3F3;
@@ -168,6 +219,7 @@ body {
   height: 25pt;
   padding-left: 10px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 #forgot-pw {
@@ -206,25 +258,9 @@ body {
   color: #303030;
 }
 
-.no-red-msg {
-  display: flex;
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 300;
-  font-size: 10px;
-  line-height: 15px;
-  visibility: hidden;
-}
 
-.red-msg {
-  display: flex;
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 300;
-  font-size: 10px;
-  line-height: 15px;
-  color: #FF4646;
-}
+
+
 
 #AUTH-text-box {
   width: 80px;
@@ -250,67 +286,107 @@ body {
 /* Calendar start */
 
 .calendar-view {
-
   display: flex;
   flex-direction: column;
   align-items: stretch;
   margin-right: auto;
   margin-left: auto;
-  width: 600px;
+  margin-bottom: 100px;
+  width: 800px;
+
 }
 
 .calendar-heading {
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
 }
 
-.calendar {
+.arrow-button {
+  border: none;
+  background-color: #FFFFFF;
+  cursor: pointer;
+}
+
+.calendar-5-week {
   display: grid;
-  grid-template: repeat(5, 1fr)/repeat(7, 1fr);
+  grid-template: 40px repeat(5, minmax(70px, auto))/repeat(7, 1fr);
+  border-top: 2px solid #303030;
+  border-bottom: 1px solid #808080;
+  background-color: #D8D8D8;
+  grid-gap: 1px;
+}
+
+.calendar-6-week {
+  display: grid;
+  grid-template: 40px repeat(6, minmax(70px, auto))/repeat(7, 1fr);
+  border-top: 2px solid #303030;
+  border-bottom: 1px solid #808080;
+  background-color: #D8D8D8;
+  grid-gap: 1px;
+}
+
+.calendar-5-week>* {
+  background-color: #FFFFFF;
+}
+
+.calendar-6-week>* {
+  background-color: #FFFFFF;
 }
 
 .calendar-heading-text {
   font-family: 'Inter';
   font-style: normal;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 20px;
   line-height: 58px;
   color: #000000;
-
   margin: 10px;
 }
 
-.day-of-week {
-  justify-content: space-around;
-  border: 1px #303030;
-}
-
-.days {
-  display: flex;
-  justify-content: space-around;
-}
-
-th {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 500;
-  font-size: 17px;
-  line-height: 58px;
-  color: #000000;
-}
 
 .day-of-week {
   display: flex;
   justify-content: center;
   padding: 5px;
   background-color: #F8F8F8;
+  border-bottom: 1px solid #D8D8D8;
+
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 15px;
+  color: #000000;
+  align-items: center;
+  text-align: center;
 }
 
 .calendar-flex {
   display: flex;
-  justify-content: center;
+  padding: 10px;
+
+  align-items: flex-start;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  color: #000000;
+}
+
+.event {
+  display: flex;
+  align-items: center;
   padding: 5px;
+  padding-left: 15px;
+  height: 20px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  color: #000000;
+  background-color: #ffd3bd;
 }
 
 .day-of-week:nth-child(7n+1) {
@@ -318,7 +394,7 @@ th {
 }
 
 .day-of-week:nth-child(7n) {
-  color: #0D2959;
+  color: #18408C;
 }
 
 
@@ -327,4 +403,37 @@ th {
 }
 
 /* Calendar fin */
+/* Admin start */
+.flex-admin {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 30px;
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.admin-heading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 800;
+  font-size: 25px;
+  color: #000000;
+}
+
+.admin-columns {
+  display: flex;
+  flex-direction: column;
+  padding-left: 20px;
+  padding-right: 20px;
+  flex-grow: 1;
+  box-sizing: border-box;
+  overflow-y: scroll;
+}
+
+
+/* Admin fin */
 </style>

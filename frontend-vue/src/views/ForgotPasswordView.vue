@@ -1,123 +1,164 @@
 <template>
-  <div class="t-box">
-    <div class="t-title">
-      ForgotPasswordView
+  <div class="logo-fixed">
+    <img :src="require('@/assets/KAIST-Logo.wine.svg')" width="100">
+  </div>
+  <div class="flex-log">
+    <div class="heading-log">
+      Forgot Password?
+    </div>
+    <div class="input-group">
+      <div class="input-heading">
+        <div>
+          Email
+        </div>
+        <div class="star" id="email-star">
+          *
+        </div>
+      </div>
+      <div class="many-elements-input">
+        <input v-if="isAuthenticated == false" class="text-box-default" type="id" v-model="id" @change="timeLeft = 0" />
+        <input v-else class="text-box-blocked" type="id" v-model="id" @change="timeLeft = 0" disabled />
+        <div class="kaist-mail">
+          @kaist.ac.kr
+        </div>
+        <button v-if="isAuthenticated == false" class="blue-button" @click="auth" :disabled="timeLeft">
+          {{ timeLeft ? timeLeft + 's' : 'AUTH' }}
+        </button>
+        <button v-else class="blue-button-blocked" @click="auth" disabled>
+          AUTH
+        </button>
+        <input v-if="isAuthenticated == false" class="text-box-default" id="AUTH-text-box" type="text" v-model="code" />
+        <input v-else class="text-box-blocked" id="AUTH-text-box" type="text" v-model="code" disabled />
+        <button v-if="isAuthenticated == false" class="blue-button" @click="confirm">
+          Confirm
+        </button>
+        <button v-else class="blue-button-blocked" @click="confirm" disabled>
+          Confirm
+        </button>
+      </div>
+    </div>
+    <div class="input-group">
+      <div class="input-heading">
+        <div>
+          Password
+        </div>
+        <div class="star">
+          *
+        </div>
+      </div>
+      <input class="text-box-default" type="password" v-model="newPw" />
+      <div class="red-msg" v-if="!isStrongPw">
+        Password must be at least 8 characters including letters and numbers.
+      </div>
+      <div class="dimmed-msg" v-else>
+        Password must be at least 8 characters including letters and numbers.
+      </div>
+    </div>
+    <div class="input-group">
+      <div class="input-heading">
+        <div>
+          Confirm New Password
+        </div>
+        <div class="star">
+          *
+        </div>
+      </div>
+      <input class="text-box-default" type="password" v-model="confirmNewPw" />
+      <div class="red-msg" v-if="!pwConfirmed">
+        Values do not match.
+      </div>
+      <div class="dimmed-msg" v-else>
+        Values do not match.
+      </div>
     </div>
     <div>
-      <label>
-        <span>Id</span>
-        <input type="id" v-model="id" @change="timeLeft = 0" />
-        <span>@kaist.ac.kr</span>
-      </label>
-      <button @click="auth" :disabled="timeLeft">{{ timeLeft ? timeLeft + 's' : 'AUTH' }}</button>
-      <input type="text" v-model="code" />
-      <button @click="confirm">confirm</button>
-    </div>
-    <div>
-      <span>New pw</span>
-      <input type="password" v-model="newPw" />
-    </div>
-    <div v-if="!isStrongPw">
-      Password must be at least 8 characters including letters and numbers.
-    </div>
-    <div>
-      <span>Confirm new pw</span>
-      <input type="password" v-model="confirmNewPw" />
-    </div>
-    <div v-if="!pwConfirmed">
-      Values do not match.
-    </div>
-    <div>
-
-    </div>
-    <div>
-      <button @click="changePw()">
+      <button class="big-blue-button" @click="changePw()">
         Change password
       </button>
+    </div>
+    <div class="link">
+      <a @click="goSignin()">
+        Sign in
+      </a>
     </div>
   </div>
 </template>
 
-<script setup>
-import axios from "axios"
-import { ref, computed } from "vue"
-import { useRouter } from "vue-router"
-
-const router = useRouter()
-
-const prefix = "/api/v1"
-
-const id = ref("")
-const newPw = ref("")
-const confirmNewPw = ref("")
-const code = ref("")
-const timeLeft = ref(0)
+<script>
+import api from "@/api"
 
 const strongPassword = /(?=.{8,})(?=.*[0-9])((?=.*[a-z])|(?=.*[A-Z]))/
-const isStrongPw = computed(() => strongPassword.test(newPw.value))
-const pwConfirmed = computed(() => newPw.value == confirmNewPw.value)
 
-function authTimer() {
-  if (timeLeft.value) {
-    timeLeft.value--
-    setTimeout(authTimer, 1000)
-  }
-}
-function auth() {
-  if (id.value) {
-    axios
-      .post(prefix + "/send-auth-code", {
-        userId: id.value,
-        purpose: "forgotPassword",
-      })
-      .then(() => {
-        timeLeft.value = 30
-        setTimeout(authTimer, 1000)
-      })
-      .catch(err => {
-        alert(err)
-        console.log(err)
-      })
-  }
-}
-function confirm() {
-  axios
-    .post(prefix + "/check-auth-code", {
-      userId: id.value,
-      code: code.value,
-    })
-    .then(() => {
-      alert("AUTHENTICATED!")
-    })
-    .catch((err) => {
-      // TODO: add a logic for getting remaining time for resending auth.
-      alert(err)
-      console.log(err)
-    })
-}
-function changePw() {
-  if (newPw.value && pwConfirmed.value && code.value) {
-    axios
-      .post(prefix + "/reset-password", {
-        userId: id.value,
-        password: newPw.value,
-      })
-      .then(() => {
-        goSignin()
-      })
-      .catch(err => {
-        alert(err)
-        console.log(err)
-      })
-    // goSignin()
-  } else if (!newPw.value || !pwConfirmed.value) {
-    alert("Please confirm your new password")
-  } else {
-    alert("Type the authentication code: Please check your email box")
-  }
-}
-function goSignin() {
-  router.push("/signin")
+export default {
+  name: "ForgotPasswordView",
+  data() {
+    return {
+      id: "",
+      newPw: "",
+      confirmNewPw: "",
+      code: "",
+      timeLeft: 0,
+      isAuthenticated: false,
+    }
+  },
+  computed: {
+    isStrongPw() {
+      return strongPassword.test(this.newPw)
+    },
+    pwConfirmed() {
+      return this.newPw === this.confirmNewPw
+    },
+  },
+  methods: {
+    authTimer() {
+      if (this.timeLeft) {
+        this.timeLeft -= 1
+        setTimeout(this.authTimer, 1000)
+      }
+    },
+    async auth() {
+      if (this.id) {
+        console.log(this.id)
+        try {
+          await api.sendAuthCode(this.id, "forgotPassword")
+          this.timeLeft = 30
+          setTimeout(this.authTimer, 1000)
+        } catch (e) {
+          alert(e)
+        }
+      }
+    },
+    async confirm() {
+      try {
+        await api.checkAuthCode(this.id, this.code)
+        this.isAuthenticated = true
+        alert("AUTHENTICATED!")
+      } catch (e) {
+        alert(e)
+      }
+    },
+    async changePw() {
+      if (!this.code) {
+        alert("Type the authentication code: Please check your email box")
+      } else if (!this.newPw) {
+        alert("Enter your new password")
+      } else if (!this.isStrongPw) {
+        alert("Please confirm your new password")
+      } else if (!this.pwConfirmed) {
+        alert("Please check your password confirmation")
+      } else {
+        try {
+          await api.resetPassword(this.id, this.newPw)
+          this.goSignin()
+        } catch (e) {
+          alert(e)
+        }
+      }
+    },
+    goSignin() {
+      this.$router.push("/signin")
+    },
+  },
 }
 
 </script>

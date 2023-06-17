@@ -1,7 +1,7 @@
 <template>
   <div class="t-box t-flex-g1">
     <div class="t-title">
-      MainView (q={{ props.q }}, isEmpty={{ props.q === "" ? true : false }})
+      MainView (q={{ q }}, isEmpty={{ q === "" ? true : false }})
     </div>
     <div>
       ToFill: Posts
@@ -9,10 +9,11 @@
   </div>
 </template>
 
-<script setup>
-import { defineProps } from "vue"
-
-const props = defineProps({
-  q: String,
-})
+<script>
+export default {
+  name: "MainView",
+  props: {
+    q: String,
+  },
+}
 </script>

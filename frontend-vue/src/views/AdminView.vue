@@ -1,9 +1,9 @@
 <template>
-  <div class="t-box">
-    <div class="t-title">
-      AdminView
-    </div>
-    <div>CURRENT CLUBS
+  <div class="flex-admin">
+    <div class="admin-columns">
+      <div class="admin-heading">
+        CURRENT CLUBS
+      </div>
       <div v-for="name in currentClubs" v-bind:key="name">
         {{ name }}
         <span @click="deleteClub(name)">
@@ -11,7 +11,10 @@
         </span>
       </div>
     </div>
-    <div>REQUEST FOR NEW CLUBS
+    <div class="admin-columns">
+      <div class="admin-heading">
+        REQUEST FOR NEW CLUBS
+      </div>
       <div v-for="(request, id) in requestsNewClub" v-bind:key="id">
         {{ request.clubName }}
         <div>Requester: {{ request.requestUser }}</div>
@@ -24,8 +27,11 @@
         </span>
       </div>
     </div>
-    <div>REQUEST FOR HANDOVER
-      <div v-for="(request, id) in requestsHandover" v-bind:key="id">  
+    <div class="admin-columns">
+      <div class="admin-heading">
+        REQUEST FOR HANDOVER
+      </div>
+      <div v-for="(request, id) in requestsHandover" v-bind:key="id">
         {{ request.clubName }}
         <div>
           <span>{{ request.fromUserName }}</span>

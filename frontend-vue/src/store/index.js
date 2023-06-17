@@ -1,12 +1,15 @@
 import { createStore } from "vuex"
-import axios from "axios"
-import qs from "qs"
+import api from "@/api"
 
-axios.defaults.paramsSerializer = params => {
-  return qs.stringify(params)
+const getIntervalOfCalendar = (year, month, firstDayOfWeek) => {
+  const startDayOfMonth = (new Date(Date.UTC(year, month - 1))).getUTCDay()
+  const startRelDayOfMonth = (startDayOfMonth + 7 - firstDayOfWeek) % 7
+  const start = new Date(Date.UTC(year, month - 1, 1 - startRelDayOfMonth))
+  const endDayOfMonth = (new Date(Date.UTC(year, month, 0))).getUTCDay()
+  const endRelDayOfMonth = (endDayOfMonth + 7 - firstDayOfWeek) % 7
+  const end = new Date(Date.UTC(year, month, 6 - endRelDayOfMonth))
+  return [start, end]
 }
-
-const prefix = "/api/v1/"
 
 export default createStore({
   state: {
@@ -243,7 +246,6 @@ export default createStore({
   mutations: {
     // Mutations for filter
     updateRelatedClubs(state, relatedClubs) {
-      console.log("UPDATE_RELATED_CLUBS")
       const clubs = relatedClubs.joined.concat(relatedClubs.subscribed)
       const checked = {}
       for (const club of clubs) {
@@ -376,15 +378,9 @@ export default createStore({
   actions: {
     // Actions for filter
     async fetchRelatedClubs(context) {
-      axios
-        .get(prefix + "get-clubs-related")
-        .then(res => {
-          context.commit("updateRelatedClubs", res.data)
-        })
-        .catch(err => {
-          console.log(err)
-          alert(err)
-        })
+      console.log("fetchRelatedClubs")
+      api.fetchRelatedClubs()
+      console.log(context.state.relatedClubs)
     },
     toggleChecked(context, name) {
       if (context.state.checked[name]) {
@@ -424,168 +420,182 @@ export default createStore({
       }
     },
     // Actions for clubprofile
-    fetchClubProfile(context, id) {
-      let apiAddress = prefix + "getdata/assets/logos" + id
-      axios
-        .get(apiAddress) // example api address
-        .then((res) => {
-          context.commit("updateClubInfo", res.data)
-        })
-        .catch((err) => {
-          alert(err)
-          console.log(err)
-        })
-    },
+    // fetchClubProfile(context, id) {
+    //   let apiAddress = prefix + "getdata/assets/logos" + id
+    //   axios
+    //     .get(apiAddress) // example api address
+    //     .then((res) => {
+    //       context.commit("updateClubInfo", res.data)
+    //     })
+    //     .catch((err) => {
+    //       alert(err)
+    //       console.log(err)
+    //     })
+    // },
     async acceptJoin(context, id) {
       let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "accept-join/" + userInfo.representing, id)
-        .then(() => {
-          context.commit("eraseApplicant", id)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
+      try {
+        await api.acceptJoin(userInfo.representing, id)
+        context.commit("eraseApplicant", id)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
     async denyJoin(context, id) {
       let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "deny-join/" + userInfo.representing, id)
-        .then(() => {
-          context.commit("eraseApplicant", id)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
+      try {
+        await api.denyJoin(userInfo.representing, id)
+        context.commit("eraseApplicant", id)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
     async getOuttaMyClubDude(context, id) {
       let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "get-outta-my-club-dude/" + userInfo.representing, id)
-        .then(() => {
-          context.commit("eraseMember", id)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
+      try {
+        await api.getOuttaMyClubDude(userInfo.representing, id)
+        context.commit("eraseApplicant", id)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
     // Actions for admin
     async fetchAdminInfo(context) {
-      axios
-        .get(prefix + "get-admin-info")
-        .then(res => {
-          context.commit("updateAdminInfo", res.data)
-          console.log(res.data)
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        })
+      try {
+        let res = await api.getAdminInfo()
+        context.commit("updateAdminInfo", res.data)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
     async deleteClub(context, name) {
-      axios
-        .post("delete-club", {
-          name,
-        })
-        .then(() => {
-          context.commit("eraseRequestNewClub", name)
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        })
+      try {
+        await api.deleteClub(name)
+        context.commit("eraseClub", name)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
-    async acceptNewClub(context, newClubId) {
-      axios
-        .post("request-newclub", {
-          newclubRequestId: newClubId,
-        })
-        .then(() => {
-          context.commit("eraseRequestNewClub", newClubId)
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        })
+    async acceptNewclub(context, newClubId) {
+      try {
+        await api.acceptNewclub(newClubId)
+        context.commit("eraseRequestNewClub", newClubId)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
-    async denyNewClub(context, newClubId) {
-      axios
-        .post("deny-newclub", {
-          newclubRequestId: newClubId,
-        })
-        .then(() => {
-          context.commit("eraseRequestNewClub", newClubId)
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        })
+    async denyNewclub(context, newClubId) {
+      try {
+        await api.denyNewclub(newClubId)
+        context.commit("eraseRequestNewClub", newClubId)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
     async acceptHandover(context, handoverId) {
-      axios
-        .post("accept-handover", {
-          handoverId,
-        })
-        .then(() => {
-          context.commit("eraseRequestHandover", handoverId)
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        })
+      try {
+        await api.acceptHandover(handoverId)
+        context.commit("eraseRequestHandover", handoverId)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
     async denyHandover(context, handoverId) {
-      axios
-        .post("deny-handover", {
-          handoverId,
-        })
-        .then(() => {
-          context.commit("eraseRequestHandover", handoverId)
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        })
-    },
-    // Actions for calendar
-    async fetchCalendar(context, payload) {
-      let month = payload.month
-      let year = payload.year
-      let firstDayOfWeek = payload.firstDayOfWeek
-      if (firstDayOfWeek === undefined) {
-        firstDayOfWeek = 0
+      try {
+        await api.denyHandover(handoverId)
+        context.commit("eraseRequestHandover", handoverId)
+      } catch (err) {
+        alert(err)
+        console.log(err)
       }
-      const startDayOfMonth = (new Date(Date.UTC(year, month - 1))).getUTCDay()
-      const startRelDayOfMonth = (startDayOfMonth + 7 - firstDayOfWeek) % 7
-      const start = new Date(Date.UTC(year, month - 1, 1 - startRelDayOfMonth))
-      const endDayOfMonth = (new Date(Date.UTC(year, month, 0))).getUTCDay()
-      const endRelDayOfMonth = (endDayOfMonth + 7 - firstDayOfWeek) % 7
-      const end = new Date(Date.UTC(year, month, 6 - endRelDayOfMonth))
-      context.commit("updateBoundaryDates", {
-        start,
-        end,
-      })
-      axios
-        .get(prefix + "retrieve", {
-          params: {
+    },
+    async fetchData(context, payload) {
+      const to = payload.to
+      const viewName = payload.to.name
+      let requiredAuthority = null
+      if (["admin"].includes(viewName)) {
+        requiredAuthority = "a"  // Signed in + Administrator
+      } else if (
+        [
+          "newpost",
+          "editclub",
+          "manageclub",
+        ].includes(viewName)
+      ) {
+        requiredAuthority = "r"  // Signed in + Representative
+      } else if (
+        [
+          "calendar",
+          "changepassword",
+          "club",
+          "newclub",
+          "main",
+          "mypage",
+        ].includes(viewName)
+      ) {
+        requiredAuthority = "i"  // Signed in
+      } else if (
+        [
+          "forgotpassword",
+          "signin",
+          "signup",
+        ].includes(viewName)
+      ) {
+        requiredAuthority = "n"  // Not signed in
+      } else {
+        return  // Doesn't matter
+      }
+      console.log(requiredAuthority)
+
+      if (viewName === "calendar") {
+        const month = Number(to.params.month)
+        const year = Number(to.params.year)
+        const firstDayOfWeek = payload.firstDayOfWeek ? payload.firstDayOfWeek : 0
+        const [start, end] = getIntervalOfCalendar(year, month, firstDayOfWeek)
+        try {
+          const res = await api.retrieve({
+            requiredAuthority: "i",
             relatedClubs: true,
             events: {
               start,
               end,
             },
-          },
-        })
-        .then((res) => {
+          })
+          context.commit("updateBoundaryDates", { start, end })
           context.commit("updateRelatedClubs", res.data.relatedClubs)
           context.commit("updateEvents", res.data.events)
-        })
-        .catch(err => {
-          alert(err)
-          console.log(err)
-        })
+          console.log(res)
+        } catch (e) {
+          alert(e.response.status)
+          throw e
+        }
+      } else if (viewName === "club") {
+        try {
+          const res = await api.retrieve({
+            requiredAuthority: "i",
+            relatedClubs: true,
+            clubProfile: to.params.clubName,
+          })
+          context.commit("updateRelatedClubs", res.data.relatedClubs)
+          if (!res.data.clubProfile) {
+            throw 404
+          }
+          context.commit("updateClubProfile", res.data.clubProfile)
+        } catch (e) {
+          if (e !== 404) {
+            alert(e.response.status)
+          }
+          throw e
+        }
+      }
     },
     // Actions for userInfo
     // fetchUserInfo(context) {
@@ -601,15 +611,13 @@ export default createStore({
     // },
     async requestHandover(context, id) {
       let userInfo = context.state.userInfo
-      axios
-        .post(prefix + "request-handover/" + userInfo.representing, id)
-        .then(() => {
-          alert(`Handover request completed: ${userInfo.userId} -> ${id}`)
-        })
-        .catch((err) => {
-          alert(err)
-          console(err)
-        })
+      try {
+        await api.requestHandover(userInfo.representing, id)
+        alert(`Handover request completed: ${userInfo.userId} -> ${id}`)
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
     },
   },
   modules: {

@@ -18,7 +18,7 @@ import SignInView from "@/views/SignInView.vue"
 import SignUpView from "@/views/SignUpView.vue"
 import UserProfileView from "@/views/UserProfileView.vue"
 import NotFoundView from "@/views/NotFoundView.vue"
-import axios from "axios"
+// import axios from "axios"
 import store from "@/store"
 
 const routes = [
@@ -42,7 +42,7 @@ const routes = [
     component: ChangePasswordView,
   },
   {
-    path: "/club/:id(\\d+)",
+    path: "/club/:clubName",
     name: "club",
     meta: { layout: DefaultLayout },
     component: ClubProfileView,
@@ -120,25 +120,22 @@ router.beforeEach((to, from, next) => {
   // console.log("beforeEach", to, from)
   const cont = async () => {
     try {
-      const userInfo = (await axios.get("/api/v1/get-user-info")).data
-      const userId = userInfo.userId
-      const isAdminString = userInfo.isAdmin ? "an ADMIN" : "NOT an ADMIN"
-      const phone = userInfo.phone
-      const representingClubString = userInfo.representingClub ? userInfo.representingClub : "NO CLUB"
-      console.log(`SIGNED IN AS ${userId}, ${isAdminString}, ${phone}, representing ${representingClubString}`)
-      if (to.name === "calendar") {
-        console.log("CALENDAR VIEW BEFOREEACH")
-        store.dispatch("fetchCalendar", {
-          month: Number(to.params.month),
-          year: Number(to.params.year),
-          firstDayOfWeek: 0,
-        })
+      // const userInfo = (await axios.get("/api/v1/get-user-info")).data
+      // const userId = userInfo.userId
+      // const isAdminString = userInfo.isAdmin ? "an ADMIN" : "NOT an ADMIN"
+      // const phone = userInfo.phone
+      // const representingClubString = userInfo.representingClub ? userInfo.representingClub : "NO CLUB"
+      // console.log(`SIGNED IN AS ${userId}, ${isAdminString}, ${phone}, representing ${representingClubString}`)
+      await store.dispatch("fetchData", { to })
+      next()
+    } catch (e) {
+      if (e === 404) {
+        next("/notfound")
+      } else if (e.response.status === 401) {
+        next("/signin")
+      } else {
+        next("/")
       }
-      next()
-    } catch (err) {
-      console.log(err)
-      alert("NOT SIGNED IN")
-      next()
     }
   }
   cont()

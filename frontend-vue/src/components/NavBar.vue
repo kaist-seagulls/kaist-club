@@ -31,55 +31,60 @@
   </div>
 </template>
 
-<script setup>
-import axios from "axios"
-import { ref } from "vue"
-import { useRouter, useRoute } from "vue-router"
+<script >
+import api from "@/api"
 
-const router = useRouter()
-const route = useRoute()
+export default {
+  name: "NavBar",
+  components: {},
+  data() {
+    return {
+      q: "",
+    }
+  },
+  methods: {
+    goSearch() {
+      if (this.q === "") {
+        this.$router.push("/")
+      } else {
+        this.$router.push({
+          name: "main",
+          query: {
+            q: this.q,
+          },
+        })
+      }
+    },
+    goMain() {
+      this.$router.push("/")
+    },
+    goCreatePost() {
+      this.$router.push("/newpost")
+    },
+    goCreateClub() {
+      this.$router.push("/newclub")
+    },
+    goCalendar() {
+      const today = new Date()
+      const month = (today.getMonth() + 1).toString()
+      const year = today.getFullYear().toString()
+      this.$router.push({
+        name: "calendar",
+        params: { month, year },
+      })
+    },
+    goUserProfile() {
+      this.$router.push("/mypage")
+    },
+    async signOut() {
+      try {
+        await api.signOut()
+        this.$router.push("/signin")
+      } catch (e) {
+        alert(e)
+      }
+    },
+  },
+}
 
-const q = ref(route.query.q || "")
-
-function goSearch() {
-  if (q.value === "") {
-    router.push("/")
-  } else {
-    router.push({
-      name: "main",
-      query: {
-        q: q.value,
-      },
-    })
-  }
-}
-function goMain() {
-  router.push("/")
-}
-function goCreatePost() {
-  router.push("/newpost")
-}
-function goCreateClub() {
-  router.push("/newclub")
-}
-function goCalendar() {
-  const today = new Date()
-  const month = (today.getMonth() + 1).toString()
-  const year = today.getFullYear().toString()
-  router.push({
-    name: "calendar",
-    params: { month, year },
-  })
-}
-function goUserProfile() {
-  router.push("/mypage")
-}
-async function signOut() {
-  try {
-    await axios.post("/api/v1/sign-out")
-    router.push("/signin")
-  } catch (e) {
-    alert(e)
-  }
-}
 </script>

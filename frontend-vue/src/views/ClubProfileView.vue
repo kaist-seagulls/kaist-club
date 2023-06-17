@@ -1,29 +1,29 @@
 <template>
   <div class="t-box t-flex-g1">
     <div class="t-title">
-      ClubProfileView (id={{ props.id }})
+      ClubProfileView (id={{ clubName }})
     </div>
-    <img src="example-api-address">
+    <!-- <img src="example-api-address"> -->
     <div>
-      Club Name: {{ clubProfile.name }}
-    </div>
-    <div>
-      Category: {{ clubProfile.category-id }}
+      Club Name: {{ clubProfile.clubName }}
     </div>
     <div>
-      Description: {{ clubProfile.description }}
+      Category: {{ clubProfile.categoryName }}
+    </div>
+    <div>
+      Description: {{ clubProfile.descriptions }}
     </div>
   </div>
 </template>
 
 <script>
 import axios from "axios"
-import { mapGetters, mapActions } from "vuex"
+import { mapGetters } from "vuex"
 
 export default {
   name: "ClubProfileView",
   props: {
-    id: String,
+    clubName: String,
   },
   computed: {
     ...mapGetters({
@@ -36,12 +36,6 @@ export default {
         .get("api/v1/get-image-example")
         .then()
     },
-    ...mapActions({
-      fetchClubProfile: "fetchClubProfile",
-    }),
-  },
-  beforeMount() {
-    this.fetchClubProfile(this.id)
   },
 }
 </script>

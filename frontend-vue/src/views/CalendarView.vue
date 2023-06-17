@@ -1,7 +1,7 @@
 <template>
   <div class="t-box t-flex-g1">
     <div class="t-title">
-      CalendarView (month={{ props.month }}, year={{ props.year }})
+      CalendarView (month={{ month }}, year={{ year }})
     </div>
     <div>
       <CalendarComp :month="month" :year="year" />
@@ -9,13 +9,18 @@
   </div>
 </template>
 
-<script setup>
-import { defineProps } from "vue"
+<script>
 import CalendarComp from "@/components/CalendarComp.vue"
 
-const props = defineProps({
-  month: String,
-  year: String,
-})
+export default {
+  name: "CalendarView",
+  components: {
+    CalendarComp,
+  },
+  props: {
+    month: String,
+    year: String,
+  },
+}
 
 </script>
