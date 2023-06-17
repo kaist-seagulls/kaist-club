@@ -1,30 +1,65 @@
 <template>
   <div class="t-box">
-    <div class="t-title">
-      ChangePasswordView
-    </div>
-    <div>
-      <span>Old pw</span>
-      <input type="password" v-model="oldPw" />
-    </div>
-    <div>
-      <span>New pw</span>
-      <input type="password" v-model="newPw" />
-    </div>
-    <div v-if="!isStrongPw">
-      Password must be at least 8 characters including letters and numbers.
-    </div>
-    <div>
-      <span>Confirm new pw</span>
-      <input type="password" v-model="confirmNewPw" />
-    </div>
-    <div v-if="!pwConfirmed">
-      Values do not match.
-    </div>
-    <div>
-      <button @click="changePw()">
-        Change password
-      </button>
+
+    <div class="flex-change-pw">
+      <div class="heading-log">
+        Change Password
+      </div>
+      <div class="input-group">
+        <div class="input-heading">
+          <div>
+            Current
+          </div>
+          <div class="star">
+            *
+          </div>
+        </div>
+        <div>
+          <input class="text-box-default" type="password" v-model="oldPw" />
+        </div>
+      </div>
+      <div class="input-group">
+        <div class="input-heading">
+          <div>
+            New Password
+          </div>
+          <div class="star">
+            *
+          </div>
+        </div>
+        <div>
+          <input class="text-box-default" type="password" v-model="newPw" />
+        </div>
+        <div class="red-msg" v-if="!isStrongPw">
+          Password must be at least 8 characters including letters and numbers.
+        </div>
+        <div class="dimmed-msg" v-else>
+          Password must be at least 8 characters including letters and numbers.
+        </div>
+      </div>
+      <div class="input-group">
+        <div class="input-heading">
+          <div>
+            Confirm New Password
+          </div>
+          <div class="star">
+            *
+          </div>
+        </div>
+        <input v-if="!pwConfirmed" class="text-box-wrong" type="password" v-model="confirmNewPw" />
+        <input v-else class="text-box-default" type="password" v-model="confirmNewPw" />
+        <div class="red-msg" v-if="!pwConfirmed">
+          Values do not match.
+        </div>
+        <div class="dimmed-msg" v-else>
+          Values do not match.
+        </div>
+      </div>
+      <div>
+        <button class="big-blue-button" @click="changePw()">
+          Change password
+        </button>
+      </div>
     </div>
   </div>
 </template>

@@ -258,10 +258,6 @@ body {
   color: #303030;
 }
 
-
-
-
-
 #AUTH-text-box {
   width: 80px;
   margin-left: 10px;
@@ -283,6 +279,19 @@ body {
 }
 
 /* LOG fin */
+
+/* ChangePW start */
+.flex-change-pw {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-right: auto;
+  margin-left: auto;
+  width: 600px;
+}
+
+/* Changepw fin */
+
 /* Calendar start */
 
 .calendar-view {
@@ -422,6 +431,7 @@ body {
   font-weight: 800;
   font-size: 25px;
   color: #000000;
+  margin-bottom: 20px;
 }
 
 .admin-columns {
