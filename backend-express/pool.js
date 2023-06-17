@@ -209,6 +209,20 @@ function buildDataController(conn) {
         )
         return result[0]
       },
+      insert: async (userId, clubName) => {
+        const result = await conn.execute(
+          "INSERT INTO Joins VALUES (?, ?)",
+          [userId, clubName],
+        )
+        return result[0].affectedRows
+      },
+      delete: async (userId, clubName) => {
+        const result = await conn.execute(
+          "DELETE FROM Joins WHERE userId=? and clubName=?",
+          [userId, clubName],
+        )
+        return result[0].affectedRows
+      },
     },
     Subscribes: {
       filterByUser: async (userId) => {
@@ -275,8 +289,36 @@ function buildDataController(conn) {
         )
         return result[0]
       },
+      insert: async (userId, clubName) => {
+        const result = await conn.execute(
+          "INSERT INTO JoinRequests VALUES (?, ?, NOW())",
+          [userId, clubName],
+        )
+        return result[0].affectedRows
+      },
+      delete: async (userId, clubName) => {
+        const result = await conn.execute(
+          "DELETE FROM JoinRequests where userId=? AND clubName=?",
+          [userId, clubName],
+        )
+        return result[0].affectedRows
+      },
     },
     Posts: {
+      insert: async (clubName, title, contents, isRecruit, schedule, isOnly) => {
+        const result = await conn.execute(
+          "INSERT INTO Posts VALUES (?, ?, NOW(), ?, ?, ?, ?, ?)",
+          [clubName, title, contents, schedule["startDate"], schedule["endDate"], isRecruit, isOnly],
+        )
+        return result[0].affectedRows
+      },
+      delete: async (postId) => {
+        const result = await conn.execute(
+          "DELETE FROM Posts WHERE postId=?",
+          [postId],
+        )
+        return result[0].affectedRows
+      },
       lookupFilterByClub: async (postId, clubName) => {
         const result = await conn.execute(
           "SELECT * FROM Posts WHERE postId = ? AND clubName = ?",
@@ -413,6 +455,18 @@ function buildDataController(conn) {
           [userId, userId, userId, escapedQ, escapedQ, limitString, offsetString],
         )
         return posts[0]
+      },
+      update: async (postId, clubName, postInfo) => {
+        const title = postInfo["title"]
+        const content = postInfo["content"]
+        const isRecruit = postInfo["isRecruitment"]
+        const schedule = postInfo["schedule"]
+        const isOnly = postInfo["isOnly"]
+        const posts = await conn.execute(
+          "UPDATE Posts SET clubName=?, title=?, uploadTime=NOW(), contents=?, scheduleStart=?, scheduleEnd=?, isRecruit=?, isOnly=? WHERE postId=?",
+          [clubName, title, content, schedule["startDate"], schedule["endDate"], isRecruit, isOnly, postId],
+        )
+        return posts[0].affectedRows
       },
     },
   }
