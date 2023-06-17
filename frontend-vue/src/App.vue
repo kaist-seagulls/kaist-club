@@ -444,6 +444,50 @@ body {
   overflow-y: scroll;
 }
 
-
 /* Admin fin */
+
+/* NavBar start */
+.flex-nav-bar {
+  display: flex;
+  background-color: #EFF1FE;
+  width: 100vw;
+  height: 55px;
+  justify-content: flex-end;
+  align-items: center;
+
+}
+
+.nav-main {
+  margin-left: 270px;
+  margin-right: auto;
+}
+
+.nav-button {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  background-color: transparent;
+  border-color: transparent;
+  margin-left: 15px;
+  margin-right: 15px;
+  cursor: pointer;
+  height: 55px;
+
+  font-weight: 400;
+  font-size: 15px;
+  color: #698FC1;
+
+}
+
+#nav-button-selected {
+  font-weight: 800;
+  border-bottom: 3px solid #18408C;
+  color: #18408C;
+}
+
+.nav-icon {
+  margin-right: 10px;
+}
+
+/* NavBar fin */
 </style>

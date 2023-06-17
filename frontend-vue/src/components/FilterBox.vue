@@ -7,6 +7,10 @@
       <div class="t-title">
         FilterSearchBox
       </div>
+      <div>
+        <input v-model="q" />
+        <button @click="goSearch()">Search</button>
+      </div>
     </div>
     <div class="t-box">
       <div class="t-title">

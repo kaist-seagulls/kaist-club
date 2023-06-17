@@ -1,32 +1,42 @@
 <template>
-  <div class="t-box">
-    <div class="t-title">
-      NavBar
+  <div class="logo-fixed">
+    <img :src="require('@/assets/KAIST-Logo.wine.svg')" width="100">
+  </div>
+  <div class="flex-nav-bar">
+    <div class="nav-main">
+      <button class="nav-button" id="nav-button-selected" @click="goMain()">
+        <img class="nav-icon" :src="require('@/assets/MainIconSelected.png')" width="25">
+        Main
+      </button>
     </div>
     <div>
-      <input v-model="q" />
-      <button @click="goSearch()">Search</button>
+      <button class="nav-button" @click="goCreatePost()">
+        <img class="nav-icon" :src="require('@/assets/NewPostIcon.png')" width="24">
+        New Post
+      </button>
     </div>
     <div>
-      <button @click="goMain()">Main</button>
+      <button class="nav-button" @click="goCreateClub()">
+        <img class="nav-icon" :src="require('@/assets/CreateNewClubIcon.png')" width="25">
+        Create New Club
+      </button>
     </div>
     <div>
-      <button @click="goCreatePost()">New Post</button>
+      <button class="nav-button" @click="goCalendar()">
+        <img class="nav-icon" :src="require('@/assets/CalendarIcon.png')" width="23">
+        Calendar
+      </button>
     </div>
     <div>
-      <button @click="goCreateClub()">Create New Club</button>
+      <button class="nav-button" @click="goUserProfile()">
+        <img class="nav-icon" :src="require('@/assets/UserProfileIcon.png')" width="24">
+        User Profile
+      </button>
     </div>
     <div>
-      <button @click="goCalendar()">Calendar</button>
-    </div>
-    <div>
-      <button @click="goUserProfile()">User Profile</button>
-    </div>
-    <div>
-      <button @click="signOut()">CALL POST /api/v1/sign-out</button>
-    </div>
-    <div>
-      ToFill: NavBar Inners
+      <button class="nav-button" @click="signOut()">
+        Log out
+      </button>
     </div>
   </div>
 </template>
