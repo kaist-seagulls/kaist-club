@@ -109,7 +109,7 @@ VALUES (
         NULL,
         NULL,
         FALSE,
-        FALSE
+        TRUE
     ), (
         'Number',
         'Number Recruit',
@@ -118,7 +118,7 @@ VALUES (
         "2023-09-01",
         "2023-09-08",
         TRUE,
-        TRUE
+        FALSE
     ), (
         'K-Let',
         'K-Let President',
@@ -127,7 +127,7 @@ VALUES (
         NULL,
         NULL,
         FALSE,
-        FALSE
+        TRUE
     ), (
         'K-Let',
         'K-Let Recruit',
@@ -136,7 +136,115 @@ VALUES (
         "2023-08-31",
         "2023-09-05",
         TRUE,
-        TRUE
+        FALSE
+    ), (
+        'K-Let',
+        'K-Let Recruit',
+        "2023-08-31 02:34:50",
+        'K-Let wants 23F sinip members!',
+        "2023-09-28",
+        "2023-10-05",
+        TRUE,
+        FALSE
+    ), (
+        'K-Let',
+        'K-Let Recruit',
+        "2023-08-31 02:34:50",
+        'K-Let wants 23F sinip members!',
+        "2023-10-28",
+        "2023-11-05",
+        TRUE,
+        FALSE
+    ), (
+        'K-Let',
+        'K-Let Recruit',
+        "2023-08-31 02:34:50",
+        'K-Let wants 23F sinip members!',
+        "2023-11-28",
+        "2023-12-05",
+        TRUE,
+        FALSE
+    ), (
+        'K-Let',
+        'K-Let Recruit',
+        "2023-08-31 02:34:50",
+        'K-Let wants 23F sinip members!',
+        "2023-12-28",
+        "2024-01-05",
+        TRUE,
+        FALSE
+    ), (
+        'K-Let',
+        'K-Let Recruit',
+        "2023-08-31 02:34:50",
+        'K-Let wants 23F sinip members!',
+        "2024-01-28",
+        "2024-02-05",
+        TRUE,
+        FALSE
+    ), (
+        'K-Let',
+        'K-Let Recruit',
+        "2023-08-31 02:34:50",
+        'K-Let wants 23F sinip members!',
+        "2024-02-28",
+        "2024-03-05",
+        TRUE,
+        FALSE
+    ), (
+        'K-Let',
+        'K-Let Recruit',
+        "2023-08-31 02:34:50",
+        'K-Let wants 23F sinip members!',
+        "2024-03-28",
+        "2024-04-05",
+        TRUE,
+        FALSE
+    ), (
+        'K-Let',
+        'K-Let Recruit',
+        "2023-08-31 02:34:50",
+        'K-Let wants 23F sinip members!',
+        "2024-04-28",
+        "2024-05-05",
+        TRUE,
+        FALSE
+    ), (
+        'K-Let',
+        'K-Let Recruit',
+        "2023-08-31 02:34:50",
+        'K-Let wants 23F sinip members!',
+        "2024-05-28",
+        "2024-06-05",
+        TRUE,
+        FALSE
+    ), (
+        'K-Let',
+        'K-Let Recruit',
+        "2023-08-31 02:34:50",
+        'K-Let wants 23F sinip members!',
+        "2024-06-28",
+        "2024-07-05",
+        TRUE,
+        FALSE
+    ), (
+        'K-Let',
+        'K-Let Recruit',
+        "2023-08-31 02:34:50",
+        'K-Let wants 23F sinip members!',
+        "2024-07-28",
+        "2024-08-05",
+        TRUE,
+        FALSE
+    ), (
+        'K-Let',
+        'K-Let Recruit',
+        "2023-08-31 02:34:50",
+        'K-Let wants 23F sinip members!',
+        "2024-08-28",
+        "2024-09-05",
+        TRUE,
+        FALSE
     );
 
 CREATE TABLE Categories ( categoryName VARCHAR(30) PRIMARY KEY );

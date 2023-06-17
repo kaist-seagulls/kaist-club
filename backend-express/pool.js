@@ -305,17 +305,12 @@ function buildDataController(conn) {
         )
         return result[0]
       },
-      filterByQPage: async (userId, q, page) => {
+      countFilteredByQ: async (userId, q) => {
         const escapedQ = "%" + escapeQ(q) + "%"
-        const limit = 10
-        const offset = limit * (page - 1)
-        const limitString = String(limit)
-        const offsetString = String(offset)
-        const posts = await conn.execute(
+        const result = await conn.execute(
           `
             SELECT
-              postId, clubName, title, contents,
-              scheduleStart, scheduleEnd, isRecruit, isOnly
+              COUNT(*) as cnt
             FROM
               (
                 SELECT
@@ -326,7 +321,46 @@ function buildDataController(conn) {
                   (clubName IN
                     (SELECT clubName FROM Joins WHERE userId = ?)
                   ) AS isJoined
-                FROM Subscribes WHERE userId = ?
+                FROM Clubs
+              ) AS A
+              NATURAL JOIN Posts
+            WHERE
+              (isJoined OR (NOT isOnly))
+              AND (
+                (
+                  title LIKE ? ESCAPE '#'
+                  OR
+                  contents LIKE ? ESCAPE '#'
+                )
+              )
+          `,
+          [userId, userId, escapedQ, escapedQ],
+        )
+        return result[0][0].cnt
+      },
+      filterByQPage: async (userId, q, page) => {
+        const escapedQ = "%" + escapeQ(q) + "%"
+        const limit = 10
+        const offset = limit * (page - 1)
+        const limitString = String(limit)
+        const offsetString = String(offset)
+        const posts = await conn.execute(
+          `
+            SELECT
+              postId, clubName, title, contents,
+              scheduleStart, scheduleEnd, isRecruit, isOnly,
+              uploadTime
+            FROM
+              (
+                SELECT
+                  clubName,
+                  (clubName IN
+                    (SELECT clubName FROM Represents WHERE userId = ?)
+                  ) AS isRepresented,
+                  (clubName IN
+                    (SELECT clubName FROM Joins WHERE userId = ?)
+                  ) AS isJoined
+                FROM Clubs
               ) AS A
               NATURAL JOIN Posts
             WHERE
@@ -342,9 +376,57 @@ function buildDataController(conn) {
             LIMIT ?
             OFFSET ?
           `,
-          [userId, userId, userId, escapedQ, escapedQ, limitString, offsetString],
+          [userId, userId, escapedQ, escapedQ, limitString, offsetString],
         )
         return posts[0]
+      },
+      countFilteredByQFilter: async (userId, q, filter) => {
+        const escapedQ = "%" + escapeQ(q) + "%"
+        let filterTupleString = "("
+        if (filter.length > 0) {
+          for (const i in filter) {
+            if (i < filter.length - 1) {
+              filterTupleString += mysql.escape(filter[i])
+              filterTupleString += ","
+            }
+          }
+          filterTupleString += mysql.escape(filter[filter.length - 1])
+        }
+        filterTupleString += ")"
+        const result = await conn.execute(
+          `
+            SELECT
+              COUNT(*) AS cnt
+            FROM
+              (
+                SELECT
+                  clubName,
+                  (clubName IN
+                    (SELECT clubName FROM Represents WHERE userId = ?)
+                  ) AS isRepresented,
+                  (clubName IN
+                    (SELECT clubName FROM Joins WHERE userId = ?)
+                  ) AS isJoined
+                FROM Subscribes
+                WHERE
+                  userId = ?
+                  AND
+                  clubName IN `+ filterTupleString + `
+              ) AS A
+              NATURAL JOIN Posts
+            WHERE
+              (isJoined OR (NOT isOnly))
+              AND (
+                (
+                  title LIKE ? ESCAPE '#'
+                  OR
+                  contents LIKE ? ESCAPE '#'
+                )
+              )
+          `,
+          [userId, userId, userId, escapedQ, escapedQ],
+        )
+        return result[0][0].cnt
       },
       filterByQFilterPage: async (userId, q, filter, page) => {
         const escapedQ = "%" + escapeQ(q) + "%"
@@ -367,7 +449,8 @@ function buildDataController(conn) {
           `
             SELECT
               postId, clubName, title, contents,
-              scheduleStart, scheduleEnd, isRecruit, isOnly
+              scheduleStart, scheduleEnd, isRecruit, isOnly,
+              uploadTime
             FROM
               (
                 SELECT

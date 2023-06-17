@@ -43,30 +43,30 @@
 
 <script >
 import api from "@/api"
+import { mapGetters } from "vuex"
 
 export default {
   name: "NavBar",
   components: {},
-  data() {
-    return {
-      q: "",
-    }
+  computed: {
+    ...mapGetters({
+      searchQ: "searchQ",
+      searchPage: "searchPage",
+    }),
   },
   methods: {
-    goSearch() {
-      if (this.q === "") {
-        this.$router.push("/")
-      } else {
-        this.$router.push({
-          name: "main",
-          query: {
-            q: this.q,
-          },
-        })
-      }
-    },
     goMain() {
-      this.$router.push("/")
+      const query = {}
+      if (this.searchQ !== "") {
+        query.q = this.searchQ
+      }
+      if (this.searchPage !== 1) {
+        query.page = this.searchPage
+      }
+      this.$router.push({
+        name: "main",
+        query,
+      })
     },
     goCreatePost() {
       this.$router.push("/newpost")
