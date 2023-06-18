@@ -494,20 +494,31 @@ body {
 /* FilterBox start */
 .flex-filter-box {
   display: flex;
-  padding: 55px 20px 20px 20px;
+  padding-top: 55px;
   flex-direction: column;
+  justify-content: space-between;
+  width: 300px;
   height: 100vh;
   box-sizing: border-box;
 }
 
+.filter {
+  display: flex;
+  flex-direction: column;
+}
+
 .search-bar {
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin: 20px 40px 20px 40px;
+  height: 30px;
 }
 
 .filter-box {
+  padding: 0px 40px 0px 40px;
   display: flex;
   flex-direction: column;
+  height: 538.6px;
+  overflow: auto;
+  white-space: nowrap;
 }
 
 .filter-heading {
@@ -517,13 +528,19 @@ body {
   font-size: 15px;
   color: #000000;
 
-  margin-top: 20px;
+  margin-top: 0px;
   border-bottom: 1px solid #D8D8D8;
 
 }
 
 #all-kaist-clubs {
-  align-self: flex-end;
+  margin-left: 40px;
+  margin-right: 40px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  border-bottom: transparent;
+  border-top: 1px solid #D8D8D8;
+  box-sizing: border-box;
 }
 
 /* FilterBox fin */

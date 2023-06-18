@@ -1,45 +1,43 @@
 <template>
   <div class="flex-filter-box">
-    <div class="search-bar">
-      <input v-model="q" />
-      <button @click="goSearch()">Search</button>
-    </div>
-    <div class="filter-box">
-      <div>
-        <div class="filter-heading">
-          Joined Clubs
-          <button @click="toggleJoinedChecked()">
-            <div v-if="isAllJoinedChecked" style="color: green;">V</div>
-            <div v-else style="color:   red;">X</div>
-          </button>
+    <div class="filter">
+      <div class="search-bar">
+        <input v-model="q" />
+        <button @click="goSearch()">Search</button>
+      </div>
+      <div class="filter-box">
+        <div>
+          <div class="filter-heading">
+            Joined Clubs
+            <button class="profile-button" @click="toggleJoinedChecked()">
+              <div v-if="isAllJoinedChecked" style="color: green;">V</div>
+              <div v-else style="color:   red;">X</div>
+            </button>
+          </div>
+          <div>
+            <FilterOption v-for="filter in filterConfig.joined" :filter="filter" :key="filter.name" />
+          </div>
         </div>
         <div>
-          <FilterOption v-for="filter in filterConfig.joined" :filter="filter" :key="filter.name" />
+          <div class="filter-heading">
+            Subscribed Clubs
+            <button @click="toggleNotJoinedChecked()">
+              <div v-if="isAllNotJoinedChecked" style="color: green;">V</div>
+              <div v-else style="color:   red;">X</div>
+            </button>
+          </div>
+        </div>
+        <div>
+          <FilterOption v-for="filter in filterConfig.notJoined" :filter="filter" :key="filter.name" />
         </div>
       </div>
-      <div>
-        <div class="filter-heading">
-          Subscribed Clubs
-          <button @click="toggleNotJoinedChecked()">
-            <div v-if="isAllNotJoinedChecked" style="color: green;">V</div>
-            <div v-else style="color:   red;">X</div>
-          </button>
-        </div>
-
-      </div>
-      <div>
-        <FilterOption v-for="filter in filterConfig.notJoined" :filter="filter" :key="filter.name" />
-      </div>
-      <div>
-        <div class="filter-heading">
-          All KAIST Clubs
-          <button @click="toggleNoFilter()">
-            <div v-if="isNoFilterChecked" style="color: green;">V</div>
-            <div v-else style="color: red;">X</div>
-          </button>
-        </div>
-
-      </div>
+    </div>
+    <div class="filter-heading" id="all-kaist-clubs">
+      All KAIST Clubs
+      <button @click="toggleNoFilter()">
+        <div v-if="isNoFilterChecked" style="color: green;">V</div>
+        <div v-else style="color: red;">X</div>
+      </button>
     </div>
   </div>
 </template>
