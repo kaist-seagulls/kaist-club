@@ -54,7 +54,7 @@ body {
 .logo-fixed {
   position: fixed;
   top: 0;
-  left: 0;
+  left: 50px;
 }
 
 .flex-log {
@@ -448,6 +448,7 @@ body {
 
 /* NavBar start */
 .flex-nav-bar {
+  position: fixed;
   display: flex;
   background-color: #EFF1FE;
   width: 100vw;
@@ -458,7 +459,7 @@ body {
 }
 
 .nav-main {
-  margin-left: 270px;
+  margin-left: 300px;
   margin-right: auto;
 }
 
@@ -490,4 +491,40 @@ body {
 }
 
 /* NavBar fin */
+/* FilterBox start */
+.flex-filter-box {
+  display: flex;
+  padding: 55px 20px 20px 20px;
+  flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.search-bar {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.filter-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-heading {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+  font-size: 15px;
+  color: #000000;
+
+  margin-top: 20px;
+  border-bottom: 1px solid #D8D8D8;
+
+}
+
+#all-kaist-clubs {
+  align-self: flex-end;
+}
+
+/* FilterBox fin */
 </style>

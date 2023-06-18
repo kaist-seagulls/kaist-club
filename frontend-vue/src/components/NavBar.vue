@@ -1,8 +1,8 @@
 <template>
-  <div class="logo-fixed">
-    <img :src="require('@/assets/KAIST-Logo.wine.svg')" width="100">
-  </div>
   <div class="flex-nav-bar">
+    <div class="logo-fixed">
+      <img :src="require('@/assets/KAIST-Logo.wine.svg')" width="100">
+    </div>
     <div class="nav-main">
       <button class="nav-button" :id="selectedMain" @click="goMain()">
         <svg class="nav-icon" width="25" viewBox="0 0 40 35" fill="none" xmlns="http://www.w3.org/2000/svg">
