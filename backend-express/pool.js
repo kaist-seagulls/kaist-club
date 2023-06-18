@@ -468,6 +468,13 @@ function buildDataController(conn) {
         )
         return posts[0].affectedRows
       },
+      fileUpdate: async (postId, fileName) => {
+        const result = await conn.execute(
+          "UPDATE POSTS SET postFile=? WEHRE postId=?",
+          [fileName, postId],
+        )
+        return result[0].affectedRows
+      },
     },
   }
 }

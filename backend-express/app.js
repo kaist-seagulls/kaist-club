@@ -8,7 +8,10 @@ const { StatusCodes } = require("http-status-codes")
 const session = require("express-session")
 const { doTransaction } = require("./pool.js")
 const MySQLStore = require("express-mysql-session")(session)
+const multer = require("multer")
+const path = require("path")
 const app = express()
+
 
 const MIN_AUTHCODE_VALID_TIME = 30 * 1000
 const MAX_AUTHCODE_VALID_TIME = 5 * 60 * 1000
@@ -64,6 +67,18 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // parse application/json
 app.use(bodyParser.json())
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploadFiles/")
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname)
+    cb(null, path.basename(file.originalname, ext) + "-" + Date.now() + ext)
+  },
+})
+
+const upload = multer({ storage: storage })
+
 const isSignedIn = (req) => {
   return req.session.mode === "i"
 }
@@ -89,6 +104,67 @@ const userIdOf = (req) => {
 const sessOut = (req) => {
   req.session.destroy()
 }
+app.get("/api/v1/get-file", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "Not signed in",
+    })
+  }
+  const postId = req.body.postId
+  const clubName = req.body.clubName
+
+  doTransaction(res, async (D) => {
+
+    const checkExists = D.Posts.lookupFilterByClub(postId, clubName)
+    if (checkExists.length === 0) {
+      await D.rollback()
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Post not found",
+      })
+      return
+    }
+    const postFile = checkExists["postFile"]
+    res.sendFile(postFile, options, (err) => {
+      if (err) {
+        res.status(StatusCodes.CONFLICT).json({
+          message: "Conflict occurred while accessing the file",
+        })
+        return
+      }
+    })
+  })
+})
+
+app.post("/api/v1/post-file", upload.single("image"), (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "Not signed in",
+    })
+  }
+  const userId = req.session.userId
+  const postId = req.body.postId
+  const clubName = req.body.clubName
+  const image = `/uploadFiles/${req.file.filename}`
+
+  doTransaction(res, async (D) => {
+    const checkRep = D.Represents.lookupByUser(userId)
+    if (checkRep.length === 0 || checkRep["clubName"] !== clubName) {
+      await D.rollback()
+      res.status(StatusCodes.FORBIDDEN).json({
+        message: "Not a club representative",
+      })
+      return
+    }
+    const fileUpdate = D.Posts.fileUpdate(postId, image)
+    if (!fileUpdate) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "Requested file cannot be updated",
+      })
+      return
+    }
+  })
+})
 
 app.post("/api/v1/request-newclub", (req, res) => {
   if (!isSignedIn(req)) {

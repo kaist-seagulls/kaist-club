@@ -83,7 +83,8 @@ CREATE TABLE
         scheduleStart DATE,
         scheduleEnd DATE,
         isRecruit BOOLEAN NOT NULL,
-        isOnly BOOLEAN NOT NULL
+        isOnly BOOLEAN NOT NULL,
+        postFile LONGBLOB
     );
 
 ALTER TABLE Posts
@@ -99,7 +100,8 @@ INSERT INTO
         scheduleStart,
         scheduleEnd,
         isRecruit,
-        isOnly
+        isOnly,
+        postFile
     )
 VALUES (
         'Number',
@@ -109,7 +111,8 @@ VALUES (
         NULL,
         NULL,
         FALSE,
-        FALSE
+        FALSE,
+        NULL
     ), (
         'Number',
         'Number Recruit',
@@ -118,7 +121,8 @@ VALUES (
         "2023-09-01",
         "2023-09-08",
         TRUE,
-        TRUE
+        TRUE,
+        NULL
     ), (
         'K-Let',
         'K-Let President',
@@ -127,7 +131,8 @@ VALUES (
         NULL,
         NULL,
         FALSE,
-        FALSE
+        FALSE,
+        NULL
     ), (
         'K-Let',
         'K-Let Recruit',
@@ -136,7 +141,8 @@ VALUES (
         "2023-08-31",
         "2023-09-05",
         TRUE,
-        TRUE
+        TRUE,
+        NULL
     );
 
 CREATE TABLE Categories ( categoryName VARCHAR(30) PRIMARY KEY );
