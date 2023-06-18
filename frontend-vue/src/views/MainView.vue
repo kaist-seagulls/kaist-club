@@ -1,73 +1,66 @@
 <template>
-  <div class="t-box t-flex-g1">
-    <!-- To the designer: A div below is for debugging. You can remove this. -->
-    <div class="t-title">
-      MainView
-    </div>
-    <!-- To the designer: A div below is for debugging. You can remove this. -->
+  <div class="flex-main">
     <div>
-      ToFill: Posts
-    </div>
-    <!-- To the designer: A div below is for debugging. You can remove this. -->
-    <div>
-      search q: {{ searchQ }} /
-      page: {{ searchPage }}
-    </div>
-    <!-- To the designer: A div below is for debugging. You can remove this. -->
-    <div>
-      RESULT CLUBS
-    </div>
-    <!-- To the designer: A div below is for debugging. You can remove this. -->
-    <div>
-      <div v-for="club in searchResult.clubs" :key="club.clubName" style="border: 1px black solid">
-        <div>
-          name: {{ club.clubName }}
+      <div class="post" v-for="post in searchResult.posts" :key="post.postId">
+        <div class="post-club">
+          <div>
+            <img class="club-profile" :src="require('@/assets/NumberProfile.png')" width="50">
+          </div>
+          {{ post.clubName }}
         </div>
-        <div>
-          categoryName: {{ club.categoryName }}
+        <div class="post-box">
+          <div class="post-heading">
+            <div>
+              <div class="tag" id="recruitment" v-if="post.isRecruit">
+                RECRUITMENT
+              </div>
+              <div class="tag" id="member-only" v-if="post.isOnly">
+                MEMBER ONLY
+              </div>
+            </div>
+            <div class="post-title">
+              {{ post.title }}
+              <div class="date">
+                <div v-if="post.scheduleStart">
+                  {{ (new Date(post.scheduleStart)).getFullYear() + "/" + (new Date(post.scheduleStart)).getMonth() + "/"
+                    + (new
+                      Date(post.scheduleStart)).getDate() }}
+                </div>
+                <div>
+                  -
+                </div>
+                <div v-if="post.scheduleEnd">
+                  {{ (new Date(post.scheduleEnd)).getFullYear() + "/" + (new Date(post.scheduleEnd)).getMonth() +
+                    "/"
+                    + (new
+                      Date(post.scheduleEnd)).getDate() }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="content">
+            <div class="content-text">
+              {{ post.contents }}
+            </div>
+            <div class="content-pic-box">
+              <img class="content-pic" :src="require('@/assets/NumberProfile.png')" width="300">
+            </div>
+          </div>
+          <div class="upload-time">
+            <div>
+              {{ (new Date(post.uploadTime)).getFullYear() + "/" + (new Date(post.uploadTime)).getMonth() + "/" + (new
+                Date(post.uploadTime)).getDate() }}
+            </div>
+            <div class="time">
+              {{ (new Date(post.uploadTime)).getHours() + ":" + (new Date(post.uploadTime)).getMinutes() }}
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div>
-      RESULT POSTS
-    </div>
-    <!-- To the designer: A div below is for debugging. You can remove this. -->
-    <div>
-      <div v-for="post in searchResult.posts" :key="post.postId" style="border: 1px black solid">
-        <div>
-          clubName: {{ post.clubName }}
-        </div>
-        <div>
-          title: {{ post.title }}
-        </div>
-        <div v-if="post.isRecruit">
-          THIS IS FOR RECRUITMENT
-        </div>
-        <div v-if="post.isOnly">
-          THIS IS ONLY FOR CLUB MEMBERS
-        </div>
-        <div>
-          contents: {{ post.contents }}
-        </div>
-        <div>
-          uploadTime: {{ post.uploadTime }}
-        </div>
-        <div v-if="post.scheduleStart">
-          scheduleStart: {{ post.scheduleStart }}
-        </div>
-        <div v-if="post.scheduleEnd">
-          scheduleEnd: {{ post.scheduleEnd }}
-        </div>
-      </div>
-    </div>
-    <!-- To the designer: A div below is for debugging. You can remove this. -->
-    <div>
-      PAGINATION
-    </div>
-    <!-- To the designer: A div below is for debugging. You can remove this. -->
-    <div>
+    <div class="pagination">
       <template v-for="page in pagination.pages" :key="page">
-        <button :disabled="page === searchPage" @click="goPage(page)">
+        <button class="page-button" :disabled="page === searchPage" @click="goPage(page)">
           {{ page }}
         </button>
       </template>

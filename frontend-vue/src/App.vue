@@ -316,6 +316,15 @@ body {
   cursor: pointer;
 }
 
+.calendar-4-week {
+  display: grid;
+  grid-template: 40px repeat(4, minmax(70px, auto))/repeat(7, 1fr);
+  border-top: 2px solid #303030;
+  border-bottom: 1px solid #808080;
+  background-color: #D8D8D8;
+  grid-gap: 1px;
+}
+
 .calendar-5-week {
   display: grid;
   grid-template: 40px repeat(5, minmax(70px, auto))/repeat(7, 1fr);
@@ -332,6 +341,10 @@ body {
   border-bottom: 1px solid #808080;
   background-color: #D8D8D8;
   grid-gap: 1px;
+}
+
+.calendar-4-week>* {
+  background-color: #FFFFFF;
 }
 
 .calendar-5-week>* {
@@ -500,6 +513,7 @@ body {
   width: 300px;
   height: 100vh;
   box-sizing: border-box;
+  border-right: 1px solid #D8D8D8;
 }
 
 .filter {
@@ -544,4 +558,142 @@ body {
 }
 
 /* FilterBox fin */
+
+/* Main start */
+.flex-main {
+  display: flex;
+  padding-top: 55px;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100vh;
+  width: 100%;
+  overflow-y: auto;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.post {
+  margin: 50px 80px 50px 80px;
+  border: transparent;
+}
+
+.post-club {
+  display: flex;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 48px;
+  color: #000000;
+}
+
+.club-profile {
+  border-radius: 50%;
+  margin-right: 20px;
+}
+
+.post-box {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 20px 10px 20px;
+  background: #F6F6F9;
+}
+
+.post-heading {
+  display: flex;
+  flex-direction: column;
+}
+
+.tag {
+  font-weight: 400;
+  font-size: 15px;
+  color: #FFFFFF;
+  padding: 5px 10px 5px 10px;
+
+  border-radius: 5px;
+  width: fit-content;
+
+}
+
+#recruitment {
+  background-color: #698FC1;
+}
+
+#member-only {
+  background-color: #0D2959;
+}
+
+.date {
+  display: flex;
+  font-weight: 400;
+  font-size: 15px;
+  color: #18408C;
+}
+
+.post-title {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 20px;
+  color: #303030;
+  padding-bottom: 5px;
+  border-bottom: 2px solid #18408C;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.content {
+  display: flex;
+  height: 350px;
+}
+
+.content-text {
+  white-space: wrap;
+  padding: 20px;
+  margin-right: 20px;
+  width: 300px;
+  height: 100%;
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+}
+
+.content-pic-box {
+  height: 100%;
+  width: 100%;
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
+.content-pic {
+  margin-right: 20px;
+  height: 100%;
+}
+
+.upload-time {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 10px;
+  font-weight: 300;
+  color: #808080;
+}
+
+.time {
+  margin-left: 5px;
+}
+
+.pagination {
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 50px;
+}
+
+.page-button {
+  font-size: 15px;
+  cursor: pointer;
+  border: transparent;
+  padding-bottom: 5px;
+  border-bottom: 2px solid #808080;
+  background-color: transparent;
+}
+
+/* Main fin */
 </style>

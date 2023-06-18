@@ -5,6 +5,37 @@
       <div class="calendar-heading-text">{{ monthString[month - 1] }} {{ year }} </div>
       <button class="arrow-button" @click=goNext()>▶</button>
     </div>
+    <div class="calendar-4-week" v-if="calendarRepresentation.weeks.length == 4">
+      <div class="day-of-week">Sun</div>
+      <div class="day-of-week">Mon</div>
+      <div class="day-of-week">Tue</div>
+      <div class="day-of-week">Wed</div>
+      <div class="day-of-week">Thu</div>
+      <div class="day-of-week">Fri</div>
+      <div class="day-of-week">Sat</div>
+      <template v-if="calendarRepresentation">
+        <template v-for="week in calendarRepresentation.weeks" :key="week">
+          <div v-for="day in week.days" :key="day">
+            <div id="dimmed-date" v-if="day.month !== Number(month)">
+            </div>
+            <div class="calendar-flex" v-else>
+              {{ day.date }}
+            </div>
+            <div v-for="(e, eventIdx) in day.events" :key="eventIdx">
+              <div id="dimmed-date" v-if="day.month !== Number(month)">
+              </div>
+              <div v-else>
+                <div class="event" v-if="(e, eventIdx) in day.events == true">
+                  {{ e ? (e.title) : "" }}
+                </div>
+                <div class="event" id="dimmed-date" v-else>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </template>
+    </div>
     <div class="calendar-5-week" v-if="calendarRepresentation.weeks.length == 5">
       <div class="day-of-week">Sun</div>
       <div class="day-of-week">Mon</div>
