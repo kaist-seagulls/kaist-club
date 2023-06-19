@@ -311,11 +311,7 @@ function buildDataController(conn) {
           "SELECT * FROM Represents WHERE userId = ?",
           [userId],
         )
-        if (result[0].length === 0) {
-          return null
-        } else {
-          return result[0][0]
-        }
+        return result[0][0]
       },
       lookupByClubName: async (userId) => {
         const result = await conn.execute(
@@ -356,12 +352,12 @@ function buildDataController(conn) {
       },
     },
     Posts: {
-      insert: async (clubName, title, contents, isRecruit, schedule, isOnly) => {
+      insert: async (clubName, title, contents, startDate, endDate, isRecruit, isOnly) => {
         const result = await conn.execute(
-          "INSERT INTO Posts VALUES (?, ?, NOW(), ?, ?, ?, ?, ?)",
-          [clubName, title, contents, schedule["startDate"], schedule["endDate"], isRecruit, isOnly],
+          "INSERT INTO Posts VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?)",
+          [null, clubName, title, contents, startDate, endDate, isRecruit, isOnly],
         )
-        return result[0].affectedRows
+        return result[0]["insertId"]
       },
       delete: async (postId) => {
         const result = await conn.execute(
@@ -602,7 +598,13 @@ function buildDataController(conn) {
         )
         return posts[0].affectedRows
       },
-
+      lastInsertId: async () => {
+        const lastRow = await conn.execute(
+          "SELECT last_insert_id()",
+          [],
+        )
+        return lastRow[0]
+      },
     },
     PostFiles: {
       insert: async (postId, clubName, fileName) => {

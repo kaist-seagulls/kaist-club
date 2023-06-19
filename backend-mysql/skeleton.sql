@@ -73,6 +73,8 @@ VALUES (
         '#ffff00'
     );
 
+DROP TABLE POSTS;
+
 CREATE TABLE
     Posts (
         postId INT AUTO_INCREMENT PRIMARY KEY,
@@ -83,8 +85,7 @@ CREATE TABLE
         scheduleStart DATE,
         scheduleEnd DATE,
         isRecruit BOOLEAN NOT NULL,
-        isOnly BOOLEAN NOT NULL,
-        postFileIndex INT
+        isOnly BOOLEAN NOT NULL
     );
 
 ALTER TABLE Posts
@@ -100,8 +101,7 @@ INSERT INTO
         scheduleStart,
         scheduleEnd,
         isRecruit,
-        isOnly,
-        postFileIndex
+        isOnly
     )
 VALUES (
         'Number',
@@ -111,8 +111,7 @@ VALUES (
         NULL,
         NULL,
         FALSE,
-        FALSE,
-        NULL
+        FALSE
     ), (
         'Number',
         'Number Recruit',
@@ -121,8 +120,7 @@ VALUES (
         "2023-09-01",
         "2023-09-08",
         TRUE,
-        TRUE,
-        NULL
+        TRUE
     ), (
         'K-Let',
         'K-Let President',
@@ -131,8 +129,7 @@ VALUES (
         NULL,
         NULL,
         FALSE,
-        FALSE,
-        NULL
+        FALSE
     ), (
         'K-Let',
         'K-Let Recruit',
@@ -141,8 +138,7 @@ VALUES (
         "2023-08-31",
         "2023-09-05",
         TRUE,
-        TRUE,
-        NULL
+        TRUE
     );
 
 drop table postfiles;

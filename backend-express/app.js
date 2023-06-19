@@ -162,7 +162,7 @@ const sessOut = (req) => {
   req.session.destroy()
 }
 
-app.get("/api/v1/get-file-for-post", (req, res) => {
+app.get("/api/v1/get-files-for-post", (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -191,7 +191,7 @@ app.get("/api/v1/get-file-for-post", (req, res) => {
   })
 })
 
-app.post("/api/v1/send-file-for-post", uploadMiddleware, (req, res) => {
+app.post("/api/v1/send-files-for-post", uploadMiddleware, (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -292,7 +292,7 @@ app.get("/api/v1/get-logo-for-creation-request", (req, res) => {
   })
 })
 
-app.post("/api/v1/send-logo-for-creation-request", uploadLogo, (req, res) => {
+app.post("/api/v1/send-logo-for-creation-request", uploadLogo.single("uploadImage"), (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -328,7 +328,7 @@ app.post("/api/v1/send-logo-for-creation-request", uploadLogo, (req, res) => {
     return
   })
 })
-app.post("/api/v1/send-header-for-creation-request", uploadHeader, (req, res) => {
+app.post("/api/v1/send-header-for-creation-request", uploadHeader.single("uploadImage"), (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -690,28 +690,31 @@ app.post("/api/v1/create-post", (req, res) => {
     })
     return
   }
-  const userId = req.session.userID
+  const userId = req.session.userId
   const clubName = req.body.clubName
   const postInfo = req.body.postInfo
   doTransaction(res, async (D) => {
-    const checkRep = D.Represents.lookupByUser(userId)
-    if (checkRep.length === 0 || checkRep["clubName"] !== clubName) {
+    const checkRep = await D.Represents.lookupByUser(userId)
+    console.log(checkRep)
+    if (checkRep.length === 0 || checkRep[0]["clubName"] !== clubName) {
       await D.rollback()
       res.status(StatusCodes.FORBIDDEN).json({
         message: "Not a club representative",
       })
       return
     }
-    const insertResult = D.Posts.insert(clubName, postInfo["title"], postInfo["content"],
-      postInfo["schedule"]["start-date"], postInfo["schedule"]["end-date"], postInfo["isRecruitment"], postInfo["isOnly"])
+    const insertResult = await D.Posts.insert(clubName, postInfo["title"], postInfo["content"],
+      postInfo["schedule"]["startDate"], postInfo["schedule"]["endDate"], postInfo["isRecruitment"], postInfo["isOnly"])
     if (!insertResult) {
       await D.rollback()
       res.status(StatusCodes.CONFLICT).json({
         message: "Conflict occurred while creating a post",
       })
     }
+    console.log(insertResult)
+
     await D.commit()
-    res.status(StatusCodes.NO_CONTENT).end()
+    res.status(StatusCodes.OK).sendStatus(insertResult)
     return
   })
 })
