@@ -327,7 +327,11 @@ function buildDataController(conn) {
           "SELECT * FROM Represents WHERE userId = ?",
           [userId],
         )
-        return result[0]
+        if (result[0].length > 0) {
+          return result[0][0].clubName
+        } else {
+          return null
+        }
       },
       lookupByClubName: async (userId) => {
         const result = await conn.execute(
@@ -395,10 +399,11 @@ function buildDataController(conn) {
           "SELECT * FROM Posts WHERE postId = ? AND clubName = ?",
           [postId, clubName],
         )
+        console.log("lookupFilterByClub: ", result)
         if (result[0].length == 0) {
           return null
         } else {
-          return result[0][0]
+          return result[0]
         }
       },
       filterByUserRange: async (userId, start, end) => {

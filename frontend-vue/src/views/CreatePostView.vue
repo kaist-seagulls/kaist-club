@@ -11,7 +11,7 @@
               Title:
             </div>
             <div style="width: 100%;">
-              <input class="title-text-box" type="text" v-model="Title">
+              <input class="title-text-box" type="text" v-model="title">
             </div>
           </div>
           <div>
@@ -27,7 +27,7 @@
               Contents
             </div>
             <div style="width: 100%;">
-              <input class="content-text-box" type="text">
+              <input class="content-text-box" type="text" v-model="content">
             </div>
           </div>
         </div>
@@ -39,6 +39,16 @@
               </div>
               <div class="tag" id="recruitment">
                 RECRUITMENT
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="post-checkbox">
+              <div>
+                <input class="checkbox" type="checkbox" v-model="isOnly">
+              </div>
+              <div class="tag" id="member-only">
+                MEMBERS ONLY
               </div>
             </div>
           </div>
@@ -72,7 +82,6 @@
           </div>
         </div>
       </div>
-
       <div>
         <button class="big-blue-button" @click="post()">Post</button>
       </div>
@@ -82,7 +91,7 @@
 
 <script>
 import api from "@/api"
-import { mapGetters } from "vuex"
+import { mapActions, mapGetters } from "vuex"
 
 export default {
   name: "SignInView",
@@ -92,8 +101,9 @@ export default {
       files: [],
       isScheduleIncluded: false,
       isRecruitment: false,
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: null,
+      endDate: null,
+      isOnly: false,
       content: "",
       imgUrls: [],
     }
@@ -104,17 +114,22 @@ export default {
     }),
   },
   methods: {
+    ...mapActions({
+      fetchUserInfo: "fetchUserInfo",
+    }),
     async post() {
       try {
         await api.createPost(
-          this.userInfo.representing,
+          this.userInfo.representingClub,
           {
             title: this.title,
-            isScheduleIncluded: this.isScheduleIncluded,
             isRecruitment: this.isRecruitment,
-            startDate: this.startDate,
-            endDate: this.endDate,
+            isOnly: this.isOnly,
             content: this.content,
+            schedule: {
+              startDate: this.startDate,
+              endDate: this.endDate,
+            },
           },
           this.files,
         )
