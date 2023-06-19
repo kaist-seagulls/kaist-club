@@ -19,7 +19,8 @@ const layout = computed(() => useRoute().meta.layout)
 }
 
 body {
-  margin: 0
+  margin: 0;
+  height: 100vh;
 }
 
 #app {
@@ -284,8 +285,10 @@ body {
 
 /* ChangePW start */
 .flex-change-pw {
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: stretch;
   margin-right: auto;
   margin-left: auto;
@@ -297,6 +300,7 @@ body {
 /* Calendar start */
 .flex-calendar {
   padding-top: 100px;
+  height: calc(100vh - 55px);
   flex: 1 0 auto;
   flex-direction: column;
   justify-content: center;
@@ -520,6 +524,7 @@ body {
 .flex-filter-box {
   display: flex;
   margin-top: 55px;
+  height: calc(100vh - 55px);
   flex-direction: column;
   justify-content: space-between;
   width: 310px;
@@ -628,6 +633,7 @@ body {
 .flex-main {
   display: flex;
   margin-top: 55px;
+  height: calc(100vh - 55px);
   flex-direction: column;
   justify-content: space-between;
   overflow-y: auto;
@@ -767,6 +773,7 @@ body {
 .flex-user-profile {
   display: flex;
   margin-top: 55px;
+  height: calc(100vh - 55px);
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -784,6 +791,7 @@ body {
 .flex-create-post {
   display: flex;
   margin-top: 55px;
+  height: calc(100vh - 55px);
   flex-direction: column;
   overflow-y: auto;
   white-space: nowrap;
