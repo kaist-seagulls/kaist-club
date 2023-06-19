@@ -207,7 +207,8 @@ const sessOut = (req) => {
   req.session.destroy()
 }
 
-app.get("/api/v1/get-files-for-post", (req, res) => {
+app.post("/api/v1/get-files-for-post", (req, res) => {
+  console.log("request received")
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -215,6 +216,7 @@ app.get("/api/v1/get-files-for-post", (req, res) => {
   }
   const postId = req.body.postId
   const clubName = req.body.clubName
+  console.log(postId, " ", "clubName")
   doTransaction(res, async (D) => {
     const checkExists = await D.Posts.lookupFilterByClub(postId, clubName)
     if (checkExists.length === 0) {
@@ -227,10 +229,12 @@ app.get("/api/v1/get-files-for-post", (req, res) => {
     const fileRows = await D.PostFiles.lookupByPostId(postId)
     console.log(fileRows)
     const fileNum = fileRows.length
-    console.log(fileNum)
+    if (fileNum === 0) {
+      res.status(StatusCodes.NO_CONTENT).end()
+      return
+    }
     for (let i = 0; i < fileNum; i++) {
       const fileName = fileRows[0][i]["imageName"]
-      console.log(fileName)
       res.download(`uploadFiles/post/${fileName}`)
     }
   })
@@ -1240,7 +1244,7 @@ app.get("/api/v1/get-admin-info", (req, res) => {
     returnDic["currentClubs"] = clubs
     returnDic["requestsNewClub"] = requests_new_club
     returnDic["requestsHandover"] = requests_handover
-    res.status(StatusCodes.OK).send(returnDic)
+    res.status(StatusCodes.OK).json(returnDic)
   })
 })
 

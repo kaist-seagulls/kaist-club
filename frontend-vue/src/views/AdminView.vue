@@ -17,12 +17,12 @@
       </div>
       <div v-for="(request, id) in requestsNewClub" v-bind:key="id">
         {{ request.clubName }}
-        <div>Requester: {{ request.requestUser }}</div>
-        <div>Description: {{ request.clubDescription }}</div>
-        <span @click="denytNewClub(id)">
+        <div>Requester: {{ request.userId }}</div>
+        <div>Description: {{ request.descriptions }}</div>
+        <span @click="denyNewClub(id)">
           deny
         </span>
-        <span @click="accepttNewClub(id)">
+        <span @click="acceptNewClub(id)">
           approve
         </span>
       </div>
@@ -34,9 +34,9 @@
       <div v-for="(request, id) in requestsHandover" v-bind:key="id">
         {{ request.clubName }}
         <div>
-          <span>{{ request.fromUserName }}</span>
+          <span>{{ request.fromId }}</span>
           <span> -> </span>
-          <span>{{ request.toUserName }}</span>
+          <span>{{ request.toId }}</span>
         </div>
         <span @click="denyHandover(id)">
           deny

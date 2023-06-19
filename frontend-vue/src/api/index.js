@@ -61,6 +61,9 @@ async function createPost(clubName, postInfo, files) {
     },
   })
 }
+async function getPostFiles(postId, clubName) {
+  return await axios.post(prefix + "get-files-for-post", { postId, clubName })
+}
 async function updatePost(clubName, postId, postInfo) {
   return await axios.post(prefix + "update-post/" + clubName + "/" + postId, { postInfo })
 }
@@ -101,7 +104,7 @@ async function deleteSubscription(clubName) {
   return await axios.post(prefix + "delete-subscription/" + clubName)
 }
 async function getAdminInfo() {
-  return await axios.post(prefix + "get-admin-info")
+  return await axios.get(prefix + "get-admin-info")
 }
 async function retrieve(params) {
   return await axios.get(prefix + "retrieve", { params })
@@ -122,6 +125,7 @@ export default {
   denyJoin,
   getOuttaMyClubDude,
   createPost,
+  getPostFiles,
   updatePost,
   deletePost,
   sendAuthCode,
