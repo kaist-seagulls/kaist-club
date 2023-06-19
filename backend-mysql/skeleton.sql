@@ -47,7 +47,7 @@ CREATE TABLE
         clubName VARCHAR(20) PRIMARY KEY,
         descriptions VARCHAR(100) NOT NULL,
         categoryName VARCHAR(30) NOT NULL,
-        color CHAR(7) NOT NULL
+        color CHAR(7) NOT NULL,
     );
 
 INSERT INTO Clubs
@@ -73,7 +73,11 @@ VALUES (
         '#ffff00'
     );
 
-DROP TABLE POSTS;
+CREATE TABLE
+    ClubFiles(
+        clubName varchar(20) primary key,
+        logoFileName varchar(50) not null
+    );
 
 CREATE TABLE
     Posts (

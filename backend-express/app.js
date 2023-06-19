@@ -112,10 +112,22 @@ const fileFilter = (req, file, cb) => {
     cb(new Error("File type not supported"), false)
   }
 }
+const storageClubLogo = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploadFiles/clubLogoImg/")
+  },
+  filename: function (req, file, cb) {
+    const ext = MIME_TYPE_MAP[file.mimetype]
+    file.originalname = file.originalname.split(`.${ext}`)[0]
+    //cb(null, path.basename(file.originalname, ext) + "-" + Date.now() + ext)
+    cb(null, path.basename(file.originalname, ext) + "-" + Date.now() + "." + ext)
+  },
+})
 
 const uploadPost = multer({ storage: storagePost, fileFilter: fileFilter }).array("uploadImages", 5)
 const uploadHeader = multer({ storage: storageHeader, fileFilter: fileFilter })
 const uploadLogo = multer({ storage: storageLogo, fileFilter: fileFilter })
+const uploadClubLogo = multer({ storage: storageClubLogo, fileFilter: fileFilter })
 const uploadMiddleware = (req, res, next) => {
 
   const upload = uploadPost
@@ -292,7 +304,7 @@ app.get("/api/v1/get-logo-for-creation-request", (req, res) => {
   })
 })
 
-app.post("/api/v1/send-logo-for-creation-request", uploadLogo.single("uploadImage"), (req, res) => {
+app.post("/api/v1/send-logo-for-creation-request", uploadLogo.single("uploadImages"), (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -328,7 +340,7 @@ app.post("/api/v1/send-logo-for-creation-request", uploadLogo.single("uploadImag
     return
   })
 })
-app.post("/api/v1/send-header-for-creation-request", uploadHeader.single("uploadImage"), (req, res) => {
+app.post("/api/v1/send-header-for-creation-request", uploadHeader.single("uploadImages"), (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -364,7 +376,66 @@ app.post("/api/v1/send-header-for-creation-request", uploadHeader.single("upload
     return
   })
 })
+app.get("/api/v1/get-club-logo-for-clubs", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "Not signed in",
+    })
+  }
+  const clubName = req.body.clubName
+  doTransaction(res, async (D) => {
+    const checkExists = await D.Clubs.lookup(clubName)
+    if (checkExists.length === 0) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Club not found",
+      })
+    }
 
+    const fileRows = await D.ClubFiles.lookupByClubName(clubName)
+    const fileNum = fileRows.length
+    console.log(fileNum)
+    for (let i = 0; i < fileNum; i++) {
+      const fileName = fileRows[0][i]["logoFileName"]
+      console.log(fileName)
+      res.download(`uploadFiles/logoImg/${fileName}`)
+    }
+  })
+})
+
+app.post("/api/v1/send-club-logo-for-clubs", uploadClubLogo.single("uploadImages"), (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "Not signed in",
+    })
+  }
+  const clubName = req.body.clubName
+
+  doTransaction(res, async (D) => {
+
+    const checkExists = await D.Clubs.lookup(clubName)
+    if (checkExists.length === 0) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Club not found",
+      })
+    }
+
+    console.log(req.files)
+    for (const file of req.files) {
+      const fileName = file.filename
+      const insertFile = await D.ClubFiles.insert(clubName, fileName)
+      if (!insertFile) {
+        await D.rollback()
+        res.status(StatusCodes.CONFLICT).json({
+          message: "Conflict occurred while processing files",
+        })
+        return
+      }
+    }
+    await D.commit()
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
+})
 
 app.post("/api/v1/request-newclub", (req, res) => {
   if (!isSignedIn(req)) {
@@ -555,10 +626,44 @@ app.post("/api/v1/delete-club", (req, res) => {
     return
   })
 })
-app.post("/api/v1/request-join", (req, res) => {
-  if (isSignedIn(req)) {
+
+app.post("/api/v1/request-handover", (req, res) => {
+  if (!isSignedIn(req)) {
     res.status(StatusCodes.UNAUTHORIZED).json({
-      message: "signedIn",
+      message: "Not signed in",
+    })
+    return
+  }
+  const repId = req.session.userId
+  const userId = req.body.userId
+  const clubName = req.body.clubName
+  doTransaction(res, async (D) => {
+    const clubRow = await D.Represents.lookupByUser(repId)
+    if (clubRow.length !== 0 || clubRow["clubName"] !== clubName) {
+      await D.rollback()
+      res.status(StatusCodes.FORBIDDEN).json({
+        message: "Not a representative",
+      })
+      return
+    }
+    const handoverRow = await D.HandoverRequests.insert(repId, userId, clubName)
+    if (!handoverRow) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "Handover Failed",
+      })
+      return
+    }
+    await D.commit()
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
+})
+
+app.post("/api/v1/request-join", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).json({
+      message: "Not signed in",
     })
     return
   }

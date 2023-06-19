@@ -84,6 +84,22 @@ function buildDataController(conn) {
         return result[0].affectedRows
       },
     },
+    ClubFiles: {
+      lookupByClubName: async (clubName) => {
+        const result = await conn.execute(
+          "SELECT * FROM ClubFiles WHERE clubName=?",
+          [clubName],
+        )
+        return result[0][0]
+      },
+      insert: async (clubName, logoFileName) => {
+        const result = await conn.execute(
+          "INSERT INTO ClubFiles VALUES(?, ?)",
+          [clubName, logoFileName],
+        )
+        return result[0].affectedRows
+      },
+    },
     Users: {
       lookup: async (userId) => {
         const result = await conn.execute(
@@ -620,6 +636,29 @@ function buildDataController(conn) {
           [postId],
         )
         return result
+      },
+    },
+    HandoverRequests: {
+      insert: async (fromId, toId, clubName) => {
+        const result = await conn.execute(
+          "INSERT INTO HandoverRequests VALUES (?,?,?)",
+          [fromId, toId, clubName],
+        )
+        return result[0].affectedRows
+      },
+      delete: async (clubName) => {
+        const result = await conn.execute(
+          "DELETE FROM HandoverRequests WHERE clubName=?",
+          [clubName],
+        )
+        return result[0].affectedRows
+      },
+      lookup: async (clubName) => {
+        const result = await conn.execute(
+          "SELECT * FROM HandoverRequests WHERE clubName=?",
+          [clubName],
+        )
+        return result[0][0]
       },
     },
   }
