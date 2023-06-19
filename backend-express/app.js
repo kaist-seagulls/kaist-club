@@ -125,25 +125,58 @@ const storageClubLogo = multer.diskStorage({
 })
 
 const uploadPost = multer({ storage: storagePost, fileFilter: fileFilter }).array("uploadImages", 5)
-const uploadHeader = multer({ storage: storageHeader, fileFilter: fileFilter })
-const uploadLogo = multer({ storage: storageLogo, fileFilter: fileFilter })
-const uploadClubLogo = multer({ storage: storageClubLogo, fileFilter: fileFilter })
+const uploadHeader = multer({ storage: storageHeader, fileFilter: fileFilter }).single("uploadImages")
+const uploadLogo = multer({ storage: storageLogo, fileFilter: fileFilter }).single("uploadImages")
+const uploadClubLogo = multer({ storage: storageClubLogo, fileFilter: fileFilter }).single("uploadImages")
 const uploadMiddleware = (req, res, next) => {
-
   const upload = uploadPost
-  // Here call the upload middleware of multer
   upload(req, res, function (err) {
     if (err instanceof multer.MulterError) {
-      // A Multer error occurred when uploading.
       const err = new Error("Multer error")
       next(err)
     } else if (err) {
-      // An unknown error occurred when uploading.
       const err = new Error("File type not supported")
       next(err)
     }
-
-    // Everything went fine.
+    next()
+  })
+}
+const uploadMiddlewareLogo = (req, res, next) => {
+  const upload = uploadLogo
+  upload(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      const err = new Error("Multer error")
+      next(err)
+    } else if (err) {
+      const err = new Error("File type not supported")
+      next(err)
+    }
+    next()
+  })
+}
+const uploadMiddlewareHeader = (req, res, next) => {
+  const upload = uploadHeader
+  upload(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      const err = new Error("Multer error")
+      next(err)
+    } else if (err) {
+      const err = new Error("File type not supported")
+      next(err)
+    }
+    next()
+  })
+}
+const uploadMiddlewareClubLogo = (req, res, next) => {
+  const upload = uploadClubLogo
+  upload(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      const err = new Error("Multer error")
+      next(err)
+    } else if (err) {
+      const err = new Error("File type not supported")
+      next(err)
+    }
     next()
   })
 }
@@ -212,11 +245,12 @@ app.post("/api/v1/send-files-for-post", uploadMiddleware, (req, res) => {
   const userId = req.session.userId
   const postId = req.body.postId
   const clubName = req.body.clubName
-  console.log("postId: ", postId)
 
   doTransaction(res, async (D) => {
-    const represented = await D.Represents.lookupByUser(userId)
-    if (represented !== clubName) {
+    const checkRep = await D.Represents.lookupByUser(userId)
+    console.log(checkRep["clubName"])
+    console.log(userId)
+    if (checkRep["clubName"] !== clubName) {
       await D.rollback()
       res.status(StatusCodes.FORBIDDEN).json({
         message: "Not a club representative",
@@ -224,7 +258,6 @@ app.post("/api/v1/send-files-for-post", uploadMiddleware, (req, res) => {
       return
     }
     const checkPost = await D.Posts.lookupFilterByClub(postId, clubName)
-    console.log("checkPost", checkPost)
     if (!checkPost) {
       await D.rollback()
       res.status(StatusCodes.NOT_FOUND).json({
@@ -233,7 +266,6 @@ app.post("/api/v1/send-files-for-post", uploadMiddleware, (req, res) => {
       return
     }
 
-    //uploadMiddleware()
     for (const file of req.files) {
       const fileName = file.filename
       const insertFile = await D.PostFiles.insert(postId, clubName, fileName)
@@ -258,9 +290,11 @@ app.get("/api/v1/get-header-for-creation-request", (req, res) => {
     })
   }
   const requestId = req.body.requestId
+  console.log(requestId)
   doTransaction(res, async (D) => {
+    console.log("dddd")
     const checkExists = await D.CreationRequests.lookupByRequestId(requestId)
-    if (checkExists.length === 0) {
+    if (!checkExists) {
       res.status(StatusCodes.NOT_FOUND).json({
         message: "Post not found",
       })
@@ -268,13 +302,9 @@ app.get("/api/v1/get-header-for-creation-request", (req, res) => {
 
     const fileRows = await D.CreationRequestFiles.lookupHeaderByRequestId(requestId)
     console.log(fileRows)
-    const fileNum = fileRows.length
-    console.log(fileNum)
-    for (let i = 0; i < fileNum; i++) {
-      const fileName = fileRows[0][i]["img"]
-      console.log(fileName)
-      res.download(`uploadFiles/headerImg/${fileName}`)
-    }
+    const fileName = fileRows["imageName"]
+    console.log(fileName)
+    res.download(`uploadFiles/headerImg/${fileName}`)
   })
 })
 app.get("/api/v1/get-logo-for-creation-request", (req, res) => {
@@ -293,18 +323,15 @@ app.get("/api/v1/get-logo-for-creation-request", (req, res) => {
     }
 
     const fileRows = await D.CreationRequestFiles.lookupLogoByRequestId(requestId)
-    console.log(fileRows)
-    const fileNum = fileRows.length
-    console.log(fileNum)
-    for (let i = 0; i < fileNum; i++) {
-      const fileName = fileRows[0][i]["img"]
-      console.log(fileName)
-      res.download(`uploadFiles/logoImg/${fileName}`)
-    }
+
+    const fileName = fileRows["imageName"]
+    console.log(fileName)
+    res.download(`uploadFiles/logoImg/${fileName}`)
+
   })
 })
 
-app.post("/api/v1/send-logo-for-creation-request", uploadLogo.single("uploadImages"), (req, res) => {
+app.post("/api/v1/send-logo-for-creation-request", uploadMiddlewareLogo, (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -323,24 +350,24 @@ app.post("/api/v1/send-logo-for-creation-request", uploadLogo.single("uploadImag
       return
     }
 
-    console.log(req.files)
-    for (const file of req.files) {
-      const fileName = file.filename
-      const insertFile = await D.CreationRequestFiles.insertLogo(requestId, fileName)
-      if (!insertFile) {
-        await D.rollback()
-        res.status(StatusCodes.CONFLICT).json({
-          message: "Conflict occurred while processing files",
-        })
-        return
-      }
+    console.log(req.file.filename)
+
+    const fileName = req.file.filename
+    const insertFile = await D.CreationRequestFiles.insertLogo(requestId, fileName)
+    if (!insertFile) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "Conflict occurred while processing files",
+      })
+      return
     }
+
     await D.commit()
     res.status(StatusCodes.NO_CONTENT).end()
     return
   })
 })
-app.post("/api/v1/send-header-for-creation-request", uploadHeader.single("uploadImages"), (req, res) => {
+app.post("/api/v1/send-header-for-creation-request", uploadMiddlewareHeader, (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -349,7 +376,7 @@ app.post("/api/v1/send-header-for-creation-request", uploadHeader.single("upload
   const requestId = req.body.requestId
 
   doTransaction(res, async (D) => {
-
+    console.log("dkdkdkdkdkd")
     const checkRequest = await D.CreationRequests.lookupByRequestId(requestId)
     if (!checkRequest) {
       await D.rollback()
@@ -358,18 +385,14 @@ app.post("/api/v1/send-header-for-creation-request", uploadHeader.single("upload
       })
       return
     }
-
-    console.log(req.files)
-    for (const file of req.files) {
-      const fileName = file.filename
-      const insertFile = await D.CreationRequestFiles.insertHeader(requestId, fileName)
-      if (!insertFile) {
-        await D.rollback()
-        res.status(StatusCodes.CONFLICT).json({
-          message: "Conflict occurred while processing files",
-        })
-        return
-      }
+    const fileName = req.file.filename
+    const insertFile = await D.CreationRequestFiles.insertHeader(requestId, fileName)
+    if (!insertFile) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "Conflict occurred while processing files",
+      })
+      return
     }
     await D.commit()
     res.status(StatusCodes.NO_CONTENT).end()
@@ -392,25 +415,33 @@ app.get("/api/v1/get-club-logo-for-clubs", (req, res) => {
     }
 
     const fileRows = await D.ClubFiles.lookupByClubName(clubName)
-    const fileNum = fileRows.length
-    console.log(fileNum)
-    for (let i = 0; i < fileNum; i++) {
-      const fileName = fileRows[0][i]["logoFileName"]
-      console.log(fileName)
-      res.download(`uploadFiles/logoImg/${fileName}`)
-    }
+
+    const fileName = fileRows["logoFileName"]
+    console.log(fileName)
+    res.download(`uploadFiles/clubLogoImg/${fileName}`)
+
   })
 })
 
-app.post("/api/v1/send-club-logo-for-clubs", uploadClubLogo.single("uploadImages"), (req, res) => {
+app.post("/api/v1/send-club-logo-for-clubs", uploadMiddlewareClubLogo, (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
     })
   }
   const clubName = req.body.clubName
+  const userId = req.session.userId
 
   doTransaction(res, async (D) => {
+    const checkRep = await D.Represents.lookupByUser(userId)
+    console.log(userId)
+    if (checkRep !== clubName) {
+      await D.rollback()
+      res.status(StatusCodes.FORBIDDEN).json({
+        message: "Not a club representative",
+      })
+      return
+    }
 
     const checkExists = await D.Clubs.lookup(clubName)
     if (checkExists.length === 0) {
@@ -418,18 +449,16 @@ app.post("/api/v1/send-club-logo-for-clubs", uploadClubLogo.single("uploadImages
         message: "Club not found",
       })
     }
+    console.log("sdsdsadsd")
 
-    console.log(req.files)
-    for (const file of req.files) {
-      const fileName = file.filename
-      const insertFile = await D.ClubFiles.insert(clubName, fileName)
-      if (!insertFile) {
-        await D.rollback()
-        res.status(StatusCodes.CONFLICT).json({
-          message: "Conflict occurred while processing files",
-        })
-        return
-      }
+    const fileName = req.file.filename
+    const insertFile = await D.ClubFiles.insert(clubName, fileName)
+    if (!insertFile) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "Conflict occurred while processing files",
+      })
+      return
     }
     await D.commit()
     res.status(StatusCodes.NO_CONTENT).end()
@@ -443,6 +472,7 @@ app.post("/api/v1/request-newclub", (req, res) => {
       message: "Not signed in",
     })
   }
+  console.log("adsasdsdasda")
   const userId = req.session.userId
   const categoryName = req.body.categoryName
   const clubName = req.body.clubName
@@ -450,7 +480,7 @@ app.post("/api/v1/request-newclub", (req, res) => {
   const logoImg = req.body.logoImg
   const headerImg = req.body.headerImg
   doTransaction(res, async (D) => {
-    const numAddRows = await D.CreationRequests.insertRequest(categoryName, clubName, description, logoImg, headerImg, userId)
+    const numAddRows = await D.CreationRequests.insertRequest(null, categoryName, clubName, description, logoImg, headerImg, userId)
     if (!numAddRows) {
       await D.rollback()
       res.status(StatusCodes.CONFLICT).json({
@@ -659,7 +689,6 @@ app.post("/api/v1/request-handover", (req, res) => {
     return
   })
 })
-const SQL_CHECK_ADMIN = "SELECT * FROM Users WHERE userId=? and isAdmin=true"
 app.post("/api/v1/accept-handover", (req, res) => {
   const sess = req.session
   const userId = req.session.userId
@@ -672,7 +701,7 @@ app.post("/api/v1/accept-handover", (req, res) => {
       })
       return
     }
-    const checkAdminResult = await D.execute(SQL_CHECK_ADMIN, [userId])
+    const checkAdminResult = await D.Users.isAdmin(userId)
     if (checkAdminResult.length === 0) {
       await D.rollback()
       res.status(StatusCodes.FORBIDDEN).json({
@@ -723,7 +752,7 @@ app.post("/api/v1/deny-handover", (req, res) => {
       })
       return
     }
-    const checkAdminResult = await D.execute(SQL_CHECK_ADMIN, [userId])
+    const checkAdminResult = await D.Users.isAdmin(userId)
     if (checkAdminResult.length === 0) {
       await D.rollback()
       res.status(StatusCodes.FORBIDDEN).json({
@@ -893,13 +922,10 @@ app.post("/api/v1/create-post", (req, res) => {
   const userId = req.session.userId
   const clubName = req.body.clubName
   const postInfo = req.body.postInfo
-  console.log("body: ", req.body)
   doTransaction(res, async (D) => {
-    const represented = await D.Represents.lookupByUser(userId)
-    console.log("represented: ", represented)
-    console.log("clubName: ", clubName)
-    if (!represented || represented !== clubName) {
-      console.log("not representative")
+    const checkRep = await D.Represents.lookupByUser(userId)
+    console.log(checkRep)
+    if (!checkRep.length || checkRep[0]["clubName"] !== clubName) {
       await D.rollback()
       res.status(StatusCodes.FORBIDDEN).json({
         message: "Not a club representative",
@@ -908,6 +934,7 @@ app.post("/api/v1/create-post", (req, res) => {
     }
     const insertResult = await D.Posts.insert(clubName, postInfo["title"], postInfo["content"],
       postInfo["schedule"]["startDate"], postInfo["schedule"]["endDate"], postInfo["isRecruitment"], postInfo["isOnly"])
+    console.log(insertResult)
     if (!insertResult) {
       await D.rollback()
       res.status(StatusCodes.CONFLICT).json({
@@ -916,12 +943,7 @@ app.post("/api/v1/create-post", (req, res) => {
     }
 
     await D.commit()
-
-    console.log(insertResult)
-    res.status(StatusCodes.OK)
-    res.json({
-      postId: insertResult,
-    })
+    res.status(StatusCodes.OK).sendStatus(insertResult)
     return
   })
 })
@@ -1160,9 +1182,6 @@ app.post("/api/v1/sign-up", (req, res) => {
   })
 })
 
-const SQL_READCLUB_ADMIN = "SELECT clubName FROM Clubs"
-const SQL_READREQUEST_ADMIN = "SELECT clubCategory, clubName, descriptions, requestUser FROM Creationrequests"
-const SQL_READHANDOVER_ADMIN = "SELECT * FROM Handoverrequests"
 app.get("/api/v1/get-admin-info", (req, res) => {
   const sess = req.session
   const userId = req.session.userId
@@ -1174,7 +1193,7 @@ app.get("/api/v1/get-admin-info", (req, res) => {
       })
       return
     }
-    const checkAdminResult = await conn.execute(SQL_CHECK_ADMIN, [userId])
+    const checkAdminResult = await conn.Users.isAdmin(userId)
     if (checkAdminResult.length === 0) {
       await conn.rollback()
       res.status(StatusCodes.FORBIDDEN).json({
@@ -1183,9 +1202,9 @@ app.get("/api/v1/get-admin-info", (req, res) => {
       return
     }
 
-    const readClubResult = (await conn.execute(SQL_READCLUB_ADMIN))[0]
-    const readRequestResult = (await conn.execute(SQL_READREQUEST_ADMIN))[0]
-    const readHandoverResult = (await conn.execute(SQL_READHANDOVER_ADMIN))[0]
+    const readClubResult = (await conn.Clubs.lookupAdmin())
+    const readRequestResult = (await conn.CreationRequests.lookupAdmin())
+    const readHandoverResult = (await conn.HandoverRequests.lookupAdmin())
     if (readClubResult.length === 0 || readRequestResult.length === 0 || readHandoverResult.length === 0) {
       await conn.rollback()
       res.status(StatusCodes.NOT_FOUND).json({
@@ -1347,7 +1366,7 @@ app.get("/api/v1/retrieve", (req, res) => {
     let representingClub = undefined
     const club = await D.Represents.lookupByUser(userId)
     if (club) {
-      representingClub = club
+      representingClub = club.clubName
     } else if (authority === "r") {
       await D.rollback()
       res.status(StatusCodes.FORBIDDEN).end()
