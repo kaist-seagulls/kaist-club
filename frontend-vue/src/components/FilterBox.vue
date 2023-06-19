@@ -2,14 +2,14 @@
   <div class="flex-filter-box">
     <div class="filter">
       <div class="search-bar">
-        <input class="search-text-box" v-model="q" />
+        <input class="search-text-box" v-model="inputQ" />
         <button class="search-button" @click="goSearch()">Search</button>
       </div>
       <div class="filter-box">
         <div>
           <div class="filter-heading">
             Joined Clubs
-            <button class="profile-button" @click="toggleJoinedChecked()">
+            <button class="profile-button" @click="toggle(toggleJoinedChecked)">
               <div v-if="isAllJoinedChecked" style="color: green;">V</div>
               <div v-else style="color:   red;">X</div>
             </button>
@@ -21,7 +21,7 @@
         <div>
           <div class="filter-heading">
             Subscribed Clubs
-            <button @click="toggleNotJoinedChecked()">
+            <button @click="toggle(toggleNotJoinedChecked)">
               <div v-if="isAllNotJoinedChecked" style="color: green;">V</div>
               <div v-else style="color:   red;">X</div>
             </button>
@@ -34,7 +34,7 @@
     </div>
     <div class="filter-heading" id="all-kaist-clubs">
       All KAIST Clubs
-      <button @click="toggleNoFilter()">
+      <button @click="toggle(toggleNoFilter)">
         <div v-if="isNoFilterChecked" style="color: green;">V</div>
         <div v-else style="color: red;">X</div>
       </button>
