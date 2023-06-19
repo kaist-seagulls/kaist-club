@@ -170,25 +170,7 @@ app.get("/api/v1/get-file-for-post", (req, res) => {
   }
   const postId = req.body.postId
   const clubName = req.body.clubName
-  const fileName = req.params.fileName
-  console.log(fileName)
   doTransaction(res, async (D) => {
-
-    //const checkExists = await D.Posts.lookupFilterByClub(postId, clubName)
-    //if (checkExists.length === 0) {
-    //  await D.rollback()
-    //  res.status(StatusCodes.NOT_FOUND).json({
-    //    message: "Post not found",
-    //  })
-    //  return
-    //}
-    const fileExist = await readFileSync.existsSync(`uploadFiles/post/${fileName}`)
-    if (!fileExist) {
-      res.status(StatusCodes.NOT_FOUND).json({
-        message: "File not found",
-      })
-    }
-
     const checkExists = await D.Posts.lookupFilterByClub(postId, clubName)
     if (checkExists.length === 0) {
       res.status(StatusCodes.NOT_FOUND).json({
@@ -197,10 +179,12 @@ app.get("/api/v1/get-file-for-post", (req, res) => {
     }
 
     console.log("dsasdasdaasd")
-    const fileNum = checkExists["postFileIndex"]
+    const fileRows = await D.PostFiles.lookupByPostId(postId)
+    console.log(fileRows)
+    const fileNum = fileRows.length
     console.log(fileNum)
     for (let i = 0; i < fileNum; i++) {
-      const fileName = req.params.fileName
+      const fileName = fileRows[0][i]["imageName"]
       console.log(fileName)
       res.download(`uploadFiles/post/${fileName}`)
     }
@@ -238,13 +222,9 @@ app.post("/api/v1/send-file-for-post", uploadMiddleware, (req, res) => {
     }
 
     //uploadMiddleware()
-    console.log("aaaaaaaa")
-    console.log(req.files)
     for (const file of req.files) {
       const fileName = file.filename
-      console.log(fileName)
       const insertFile = await D.PostFiles.insert(postId, clubName, fileName)
-      console.log(insertFile)
       if (!insertFile) {
         await D.rollback()
         res.status(StatusCodes.CONFLICT).json({
@@ -253,53 +233,12 @@ app.post("/api/v1/send-file-for-post", uploadMiddleware, (req, res) => {
         return
       }
     }
-    //const imagesArray = req.files
-    //const image = `/uploadFiles/post/${req.file.filename}`
 
-    //const fileUpdate = await D.Posts.fileUpdate(postId, image)
-    //if (!fileUpdate) {
-    //  await D.rollback()
-    //  res.status(StatusCodes.CONFLICT).json({
-    //    message: "Requested file cannot be updated",
-    //  })
-    //  return
-    //}
     await D.commit()
     res.status(StatusCodes.NO_CONTENT).end()
     return
   })
 })
-
-app.get("/api/v1/get-logo-for-creation-request", (req, res) => {
-  if (!isSignedIn(req)) {
-    res.status(StatusCodes.FORBIDDEN).json({
-      message: "Not signed in",
-    })
-  }
-  const requestId = req.body.requestId
-
-  doTransaction(res, async (D) => {
-
-    const checkExists = await D.CreationRequests.lookupByRequestId(requestId)
-    if (checkExists.length === 0) {
-      await D.rollback()
-      res.status(StatusCodes.NOT_FOUND).json({
-        message: "Post not found",
-      })
-      return
-    }
-    const logoImg = checkExists["logoImg"]
-    res.sendFile(logoImg, options, (err) => {
-      if (err) {
-        res.status(StatusCodes.CONFLICT).json({
-          message: "Conflict occurred while accessing the file",
-        })
-        return
-      }
-    })
-  })
-})
-
 app.get("/api/v1/get-header-for-creation-request", (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
@@ -307,55 +246,118 @@ app.get("/api/v1/get-header-for-creation-request", (req, res) => {
     })
   }
   const requestId = req.body.requestId
-
   doTransaction(res, async (D) => {
-
     const checkExists = await D.CreationRequests.lookupByRequestId(requestId)
     if (checkExists.length === 0) {
-      await D.rollback()
       res.status(StatusCodes.NOT_FOUND).json({
         message: "Post not found",
       })
+    }
+
+    const fileRows = await D.CreationRequestFiles.lookupHeaderByRequestId(requestId)
+    console.log(fileRows)
+    const fileNum = fileRows.length
+    console.log(fileNum)
+    for (let i = 0; i < fileNum; i++) {
+      const fileName = fileRows[0][i]["img"]
+      console.log(fileName)
+      res.download(`uploadFiles/headerImg/${fileName}`)
+    }
+  })
+})
+app.get("/api/v1/get-logo-for-creation-request", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "Not signed in",
+    })
+  }
+  const requestId = req.body.requestId
+  doTransaction(res, async (D) => {
+    const checkExists = await D.CreationRequests.lookupByRequestId(requestId)
+    if (checkExists.length === 0) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Post not found",
+      })
+    }
+
+    const fileRows = await D.CreationRequestFiles.lookupLogoByRequestId(requestId)
+    console.log(fileRows)
+    const fileNum = fileRows.length
+    console.log(fileNum)
+    for (let i = 0; i < fileNum; i++) {
+      const fileName = fileRows[0][i]["img"]
+      console.log(fileName)
+      res.download(`uploadFiles/logoImg/${fileName}`)
+    }
+  })
+})
+
+app.post("/api/v1/send-logo-for-creation-request", uploadLogo, (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "Not signed in",
+    })
+  }
+  const requestId = req.body.requestId
+
+  doTransaction(res, async (D) => {
+
+    const checkRequest = await D.CreationRequests.lookupByRequestId(requestId)
+    if (!checkRequest) {
+      await D.rollback()
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Request not found",
+      })
       return
     }
-    const headerImg = checkExists["headerImg"]
-    res.sendFile(headerImg, options, (err) => {
-      if (err) {
+
+    console.log(req.files)
+    for (const file of req.files) {
+      const fileName = file.filename
+      const insertFile = await D.CreationRequestFiles.insertLogo(requestId, fileName)
+      if (!insertFile) {
+        await D.rollback()
         res.status(StatusCodes.CONFLICT).json({
-          message: "Conflict occurred while accessing the file",
+          message: "Conflict occurred while processing files",
         })
         return
       }
-    })
+    }
+    await D.commit()
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
   })
 })
-
-app.post("/api/v1/post-header-for-creation-request", uploadHeader.single("image"), (req, res) => {
+app.post("/api/v1/send-header-for-creation-request", uploadHeader, (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
     })
   }
   const requestId = req.body.requestId
-  const clubName = req.body.clubName
-  const image = `/uploadFiles/headerImg/${req.file.filename}`
 
   doTransaction(res, async (D) => {
-    const checkRequest = await D.CreationRequests.lookupByClubName(clubName)
+
+    const checkRequest = await D.CreationRequests.lookupByRequestId(requestId)
     if (!checkRequest) {
       await D.rollback()
       res.status(StatusCodes.NOT_FOUND).json({
-        message: "Club request not found",
+        message: "Request not found",
       })
       return
     }
-    const fileUpdate = await D.CreationRequests.headerUpdate(requestId, image)
-    if (!fileUpdate) {
-      await D.rollback()
-      res.status(StatusCodes.CONFLICT).json({
-        message: "Requested file cannot be updated",
-      })
-      return
+
+    console.log(req.files)
+    for (const file of req.files) {
+      const fileName = file.filename
+      const insertFile = await D.CreationRequestFiles.insertHeader(requestId, fileName)
+      if (!insertFile) {
+        await D.rollback()
+        res.status(StatusCodes.CONFLICT).json({
+          message: "Conflict occurred while processing files",
+        })
+        return
+      }
     }
     await D.commit()
     res.status(StatusCodes.NO_CONTENT).end()
@@ -363,38 +365,6 @@ app.post("/api/v1/post-header-for-creation-request", uploadHeader.single("image"
   })
 })
 
-app.post("/api/v1/post-logo-for-creation-request", uploadLogo.single("image"), (req, res) => {
-  if (!isSignedIn(req)) {
-    res.status(StatusCodes.FORBIDDEN).json({
-      message: "Not signed in",
-    })
-  }
-  const requestId = req.body.requestId
-  const clubName = req.body.clubName
-  const image = `/uploadFiles/logoImg/${req.file.filename}`
-
-  doTransaction(res, async (D) => {
-    const checkRequest = await D.CreationRequests.lookupByClubName(clubName)
-    if (!checkRequest) {
-      await D.rollback()
-      res.status(StatusCodes.NOT_FOUND).json({
-        message: "Club request not found",
-      })
-      return
-    }
-    const fileUpdate = await D.CreationRequests.logoUpdate(requestId, image)
-    if (!fileUpdate) {
-      await D.rollback()
-      res.status(StatusCodes.CONFLICT).json({
-        message: "Requested file cannot be updated",
-      })
-      return
-    }
-    await D.commit()
-    res.status(StatusCodes.NO_CONTENT).end()
-    return
-  })
-})
 
 app.post("/api/v1/request-newclub", (req, res) => {
   if (!isSignedIn(req)) {

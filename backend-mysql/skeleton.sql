@@ -213,6 +213,18 @@ VALUES (
     );
 
 CREATE TABLE
+    CreationRequestFiles (
+        requestId INT not null,
+        isheader BOOLEAN not null,
+        img longblob
+    );
+
+ALTER Table
+    CreationRequestFiles
+Add
+    foreign key (requestId) references CreationRequests (requestId);
+
+CREATE TABLE
     Subscribes (
         userId VARCHAR(20) NOT NULL,
         clubName VARCHAR(20) NOT NULL

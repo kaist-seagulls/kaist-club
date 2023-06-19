@@ -180,6 +180,36 @@ function buildDataController(conn) {
         return result[0].affectedRows
       },
     },
+    CreationRequestFiles: {
+      insertLogo: async (requestId, fileName) => {
+        const result = await conn.execute(
+          "INSERT INTO CreationRequestFiles VALUES (?, FALSE, ?)",
+          [requestId, fileName],
+        )
+        return result[0].affectedRows
+      },
+      insertHeader: async (requestId, fileName) => {
+        const result = await conn.execute(
+          "INSERT INTO CreationRequestFiles VALUES (?, TRUE, ?)",
+          [requestId, fileName],
+        )
+        return result[0].affectedRows
+      },
+      lookupLogoByRequestId: async (requestId) => {
+        const result = await conn.execute(
+          "SELECT * FROM CreationRequestFiles WHERE requestId=? AND isHeader=FALSE",
+          [requestId],
+        )
+        return result
+      },
+      lookupHeaderByRequestId: async (requestId) => {
+        const result = await conn.execute(
+          "SELECT * FROM CreationRequestFiles WHERE requestId=? AND isHeader=TRUE",
+          [requestId],
+        )
+        return result
+      },
+    },
     AuthCodes: {
       lookup: async (userId) => {
         const result = await conn.execute(
@@ -497,8 +527,14 @@ function buildDataController(conn) {
           "INSERT INTO PostFiles VALUES (?,?,?)",
           [postId, clubName, fileName],
         )
-        console.log(result)
         return result[0].affectedRows
+      },
+      lookupByPostId: async (postId) => {
+        const result = await conn.execute(
+          "SELECT * FROM PostFiles WHERE postId=?",
+          [postId],
+        )
+        return result
       },
     },
   }
