@@ -559,10 +559,12 @@ body {
   border: 1px solid #303030;
   border-radius: 9px;
   height: 25px;
+
 }
 
 .filter-box {
   padding: 0px 40px 0px 40px;
+  margin-top: 20px;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -577,9 +579,10 @@ body {
   font-size: 15px;
   color: #000000;
 
-  margin-top: 0px;
+  margin-top: 30px;
   border-bottom: 1px solid #D8D8D8;
-
+  padding-left: 10px;
+  padding-bottom: 10px;
 }
 
 #all-kaist-clubs {
@@ -590,6 +593,29 @@ body {
   border-bottom: transparent;
   border-top: 1px solid #D8D8D8;
   box-sizing: border-box;
+}
+
+.filter-option-box {
+  padding-left: 10px;
+  display: flex;
+  margin-top: 10px;
+}
+
+.filter-profile {
+  padding: 0;
+  cursor: pointer;
+  background-color: transparent;
+  border: transparent;
+  font-weight: 400;
+  font-size: 15px;
+  color: #808080;
+}
+
+.check-box-pic {
+  cursor: pointer;
+  padding: 0;
+  border: transparent;
+  background-color: transparent;
 }
 
 /* FilterBox fin */
