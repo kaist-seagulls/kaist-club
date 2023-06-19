@@ -53,6 +53,13 @@ function buildDataController(conn) {
           return result[0][0]
         }
       },
+      lookupAdmin: async () => {
+        const result = await conn.execute(
+          "SELECT * FROM Clubs",
+          [],
+        )
+        return result[0]
+      },
       filterByQ: async (q) => {
         const escapedQ = "%" + escapeQ(q) + "%"
         const result = await conn.execute(
@@ -166,6 +173,13 @@ function buildDataController(conn) {
           [requestId],
         )
         return result[0][0]
+      },
+      lookupAdmin: async () => {
+        const result = await conn.execute(
+          "SELECT * FROM CreationRequests",
+          [],
+        )
+        return result[0]
       },
       deleteRequest: async (requestId) => {
         const result = await conn.execute(
@@ -672,6 +686,13 @@ function buildDataController(conn) {
           [handoverId],
         )
         return result[0][0]
+      },
+      lookupAdmin: async () => {
+        const result = await conn.execute(
+          "SELECT * FROM HandoverRequests",
+          [],
+        )
+        return result[0]
       },
     },
   }
