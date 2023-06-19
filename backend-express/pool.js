@@ -327,7 +327,7 @@ function buildDataController(conn) {
           "SELECT * FROM Represents WHERE userId = ?",
           [userId],
         )
-        return result[0][0]
+        return result[0]
       },
       lookupByClubName: async (userId) => {
         const result = await conn.execute(
@@ -335,6 +335,13 @@ function buildDataController(conn) {
           [userId],
         )
         return result[0][0]
+      },
+      update: async (clubName, newRep) => {
+        const result = await conn.execute(
+          "UPDATE Represents SET userId=? WHERE clubName=?",
+          [newRep, clubName],
+        )
+        return result[0].affectedRows
       },
     },
     JoinRequests: {
@@ -373,6 +380,7 @@ function buildDataController(conn) {
           "INSERT INTO Posts VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?)",
           [null, clubName, title, contents, startDate, endDate, isRecruit, isOnly],
         )
+        console.log(result)
         return result[0]["insertId"]
       },
       delete: async (postId) => {
@@ -646,17 +654,17 @@ function buildDataController(conn) {
         )
         return result[0].affectedRows
       },
-      delete: async (clubName) => {
+      delete: async (handoverId) => {
         const result = await conn.execute(
-          "DELETE FROM HandoverRequests WHERE clubName=?",
-          [clubName],
+          "DELETE FROM HandoverRequests WHERE requestId=?",
+          [handoverId],
         )
         return result[0].affectedRows
       },
-      lookup: async (clubName) => {
+      lookup: async (handoverId) => {
         const result = await conn.execute(
-          "SELECT * FROM HandoverRequests WHERE clubName=?",
-          [clubName],
+          "SELECT * FROM HandoverRequests WHERE requestId=?",
+          [handoverId],
         )
         return result[0][0]
       },

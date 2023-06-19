@@ -659,6 +659,103 @@ app.post("/api/v1/request-handover", (req, res) => {
     return
   })
 })
+const SQL_CHECK_ADMIN = "SELECT * FROM Users WHERE userId=? and isAdmin=true"
+app.post("/api/v1/accept-handover", (req, res) => {
+  const sess = req.session
+  const userId = req.session.userId
+  const handoverId = req.body.handoverId
+  doTransaction(res, async (D) => {
+    if (sess.islogged === false) {
+      await D.rollback()
+      res.status(StatusCodes.UNAUTHORIZED).json({
+        message: "Unauthorized access",
+      })
+      return
+    }
+    const checkAdminResult = await D.execute(SQL_CHECK_ADMIN, [userId])
+    if (checkAdminResult.length === 0) {
+      await D.rollback()
+      res.status(StatusCodes.FORBIDDEN).json({
+        message: "Forbidden",
+      })
+      return
+    }
+    const handoverRow = await D.HandoverRequests.lookup(handoverId)
+    if (!handoverRow.length) {
+      await D.rollback()
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Handover Request Not Found",
+      })
+      return
+    }
+    const clubName = handoverRow["clubName"]
+    const newRep = handoverRow["toId"]
+    const deleteRequest = await D.HandoverRequests.delete(handoverId)
+    if (!deleteRequest) {
+      await D.rollback()
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Handover Request Not Found",
+      })
+      return
+    }
+    const updateRows = await D.Represents.update(clubName, newRep)
+    if (!updateRows) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "Conflict occurred while updating representative info",
+      })
+      return
+    }
+    await D.commit()
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
+})
+app.post("/api/v1/deny-handover", (req, res) => {
+  const sess = req.session
+  const userId = req.session.userId
+  const handoverId = req.body.handoverId
+  doTransaction(res, async (D) => {
+    if (sess.islogged === false) {
+      await D.rollback()
+      res.status(StatusCodes.UNAUTHORIZED).json({
+        message: "Unauthorized access",
+      })
+      return
+    }
+    const checkAdminResult = await D.execute(SQL_CHECK_ADMIN, [userId])
+    if (checkAdminResult.length === 0) {
+      await D.rollback()
+      res.status(StatusCodes.FORBIDDEN).json({
+        message: "Forbidden",
+      })
+      return
+    }
+    const handoverRow = await D.HandoverRequests.lookup(handoverId)
+    if (!handoverRow.length) {
+      await D.rollback()
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Handover Request Not Found",
+      })
+      return
+    }
+    const clubName = handoverRow["clubName"]
+    const newRep = handoverRow["toId"]
+    const deleteRequest = await D.HandoverRequests.delete(handoverId)
+    if (!deleteRequest) {
+      await D.rollback()
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Handover Request Not Found",
+      })
+      return
+    }
+    await D.commit()
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
+})
+
+
 
 app.post("/api/v1/request-join", (req, res) => {
   if (!isSignedIn(req)) {
@@ -800,8 +897,7 @@ app.post("/api/v1/create-post", (req, res) => {
   const postInfo = req.body.postInfo
   doTransaction(res, async (D) => {
     const checkRep = await D.Represents.lookupByUser(userId)
-    console.log(checkRep)
-    if (checkRep.length === 0 || checkRep[0]["clubName"] !== clubName) {
+    if (!checkRep.length || checkRep[0]["clubName"] !== clubName) {
       await D.rollback()
       res.status(StatusCodes.FORBIDDEN).json({
         message: "Not a club representative",
@@ -810,13 +906,13 @@ app.post("/api/v1/create-post", (req, res) => {
     }
     const insertResult = await D.Posts.insert(clubName, postInfo["title"], postInfo["content"],
       postInfo["schedule"]["startDate"], postInfo["schedule"]["endDate"], postInfo["isRecruitment"], postInfo["isOnly"])
+    console.log(insertResult)
     if (!insertResult) {
       await D.rollback()
       res.status(StatusCodes.CONFLICT).json({
         message: "Conflict occurred while creating a post",
       })
     }
-    console.log(insertResult)
 
     await D.commit()
     res.status(StatusCodes.OK).sendStatus(insertResult)
@@ -1058,7 +1154,6 @@ app.post("/api/v1/sign-up", (req, res) => {
   })
 })
 
-const SQL_CHECK_ADMIN = "SELECT * FROM Users WHERE userId=? and isAdmin=true"
 const SQL_READCLUB_ADMIN = "SELECT clubName FROM Clubs"
 const SQL_READREQUEST_ADMIN = "SELECT clubCategory, clubName, descriptions, requestUser FROM Creationrequests"
 const SQL_READHANDOVER_ADMIN = "SELECT * FROM Handoverrequests"

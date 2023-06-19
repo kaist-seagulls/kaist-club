@@ -79,6 +79,10 @@ CREATE TABLE
         logoFileName varchar(50) not null
     );
 
+ALTER TABLE ClubFiles
+ADD
+    FOREIGN KEY (clubName) REFERENCES Clubs (clubName);
+
 CREATE TABLE
     Posts (
         postId INT AUTO_INCREMENT PRIMARY KEY,
@@ -277,9 +281,10 @@ VALUES ('tanit23', 'K-Let'), ('tpdus2155', 'Number');
 
 CREATE TABLE
     HandoverRequests (
+        requestId INT AUTO_INCREMENT PRIMARY KEY,
         fromId VARCHAR(20) NOT NULL,
         toId VARCHAR(20) NOT NULL,
-        clubName VARCHAR(20) PRIMARY KEY
+        clubName VARCHAR(20)
     );
 
 ALTER TABLE HandoverRequests
@@ -296,6 +301,7 @@ ADD
 
 INSERT INTO HandoverRequests
 VALUES (
+        NULL,
         'tpdus2155',
         'antony',
         'Number'
