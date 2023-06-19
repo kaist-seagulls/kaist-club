@@ -1,7 +1,7 @@
 <template>
-  <div class="t-title">
+  <!-- <div class="t-title">
     DefaultLayout (NavBar and FilterBox)
-  </div>
+  </div> -->
   <NavBar />
   <div class="t-flex">
     <FilterBox />

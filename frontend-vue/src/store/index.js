@@ -13,6 +13,14 @@ const getIntervalOfCalendar = (year, month, firstDayOfWeek) => {
 
 export default createStore({
   state: {
+    inputQ: "",
+    searchQ: "",
+    searchPage: 1,
+    searchResult: {
+      numPosts: 0,
+      clubs: [],
+      posts: [],
+    },
     relatedClubs: {
       joined: [],
       subscribed: [],
@@ -31,6 +39,30 @@ export default createStore({
   },
   getters: {
     // Getters for filter
+    inputQ(state) {
+      return state.inputQ
+    },
+    searchQ(state) {
+      return state.searchQ
+    },
+    searchPage(state) {
+      return state.searchPage
+    },
+    searchResult(state) {
+      return state.searchResult
+    },
+    searchFilter(state) {
+      if (state.noFilter) {
+        return []
+      }
+      const filter = []
+      for (const club in state.checked) {
+        if (state.checked[club]) {
+          filter.push(club)
+        }
+      }
+      return filter
+    },
     filterConfig(state) {
       const config = {
         joined: [],
@@ -245,6 +277,18 @@ export default createStore({
   },
   mutations: {
     // Mutations for filter
+    updateInputQ(state, q) {
+      state.inputQ = q
+    },
+    updateSearchQ(state, q) {
+      state.searchQ = q
+    },
+    updateSearchPage(state, page) {
+      state.searchPage = page
+    },
+    updateSearchResult(state, searchResult) {
+      state.searchResult = searchResult
+    },
     updateRelatedClubs(state, relatedClubs) {
       const clubs = relatedClubs.joined.concat(relatedClubs.subscribed)
       const checked = {}
@@ -377,6 +421,15 @@ export default createStore({
   },
   actions: {
     // Actions for filter
+    updateInputQ(context, q) {
+      context.commit("updateInputQ", q)
+    },
+    updateSearchQ(context, q) {
+      context.commit("updateSearchQ", q)
+    },
+    updateSearchPage(context, page) {
+      context.commit("updateSearchPage", page)
+    },
     async fetchRelatedClubs(context) {
       console.log("fetchRelatedClubs")
       api.fetchRelatedClubs()
@@ -401,13 +454,6 @@ export default createStore({
         context.commit("setAllNotJoinedUnchecked")
       } else {
         context.commit("setAllNotJoinedChecked")
-      }
-    },
-    toggleAllChecked(context) {
-      if (context.getters.isAllChecked) {
-        context.commit("setAllUnchecked")
-      } else {
-        context.commit("setAllChecked")
       }
     },
     toggleNoFilter(context) {
@@ -520,40 +566,40 @@ export default createStore({
     async fetchData(context, payload) {
       const to = payload.to
       const viewName = payload.to.name
-      let requiredAuthority = null
-      if (["admin"].includes(viewName)) {
-        requiredAuthority = "a"  // Signed in + Administrator
-      } else if (
-        [
-          "newpost",
-          "editclub",
-          "manageclub",
-        ].includes(viewName)
-      ) {
-        requiredAuthority = "r"  // Signed in + Representative
-      } else if (
-        [
-          "calendar",
-          "changepassword",
-          "club",
-          "newclub",
-          "main",
-          "mypage",
-        ].includes(viewName)
-      ) {
-        requiredAuthority = "i"  // Signed in
-      } else if (
-        [
-          "forgotpassword",
-          "signin",
-          "signup",
-        ].includes(viewName)
-      ) {
-        requiredAuthority = "n"  // Not signed in
-      } else {
-        return  // Doesn't matter
-      }
-      console.log(requiredAuthority)
+      // let requiredAuthority = null
+      // if (["admin"].includes(viewName)) {
+      //   requiredAuthority = "a"  // Signed in + Administrator
+      // } else if (
+      //   [
+      //     "newpost",
+      //     "editclub",
+      //     "manageclub",
+      //   ].includes(viewName)
+      // ) {
+      //   requiredAuthority = "r"  // Signed in + Representative
+      // } else if (
+      //   [
+      //     "calendar",
+      //     "changepassword",
+      //     "club",
+      //     "newclub",
+      //     "main",
+      //     "mypage",
+      //   ].includes(viewName)
+      // ) {
+      //   requiredAuthority = "i"  // Signed in
+      // } else if (
+      //   [
+      //     "forgotpassword",
+      //     "signin",
+      //     "signup",
+      //   ].includes(viewName)
+      // ) {
+      //   requiredAuthority = "n"  // Not signed in
+      // } else {
+      //   return  // Doesn't matter
+      // }
+      // // console.log(requiredAuthority)
 
       if (viewName === "calendar") {
         const month = Number(to.params.month)
@@ -572,7 +618,6 @@ export default createStore({
           context.commit("updateBoundaryDates", { start, end })
           context.commit("updateRelatedClubs", res.data.relatedClubs)
           context.commit("updateEvents", res.data.events)
-          console.log(res)
         } catch (e) {
           alert(e.response.status)
           throw e
@@ -595,6 +640,20 @@ export default createStore({
           }
           throw e
         }
+      }
+      else if (viewName === "main") {
+        const options = {
+          requiredAuthority: "i",
+          relatedClubs: true,
+          search: {
+            q: context.getters.searchQ,
+            filter: context.getters.searchFilter,
+            page: context.getters.searchPage,
+          },
+        }
+        const res = await api.retrieve(options)
+        context.commit("updateRelatedClubs", res.data.relatedClubs)
+        context.commit("updateSearchResult", res.data.search)
       }
     },
     // Actions for userInfo

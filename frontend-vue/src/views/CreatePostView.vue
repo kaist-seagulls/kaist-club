@@ -6,5 +6,135 @@
     <div>
       ToFill: CreatePostView Inners
     </div>
+    <div>
+      <div>
+        title:
+      </div>
+      <div>
+        <input type="text" v-model="Title">
+      </div>
+    </div>
+    <div>
+      <input type="file" accept="image/png, image/jpeg" @change="changeFile" multiple>
+    </div>
+    <div v-for="(file, index) in files" v-bind:key="index">
+      <img :src="imgUrls[index]" style="height:100px">
+    </div>
+    <div>
+      <div>
+        <input type="checkbox" v-model="isRecruitment">
+        <div>
+          This post is for recruitment
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        <input type="checkbox" v-model="isScheduleIncluded">
+        <div>
+          Include schedule data
+        </div>
+      </div>
+      <div v-if="isScheduleIncluded">
+        <div>
+          <div>
+            startDate:
+          </div>
+          <div>
+            <input type="date" v-model="startDate" @change="checkDate">
+          </div>
+        </div>
+        <div>
+          <div>
+            endDate:
+          </div>
+          <div>
+            <input type="date" v-model="endDate" @change="checkDate">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
+        Contents:
+      </div>
+      <div>
+        <input type="text">
+      </div>
+    </div>
+    <div>
+      <button @click="post()">Post</button>
+    </div>
   </div>
 </template>
+
+<script>
+import api from "@/api"
+import { mapGetters } from "vuex"
+
+export default {
+  name: "SignInView",
+  data() {
+    return {
+      title: "",
+      files: [],
+      isScheduleIncluded: false,
+      isRecruitment: false,
+      startDate: new Date(),
+      endDate: new Date(),
+      content: "",
+      imgUrls: [],
+    }
+  },
+  computed: {
+    ...mapGetters({
+      userInfo: "userInfo",
+    }),
+  },
+  methods: {
+    async post() {
+      try {
+        await api.createPost(
+          this.userInfo.representing,
+          {
+            title: this.title,
+            isScheduleIncluded: this.isScheduleIncluded,
+            isRecruitment: this.isRecruitment,
+            startDate: this.startDate,
+            endDate: this.endDate,
+            content: this.content,
+          },
+          this.files,
+        )
+        alert("Post uploaded")
+        this.goHome()
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
+    },
+    addFile() {
+      this.files.push(null)
+    },
+    removeFile(index) {
+      this.files.splice(index, 1)
+    },
+    changeFile(event) {
+      this.files = event.target.files || event.dataTransfer.files
+      for (const file of this.files) {
+        const url = URL.createObjectURL(file)
+        this.imgUrls.push(url)
+      }
+    },
+    checkDate(event) {
+      if (this.startDate > this.endDate) {
+        alert("startDate cannot be later than endDate")
+        event.target.value = event.target.defaultValue
+      }
+    },
+    goHome() {
+      this.$router.push("/")
+    },
+  },
+}
+</script>

@@ -797,7 +797,6 @@ app.post("/api/v1/send-auth-code", (req, res) => {
   }
   const purpose = req.body.purpose
   const userId = req.body.userId
-  console.log(req.body)
   doTransaction(res, async (D) => {
     const user = await D.Users.lookup(userId)
     if (
@@ -903,7 +902,6 @@ app.post("/api/v1/sign-out", (req, res) => {
 })
 
 app.post("/api/v1/sign-up", (req, res) => {
-  console.log(req.body)
   if (isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "signedIn",
@@ -1215,8 +1213,10 @@ app.get("/api/v1/retrieve", (req, res) => {
       }
       const filter = req.query.search.filter
       if (!Array.isArray(filter) || filter.length === 0) {
+        search.numPosts = await D.Posts.countFilteredByQ(userId, q)
         search.posts = await D.Posts.filterByQPage(userId, q, page)
       } else {
+        search.numPosts = await D.Posts.countFilteredByQFilter(userId, q, filter)
         search.posts = await D.Posts.filterByQFilterPage(userId, q, filter, page)
       }
     }

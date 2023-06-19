@@ -1,7 +1,4 @@
 <template>
-  <div class="t-title">
-    NonfilteredLayout (Only NavBar)
-  </div>
   <NavBar />
   <slot />
 </template>
@@ -13,5 +10,4 @@ export default {
     NavBar,
   },
 }
-
 </script>

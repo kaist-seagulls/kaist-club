@@ -77,7 +77,6 @@ const routes = [
     name: "main",
     meta: { layout: DefaultLayout },
     component: MainView,
-    props: (route) => ({ q: route.query.q || "" }),
   },
   {
     path: "/manageclub",
@@ -118,6 +117,14 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   // console.log("beforeEach", to, from)
+  if (to.name === "main") {
+    if (to.query.q) {
+      store.dispatch("updateSearchQ", to.query.q)
+    }
+    if (to.query.page) {
+      store.dispatch("updateSearchPage", Number(to.query.page))
+    }
+  }
   const cont = async () => {
     try {
       // const userInfo = (await axios.get("/api/v1/get-user-info")).data
