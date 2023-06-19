@@ -44,13 +44,18 @@ async function getOuttaMyClubDude(clubName, userId) {
   return await axios.post(prefix + "get-outta-my-club-dude/" + clubName, { userId })
 }
 async function createPost(clubName, postInfo, files) {
-  await axios.post(prefix + "create-post/" + clubName, postInfo)
+  const res = await axios.post(prefix + "create-post", { clubName, postInfo })
+  console.log(res)
+  const postId = res.data.postId
+
   const formData = new FormData()
+  formData.append("clubName", clubName)
+  formData.append("postId", postId)
   for (let i = 0; i < files.length; i++) {
     let file = files[i]
-    formData.append("files[" + i + "]", file)
+    formData.append("uploadImages", file)
   }
-  return await axios.post(prefix + "send-files-for-post/" + clubName, formData, {
+  return await axios.post(prefix + "send-files-for-post/", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },

@@ -655,19 +655,19 @@ export default createStore({
         context.commit("updateRelatedClubs", res.data.relatedClubs)
         context.commit("updateSearchResult", res.data.search)
       }
+      else if (viewName === "newpost") {
+        const options = {
+          requiredAuthority: "r",
+        }
+        const res = await api.retrieve(options)
+        const userInfo = {
+          userId: res.data.userId,
+          representingClub: res.data.representingClub,
+          isAdmin: res.data.isAdmin,
+        }
+        context.commit("updateUserInfo", userInfo)
+      }
     },
-    // Actions for userInfo
-    // fetchUserInfo(context) {
-    //   axios
-    //     .get(prefix + "get-user-info")
-    //     .then((res) => {
-    //       context.commit("updateUserInfo", res.data)
-    //     })
-    //     .catch((err) => {
-    //       alert(err)
-    //       console.log(err)
-    //     })
-    // },
     async requestHandover(context, id) {
       let userInfo = context.state.userInfo
       try {
