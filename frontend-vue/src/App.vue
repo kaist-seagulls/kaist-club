@@ -48,6 +48,8 @@ body {
 
 .t-flex {
   display: flex;
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 /* Log */
@@ -516,11 +518,11 @@ body {
 /* FilterBox start */
 .flex-filter-box {
   display: flex;
-  padding-top: 55px;
+  margin-top: 55px;
   flex-direction: column;
   justify-content: space-between;
   width: 300px;
-  height: 100vh;
+  height: calc(100vh-55px);
   box-sizing: border-box;
   border-right: 1px solid #D8D8D8;
 }
@@ -539,7 +541,7 @@ body {
   padding: 0px 40px 0px 40px;
   display: flex;
   flex-direction: column;
-  height: 538.6px;
+  height: 100%;
   overflow: auto;
   white-space: nowrap;
 }
@@ -571,10 +573,10 @@ body {
 /* Main start */
 .flex-main {
   display: flex;
-  padding-top: 55px;
+  margin-top: 55px;
   flex-direction: column;
   justify-content: space-between;
-  height: 100vh;
+  height: calc(100vh-55px);
   width: 100%;
   overflow-y: auto;
   white-space: nowrap;
@@ -712,11 +714,11 @@ body {
 /* UserProfile start */
 .flex-user-profile {
   display: flex;
-  padding-top: 55px;
+  margin-top: 55px;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: calc(100vh-55px);
   width: 100%;
   box-sizing: border-box;
 }
@@ -730,9 +732,9 @@ body {
 /* CreatePost start */
 .flex-create-post {
   display: flex;
-  padding-top: 55px;
+  margin-top: 55px;
   flex-direction: column;
-  height: 100vh;
+  height: (100vh-55px);
   width: 100%;
   overflow-y: auto;
   white-space: nowrap;
