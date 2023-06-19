@@ -35,7 +35,7 @@ function buildDataController(conn) {
       await conn.commit()
     },
     Clubs: {
-      createClub: async (clubName, description, categoryName) => {
+      insertClub: async (clubName, description, categoryName) => {
         const result = await conn.execute(
           "INSERT INTO Clubs VALUES (?, ?, ?)",
           [clubName, description, categoryName],
@@ -65,6 +65,40 @@ function buildDataController(conn) {
         )
         return result[0]
       },
+      update: async (clubDescription, clubCategory, clubColor, clubName) => {
+        const result = await conn.execute(
+          `
+            UPDATE Clubs 
+            SET descriptions=?, categoryName=?, color=?
+            WHERE clubName = ?
+          `,
+          [clubDescription, clubCategory, clubColor, clubName],
+        )
+        return result[0].affectedRows
+      },
+      delete: async (clubName) => {
+        const result = await conn.execute(
+          "DELETE FROM Clubs WHERE clubName=?",
+          [clubName],
+        )
+        return result[0].affectedRows
+      },
+    },
+    ClubFiles: {
+      lookupByClubName: async (clubName) => {
+        const result = await conn.execute(
+          "SELECT * FROM ClubFiles WHERE clubName=?",
+          [clubName],
+        )
+        return result[0][0]
+      },
+      insert: async (clubName, logoFileName) => {
+        const result = await conn.execute(
+          "INSERT INTO ClubFiles VALUES(?, ?)",
+          [clubName, logoFileName],
+        )
+        return result[0].affectedRows
+      },
     },
     Users: {
       lookup: async (userId) => {
@@ -89,7 +123,7 @@ function buildDataController(conn) {
           return result[0][0]
         }
       },
-      create: async (userId, phone, pw) => {
+      insert: async (userId, phone, pw) => {
         const result = await conn.execute(
           "INSERT INTO Users (userId, phone, hashedPw, isAdmin) VALUES (?, ?, ?, FALSE)",
           [userId, phone, hashPw(pw)],
@@ -119,14 +153,14 @@ function buildDataController(conn) {
       },
     },
     CreationRequests: {
-      addRequest: async (categoryName, clubName, description, headerImg, logoImg, userId) => {
+      insertRequest: async (categoryName, clubName, description, headerImg, logoImg, userId) => {
         const result = await conn.execute(
           "INSERT INTO CreationRequests VALUES (?, ?, ?, NOW(), ?, ?, ?)",
           [clubName, userId, description, categoryName, logoImg, headerImg],
         )
         return result[0].affectedRows
       },
-      readRequest: async (requestId) => {
+      lookupByRequestId: async (requestId) => {
         const result = await conn.execute(
           "SELECT * FROM CreationRequests WHERE requestId=?",
           [requestId],
@@ -139,6 +173,57 @@ function buildDataController(conn) {
           [requestId],
         )
         return result[0].affectedRows
+      },
+      lookupByClubName: async (clubName) => {
+        const result = await conn.execute(
+          "SELECT * FROM CreationRequests WHERE clubName=?",
+          [clubName],
+        )
+        return result[0][0]
+      },
+      headerUpdate: async (requestId, fileName) => {
+        const result = await conn.execute(
+          "UPDATE CreationRequests SET headerImg=? WHERE postId=?",
+          [fileName, requestId],
+        )
+        return result[0].affectedRows
+      },
+      logoUpdate: async (requestId, fileName) => {
+        const result = await conn.execute(
+          "UPDATE CreationRequests SET logoImg=? WHERE postId=?",
+          [fileName, requestId],
+        )
+        return result[0].affectedRows
+      },
+    },
+    CreationRequestFiles: {
+      insertLogo: async (requestId, fileName) => {
+        const result = await conn.execute(
+          "INSERT INTO CreationRequestFiles VALUES (?, FALSE, ?)",
+          [requestId, fileName],
+        )
+        return result[0].affectedRows
+      },
+      insertHeader: async (requestId, fileName) => {
+        const result = await conn.execute(
+          "INSERT INTO CreationRequestFiles VALUES (?, TRUE, ?)",
+          [requestId, fileName],
+        )
+        return result[0].affectedRows
+      },
+      lookupLogoByRequestId: async (requestId) => {
+        const result = await conn.execute(
+          "SELECT * FROM CreationRequestFiles WHERE requestId=? AND isHeader=FALSE",
+          [requestId],
+        )
+        return result
+      },
+      lookupHeaderByRequestId: async (requestId) => {
+        const result = await conn.execute(
+          "SELECT * FROM CreationRequestFiles WHERE requestId=? AND isHeader=TRUE",
+          [requestId],
+        )
+        return result
       },
     },
     AuthCodes: {
@@ -153,7 +238,7 @@ function buildDataController(conn) {
           return result[0][0]
         }
       },
-      create: async (userId, code) => {
+      insert: async (userId, code) => {
         const result = await conn.execute(
           "INSERT INTO AuthCodes (userId, code, issuedAt) VALUES (?, ?, NOW())",
           [userId, code],
@@ -183,19 +268,27 @@ function buildDataController(conn) {
         )
         return result[0]
       },
-      selectUser: async (clubName) => {
-        const result = await conn.execute(
-          "SELECT userId from Joins WHERE clubName=?",
-          [clubName],
-        )
-        return result[0]
-      },
+
       checkAlreadyJoined: async (userId, clubName) => {
         const result = await conn.execute(
           "SELECT userId, clubName from joins WHERE userId=? and clubName=?",
           [userId, clubName],
         )
         return result[0]
+      },
+      insert: async (userId, clubName) => {
+        const result = await conn.execute(
+          "INSERT INTO Joins VALUES (?, ?)",
+          [userId, clubName],
+        )
+        return result[0].affectedRows
+      },
+      delete: async (userId, clubName) => {
+        const result = await conn.execute(
+          "DELETE FROM Joins WHERE userId=? and clubName=?",
+          [userId, clubName],
+        )
+        return result[0].affectedRows
       },
     },
     Subscribes: {
@@ -213,19 +306,19 @@ function buildDataController(conn) {
         )
         return result[0]
       },
-      addSubscription: async (userId, clubName) => {
+      insertSubscription: async (userId, clubName) => {
         const result = await conn.execute(
           "INSERT INTO Subscribes VALUES(?,?)",
           [userId, clubName],
         )
-        return result
+        return result[0].affectedRows
       },
       deleteSubscription: async (userId, clubName) => {
         const result = await conn.execute(
           "DELETE FROM Subscribes WHERE userId=? AND clubName=?",
           [userId, clubName],
         )
-        return result[0]
+        return result[0].affectedRows
       },
     },
     Represents: {
@@ -234,18 +327,21 @@ function buildDataController(conn) {
           "SELECT * FROM Represents WHERE userId = ?",
           [userId],
         )
-        if (result[0].length == 0) {
-          return null
-        } else {
-          return result[0][0]
-        }
+        return result[0]
       },
-      getClubName: async (userId) => {
+      lookupByClubName: async (userId) => {
         const result = await conn.execute(
           "SELECT * FROM Represents WHERE userId=?",
           [userId],
         )
-        return result[0]
+        return result[0][0]
+      },
+      update: async (clubName, newRep) => {
+        const result = await conn.execute(
+          "UPDATE Represents SET userId=? WHERE clubName=?",
+          [newRep, clubName],
+        )
+        return result[0].affectedRows
       },
     },
     JoinRequests: {
@@ -256,15 +352,44 @@ function buildDataController(conn) {
         )
         return result[0]
       },
-      getUsers: async (clubName) => {
+      lookupByClubName: async (clubName) => {
         const result = await conn.execute(
           "SELECT userId from JoinRequest where clubName=?",
           [clubName],
         )
         return result[0]
       },
+      insert: async (userId, clubName) => {
+        const result = await conn.execute(
+          "INSERT INTO JoinRequests VALUES (?, ?, NOW())",
+          [userId, clubName],
+        )
+        return result[0].affectedRows
+      },
+      delete: async (userId, clubName) => {
+        const result = await conn.execute(
+          "DELETE FROM JoinRequests where userId=? AND clubName=?",
+          [userId, clubName],
+        )
+        return result[0].affectedRows
+      },
     },
     Posts: {
+      insert: async (clubName, title, contents, startDate, endDate, isRecruit, isOnly) => {
+        const result = await conn.execute(
+          "INSERT INTO Posts VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?)",
+          [null, clubName, title, contents, startDate, endDate, isRecruit, isOnly],
+        )
+        console.log(result)
+        return result[0]["insertId"]
+      },
+      delete: async (postId) => {
+        const result = await conn.execute(
+          "DELETE FROM Posts WHERE postId=?",
+          [postId],
+        )
+        return result[0].affectedRows
+      },
       lookupFilterByClub: async (postId, clubName) => {
         const result = await conn.execute(
           "SELECT * FROM Posts WHERE postId = ? AND clubName = ?",
@@ -484,6 +609,64 @@ function buildDataController(conn) {
           [userId, userId, userId, escapedQ, escapedQ, limitString, offsetString],
         )
         return posts[0]
+      },
+      update: async (postId, clubName, postInfo) => {
+        const title = postInfo["title"]
+        const content = postInfo["content"]
+        const isRecruit = postInfo["isRecruitment"]
+        const schedule = postInfo["schedule"]
+        const isOnly = postInfo["isOnly"]
+        const posts = await conn.execute(
+          "UPDATE Posts SET clubName=?, title=?, uploadTime=NOW(), contents=?, scheduleStart=?, scheduleEnd=?, isRecruit=?, isOnly=? WHERE postId=?",
+          [clubName, title, content, schedule["startDate"], schedule["endDate"], isRecruit, isOnly, postId],
+        )
+        return posts[0].affectedRows
+      },
+      lastInsertId: async () => {
+        const lastRow = await conn.execute(
+          "SELECT last_insert_id()",
+          [],
+        )
+        return lastRow[0]
+      },
+    },
+    PostFiles: {
+      insert: async (postId, clubName, fileName) => {
+        const result = await conn.execute(
+          "INSERT INTO PostFiles VALUES (?,?,?)",
+          [postId, clubName, fileName],
+        )
+        return result[0].affectedRows
+      },
+      lookupByPostId: async (postId) => {
+        const result = await conn.execute(
+          "SELECT * FROM PostFiles WHERE postId=?",
+          [postId],
+        )
+        return result
+      },
+    },
+    HandoverRequests: {
+      insert: async (fromId, toId, clubName) => {
+        const result = await conn.execute(
+          "INSERT INTO HandoverRequests VALUES (?,?,?)",
+          [fromId, toId, clubName],
+        )
+        return result[0].affectedRows
+      },
+      delete: async (handoverId) => {
+        const result = await conn.execute(
+          "DELETE FROM HandoverRequests WHERE requestId=?",
+          [handoverId],
+        )
+        return result[0].affectedRows
+      },
+      lookup: async (handoverId) => {
+        const result = await conn.execute(
+          "SELECT * FROM HandoverRequests WHERE requestId=?",
+          [handoverId],
+        )
+        return result[0][0]
       },
     },
   }

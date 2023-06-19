@@ -47,7 +47,7 @@ CREATE TABLE
         clubName VARCHAR(20) PRIMARY KEY,
         descriptions VARCHAR(100) NOT NULL,
         categoryName VARCHAR(30) NOT NULL,
-        color CHAR(7) NOT NULL
+        color CHAR(7) NOT NULL,
     );
 
 INSERT INTO Clubs
@@ -72,6 +72,16 @@ VALUES (
         'Arts',
         '#ffff00'
     );
+
+CREATE TABLE
+    ClubFiles(
+        clubName varchar(20) primary key,
+        logoFileName varchar(50) not null
+    );
+
+ALTER TABLE ClubFiles
+ADD
+    FOREIGN KEY (clubName) REFERENCES Clubs (clubName);
 
 CREATE TABLE
     Posts (
@@ -109,7 +119,7 @@ VALUES (
         NULL,
         NULL,
         FALSE,
-        TRUE
+        FALSE
     ), (
         'Number',
         'Number Recruit',
@@ -118,7 +128,7 @@ VALUES (
         "2023-09-01",
         "2023-09-08",
         TRUE,
-        FALSE
+        TRUE
     ), (
         'K-Let',
         'K-Let President',
@@ -127,7 +137,7 @@ VALUES (
         NULL,
         NULL,
         FALSE,
-        TRUE
+        FALSE
     ), (
         'K-Let',
         'K-Let Recruit',
@@ -136,116 +146,25 @@ VALUES (
         "2023-08-31",
         "2023-09-05",
         TRUE,
-        FALSE
-    ), (
-        'K-Let',
-        'K-Let Recruit',
-        "2023-08-31 02:34:50",
-        'K-Let wants 23F sinip members!',
-        "2023-09-28",
-        "2023-10-05",
-        TRUE,
-        FALSE
-    ), (
-        'K-Let',
-        'K-Let Recruit',
-        "2023-08-31 02:34:50",
-        'K-Let wants 23F sinip members!',
-        "2023-10-28",
-        "2023-11-05",
-        TRUE,
-        FALSE
-    ), (
-        'K-Let',
-        'K-Let Recruit',
-        "2023-08-31 02:34:50",
-        'K-Let wants 23F sinip members!',
-        "2023-11-28",
-        "2023-12-05",
-        TRUE,
-        FALSE
-    ), (
-        'K-Let',
-        'K-Let Recruit',
-        "2023-08-31 02:34:50",
-        'K-Let wants 23F sinip members!',
-        "2023-12-28",
-        "2024-01-05",
-        TRUE,
-        FALSE
-    ), (
-        'K-Let',
-        'K-Let Recruit',
-        "2023-08-31 02:34:50",
-        'K-Let wants 23F sinip members!',
-        "2024-01-28",
-        "2024-02-05",
-        TRUE,
-        FALSE
-    ), (
-        'K-Let',
-        'K-Let Recruit',
-        "2023-08-31 02:34:50",
-        'K-Let wants 23F sinip members!',
-        "2024-02-28",
-        "2024-03-05",
-        TRUE,
-        FALSE
-    ), (
-        'K-Let',
-        'K-Let Recruit',
-        "2023-08-31 02:34:50",
-        'K-Let wants 23F sinip members!',
-        "2024-03-28",
-        "2024-04-05",
-        TRUE,
-        FALSE
-    ), (
-        'K-Let',
-        'K-Let Recruit',
-        "2023-08-31 02:34:50",
-        'K-Let wants 23F sinip members!',
-        "2024-04-28",
-        "2024-05-05",
-        TRUE,
-        FALSE
-    ), (
-        'K-Let',
-        'K-Let Recruit',
-        "2023-08-31 02:34:50",
-        'K-Let wants 23F sinip members!',
-        "2024-05-28",
-        "2024-06-05",
-        TRUE,
-        FALSE
-    ), (
-        'K-Let',
-        'K-Let Recruit',
-        "2023-08-31 02:34:50",
-        'K-Let wants 23F sinip members!',
-        "2024-06-28",
-        "2024-07-05",
-        TRUE,
-        FALSE
-    ), (
-        'K-Let',
-        'K-Let Recruit',
-        "2023-08-31 02:34:50",
-        'K-Let wants 23F sinip members!',
-        "2024-07-28",
-        "2024-08-05",
-        TRUE,
-        FALSE
-    ), (
-        'K-Let',
-        'K-Let Recruit',
-        "2023-08-31 02:34:50",
-        'K-Let wants 23F sinip members!',
-        "2024-08-28",
-        "2024-09-05",
-        TRUE,
-        FALSE
+        TRUE
     );
+
+drop table postfiles;
+
+CREATE TABLE
+    PostFiles (
+        postId INT not null,
+        clubName varchar(30) NOT NULL,
+        imageName varchar(50) Primary key
+    );
+
+ALTER TABLE PostFiles
+ADD
+    FOREIGN KEY (postID) REFERENCES Posts (postId);
+
+ALTER TABLE PostFiles
+ADD
+    FOREIGN KEY (clubName) REFERENCES Clubs (clubName);
 
 CREATE TABLE Categories ( categoryName VARCHAR(30) PRIMARY KEY );
 
@@ -296,6 +215,18 @@ VALUES (
         Null,
         Null
     );
+
+CREATE TABLE
+    CreationRequestFiles (
+        requestId INT not null,
+        isheader BOOLEAN not null,
+        img longblob
+    );
+
+ALTER Table
+    CreationRequestFiles
+Add
+    foreign key (requestId) references CreationRequests (requestId);
 
 CREATE TABLE
     Subscribes (
@@ -350,9 +281,10 @@ VALUES ('tanit23', 'K-Let'), ('tpdus2155', 'Number');
 
 CREATE TABLE
     HandoverRequests (
+        requestId INT AUTO_INCREMENT PRIMARY KEY,
         fromId VARCHAR(20) NOT NULL,
         toId VARCHAR(20) NOT NULL,
-        clubName VARCHAR(20) PRIMARY KEY
+        clubName VARCHAR(20)
     );
 
 ALTER TABLE HandoverRequests
@@ -369,6 +301,7 @@ ADD
 
 INSERT INTO HandoverRequests
 VALUES (
+        NULL,
         'tpdus2155',
         'antony',
         'Number'
