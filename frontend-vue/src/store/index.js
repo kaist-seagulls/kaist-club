@@ -340,24 +340,23 @@ export default createStore({
     },
     //Mutations for admin
     updateAdminInfo(state, adminInfo) {
-      console.log(adminInfo.requestsHandover)
-      state.currentClubs = adminInfo.clubs
+      state.currentClubs = adminInfo.currentClubs
       state.requestsNewClub = {}
       state.requestsHandover = {}
       for (const request of adminInfo.requestsNewClub) {
         state.requestsNewClub[request.requestNewClubId] = {
           categoryName: request.categoryName,
           clubName: request.clubName,
-          clubDescription: request.clubDescription,
-          requestUser: request.requestUser,
+          descriptions: request.descriptions,
+          userId: request.userId,
         }
       }
       for (const request of adminInfo.requestsHandover) {
-        console.log(request.fromUserName)
+        console.log(request.fromId)
         state.requestsHandover[request.requestsHandoverId] = {
           clubName: request.clubName,
-          fromUserName: request.fromUserName,
-          toUserName: request.toUserName,
+          fromId: request.fromId,
+          toId: request.toId,
         }
       }
     },
@@ -512,6 +511,7 @@ export default createStore({
     async fetchAdminInfo(context) {
       try {
         let res = await api.getAdminInfo()
+        console.log(res)
         context.commit("updateAdminInfo", res.data)
       } catch (err) {
         alert(err)
