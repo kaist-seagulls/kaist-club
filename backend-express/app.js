@@ -1183,13 +1183,11 @@ app.post("/api/v1/sign-up", (req, res) => {
 })
 
 app.get("/api/v1/get-admin-info", (req, res) => {
-  const sess = req.session
   const userId = req.session.userId
   doTransaction(res, async (conn) => {
-    if (sess.islogged === false) {
-      await conn.rollback()
-      res.status(StatusCodes.UNAUTHORIZED).json({
-        message: "Unauthorized access",
+    if (!isSignedIn(req)) {
+      res.status(StatusCodes.FORBIDDEN).json({
+        message: "Not signed in",
       })
       return
     }
@@ -1201,7 +1199,7 @@ app.get("/api/v1/get-admin-info", (req, res) => {
       })
       return
     }
-
+    console.log("344")
     const readClubResult = (await conn.Clubs.lookupAdmin())
     const readRequestResult = (await conn.CreationRequests.lookupAdmin())
     const readHandoverResult = (await conn.HandoverRequests.lookupAdmin())
@@ -1221,19 +1219,21 @@ app.get("/api/v1/get-admin-info", (req, res) => {
     }
     for (let j = 0; j < readRequestResult.length; j++) {
       let dic = {}
-      dic["requestsNewClubId"] = j
-      dic["categoryName"] = readRequestResult[j]["clubCategory"]
+      dic["requestId"] = readRequestResult[j]["requestId"]
+      dic["categoryName"] = readRequestResult[j]["categoryName"]
       dic["clubName"] = readRequestResult[j]["clubName"]
-      dic["clubDescription"] = readRequestResult[j]["descriptions"]
-      dic["requestUser"] = readRequestResult[j]["requestUser"]
+      dic["descriptions"] = readRequestResult[j]["descriptions"]
+      dic["userId"] = readRequestResult[j]["userId"]
+      dic["reqTime"] = readRequestResult[j]["reqTime"]
+
       requests_new_club.push(dic)
     }
     for (let k = 0; k < readHandoverResult.length; k++) {
       let dic = {}
-      dic["requestsHandoverId"] = k
-      dic["clubName"] = readHandoverResult[k]["ofClub"]
-      dic["fromUserName"] = readHandoverResult[k]["fromId"]
-      dic["toUserName"] = readHandoverResult[k]["toId"]
+      dic["requestId"] = readHandoverResult[k]["requestId"]
+      dic["clubName"] = readHandoverResult[k]["clubName"]
+      dic["fromId"] = readHandoverResult[k]["fromId"]
+      dic["toId"] = readHandoverResult[k]["toId"]
       requests_handover.push(dic)
     }
     const returnDic = {}
