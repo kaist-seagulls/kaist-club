@@ -67,19 +67,75 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // parse application/json
 app.use(bodyParser.json())
 
-const storage = multer.diskStorage({
+const MIME_TYPE_MAP = {
+  "image/png": "png",
+  "image/jpeg": "jpeg",
+  "image/jpg": "jpg",
+}
+const storagePost = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploadFiles/")
+    cb(null, "uploadFiles/post/")
   },
   filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname)
+    const ext = MIME_TYPE_MAP[file.mimetype]
+    file.originalname = file.originalname.split(`.${ext}`)[0]
     //cb(null, path.basename(file.originalname, ext) + "-" + Date.now() + ext)
-    cb(null, path.basename(file.originalname, ext) + ext)
+    cb(null, file.originalname + "-" + Date.now() + "." + ext)
   },
 })
+const storageLogo = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploadFiles/logoImg/")
+  },
+  filename: function (req, file, cb) {
+    const ext = MIME_TYPE_MAP[file.mimetype]
+    file.originalname = file.originalname.split(`.${ext}`)[0]
+    //cb(null, path.basename(file.originalname, ext) + "-" + Date.now() + ext)
+    cb(null, path.basename(file.originalname, ext) + "-" + Date.now() + "." + ext)
+  },
+})
+const storageHeader = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploadFiles/headerImg/")
+  },
+  filename: function (req, file, cb) {
+    const ext = MIME_TYPE_MAP[file.mimetype]
+    file.originalname = file.originalname.split(`.${ext}`)[0]
+    //cb(null, path.basename(file.originalname, ext) + "-" + Date.now() + ext)
+    cb(null, path.basename(file.originalname, ext) + "-" + Date.now() + "." + ext)
+  },
+})
+const fileFilter = (req, file, cb) => {
+  if (["image/png", "image/jpg", "image/jpeg"].includes(file.mimetype)) {
+    cb(null, true)
+  } else {
+    cb(new Error("File type not supported"), false)
+  }
+}
 
-let upload = multer({ storage: storage })
+const uploadPost = multer({ storage: storagePost, fileFilter: fileFilter }).array("uploadImages", 5)
+const uploadHeader = multer({ storage: storageHeader, fileFilter: fileFilter })
+const uploadLogo = multer({ storage: storageLogo, fileFilter: fileFilter })
+const uploadMiddleware = (req, res, next) => {
 
+  const upload = uploadPost
+  // Here call the upload middleware of multer
+  upload(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      // A Multer error occurred when uploading.
+      const err = new Error("Multer error")
+      next(err)
+    } else if (err) {
+      // An unknown error occurred when uploading.
+      const err = new Error("File type not supported")
+      next(err)
+    }
+
+    // Everything went fine.
+    next()
+  })
+}
+//app.use(uploadMiddleware)
 const isSignedIn = (req) => {
   return req.session.mode === "i"
 }
@@ -105,6 +161,7 @@ const userIdOf = (req) => {
 const sessOut = (req) => {
   req.session.destroy()
 }
+
 app.get("/api/v1/get-file-for-post", (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
@@ -113,31 +170,44 @@ app.get("/api/v1/get-file-for-post", (req, res) => {
   }
   const postId = req.body.postId
   const clubName = req.body.clubName
-
+  const fileName = req.params.fileName
+  console.log(fileName)
   doTransaction(res, async (D) => {
+
+    //const checkExists = await D.Posts.lookupFilterByClub(postId, clubName)
+    //if (checkExists.length === 0) {
+    //  await D.rollback()
+    //  res.status(StatusCodes.NOT_FOUND).json({
+    //    message: "Post not found",
+    //  })
+    //  return
+    //}
+    const fileExist = await readFileSync.existsSync(`uploadFiles/post/${fileName}`)
+    if (!fileExist) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "File not found",
+      })
+    }
 
     const checkExists = await D.Posts.lookupFilterByClub(postId, clubName)
     if (checkExists.length === 0) {
-      await D.rollback()
       res.status(StatusCodes.NOT_FOUND).json({
         message: "Post not found",
       })
-      return
     }
+
     console.log("dsasdasdaasd")
-    const postFile = checkExists["postFile"]
-    res.sendFile(postFile, options, (err) => {
-      if (err) {
-        res.status(StatusCodes.CONFLICT).json({
-          message: "Conflict occurred while accessing the file",
-        })
-        return
-      }
-    })
+    const fileNum = checkExists["postFileIndex"]
+    console.log(fileNum)
+    for (let i = 0; i < fileNum; i++) {
+      const fileName = req.params.fileName
+      console.log(fileName)
+      res.download(`uploadFiles/post/${fileName}`)
+    }
   })
 })
 
-app.post("/api/v1/post-file-for-post", upload.single("image"), (req, res) => {
+app.post("/api/v1/send-file-for-post", uploadMiddleware, (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -146,7 +216,6 @@ app.post("/api/v1/post-file-for-post", upload.single("image"), (req, res) => {
   const userId = req.session.userId
   const postId = req.body.postId
   const clubName = req.body.clubName
-  const image = `/uploadFiles/post/${req.file.filename}`
 
   doTransaction(res, async (D) => {
     const checkRep = await D.Represents.lookupByUser(userId)
@@ -167,15 +236,34 @@ app.post("/api/v1/post-file-for-post", upload.single("image"), (req, res) => {
       })
       return
     }
-    console.log("dsdsdsa")
-    const fileUpdate = await D.Posts.fileUpdate(postId, image)
-    if (!fileUpdate) {
-      await D.rollback()
-      res.status(StatusCodes.CONFLICT).json({
-        message: "Requested file cannot be updated",
-      })
-      return
+
+    //uploadMiddleware()
+    console.log("aaaaaaaa")
+    console.log(req.files)
+    for (const file of req.files) {
+      const fileName = file.filename
+      console.log(fileName)
+      const insertFile = await D.PostFiles.insert(postId, clubName, fileName)
+      console.log(insertFile)
+      if (!insertFile) {
+        await D.rollback()
+        res.status(StatusCodes.CONFLICT).json({
+          message: "Conflict occurred while processing files",
+        })
+        return
+      }
     }
+    //const imagesArray = req.files
+    //const image = `/uploadFiles/post/${req.file.filename}`
+
+    //const fileUpdate = await D.Posts.fileUpdate(postId, image)
+    //if (!fileUpdate) {
+    //  await D.rollback()
+    //  res.status(StatusCodes.CONFLICT).json({
+    //    message: "Requested file cannot be updated",
+    //  })
+    //  return
+    //}
     await D.commit()
     res.status(StatusCodes.NO_CONTENT).end()
     return
@@ -242,7 +330,7 @@ app.get("/api/v1/get-header-for-creation-request", (req, res) => {
   })
 })
 
-app.post("/api/v1/post-header-for-creation-request", upload.single("image"), (req, res) => {
+app.post("/api/v1/post-header-for-creation-request", uploadHeader.single("image"), (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -275,7 +363,7 @@ app.post("/api/v1/post-header-for-creation-request", upload.single("image"), (re
   })
 })
 
-app.post("/api/v1/post-logo-for-creation-request", upload.single("image"), (req, res) => {
+app.post("/api/v1/post-logo-for-creation-request", uploadLogo.single("image"), (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",

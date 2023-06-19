@@ -489,11 +489,15 @@ function buildDataController(conn) {
         )
         return posts[0].affectedRows
       },
-      fileUpdate: async (postId, fileName) => {
+
+    },
+    PostFiles: {
+      insert: async (postId, clubName, fileName) => {
         const result = await conn.execute(
-          "UPDATE Posts SET postFile=? WHERE postId=?",
-          [fileName, postId],
+          "INSERT INTO PostFiles VALUES (?,?,?)",
+          [postId, clubName, fileName],
         )
+        console.log(result)
         return result[0].affectedRows
       },
     },

@@ -84,7 +84,7 @@ CREATE TABLE
         scheduleEnd DATE,
         isRecruit BOOLEAN NOT NULL,
         isOnly BOOLEAN NOT NULL,
-        postFile LONGBLOB
+        postFileIndex INT
     );
 
 ALTER TABLE Posts
@@ -101,7 +101,7 @@ INSERT INTO
         scheduleEnd,
         isRecruit,
         isOnly,
-        postFile
+        postFileIndex
     )
 VALUES (
         'Number',
@@ -144,6 +144,23 @@ VALUES (
         TRUE,
         NULL
     );
+
+drop table postfiles;
+
+CREATE TABLE
+    PostFiles (
+        postId INT not null,
+        clubName varchar(30) NOT NULL,
+        imageName varchar(50) Primary key
+    );
+
+ALTER TABLE PostFiles
+ADD
+    FOREIGN KEY (postID) REFERENCES Posts (postId);
+
+ALTER TABLE PostFiles
+ADD
+    FOREIGN KEY (clubName) REFERENCES Clubs (clubName);
 
 CREATE TABLE Categories ( categoryName VARCHAR(30) PRIMARY KEY );
 
