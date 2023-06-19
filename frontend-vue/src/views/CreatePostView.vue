@@ -1,69 +1,81 @@
 <template>
-  <div class="t-box t-flex-g1">
-    <div class="t-title">
-      CreatePostView
-    </div>
-    <div>
-      ToFill: CreatePostView Inners
-    </div>
-    <div>
-      <div>
-        title:
+  <div class="flex-create-post">
+    <div class="create-post-box">
+      <div class="page-title">
+        Add New Post
       </div>
-      <div>
-        <input type="text" v-model="Title">
-      </div>
-    </div>
-    <div>
-      <input type="file" accept="image/png, image/jpeg" @change="changeFile" multiple>
-    </div>
-    <div v-for="(file, index) in files" v-bind:key="index">
-      <img :src="imgUrls[index]" style="height:100px">
-    </div>
-    <div>
-      <div>
-        <input type="checkbox" v-model="isRecruitment">
-        <div>
-          This post is for recruitment
-        </div>
-      </div>
-    </div>
-    <div>
-      <div>
-        <input type="checkbox" v-model="isScheduleIncluded">
-        <div>
-          Include schedule data
-        </div>
-      </div>
-      <div v-if="isScheduleIncluded">
-        <div>
-          <div>
-            startDate:
+      <div class="create-post-inner-box">
+        <div class="box-left">
+          <div class="title-input-section">
+            <div class="title-text">
+              Title:
+            </div>
+            <div style="width: 100%;">
+              <input class="title-text-box" type="text" v-model="Title">
+            </div>
           </div>
           <div>
-            <input type="date" v-model="startDate" @change="checkDate">
+            <input type="file" accept="image/png, image/jpeg" @change="changeFile" multiple>
+          </div>
+          <div class="img-box">
+            <div v-for="(file, index) in files" v-bind:key="index">
+              <img class="img-setting" :src="imgUrls[index]">
+            </div>
+          </div>
+          <div class="content-input-section">
+            <div class="title-text">
+              Contents
+            </div>
+            <div style="width: 100%;">
+              <input class="content-text-box" type="text">
+            </div>
           </div>
         </div>
-        <div>
+        <div class="box-right">
           <div>
-            endDate:
+            <div class="post-checkbox">
+              <div>
+                <input class="checkbox" type="checkbox" v-model="isRecruitment">
+              </div>
+              <div class="tag" id="recruitment">
+                RECRUITMENT
+              </div>
+            </div>
           </div>
           <div>
-            <input type="date" v-model="endDate" @change="checkDate">
+            <div class="post-checkbox">
+              <div>
+                <input class="checkbox" type="checkbox" v-model="isScheduleIncluded">
+              </div>
+              <div class="tag" id="schedule">
+                SCHEDULE
+              </div>
+            </div>
+            <div v-if="isScheduleIncluded">
+              <div class="date-picker">
+                <div class="date-picker-text">
+                  Start
+                </div>
+                <div>
+                  <input type="date" v-model="startDate" @change="checkDate">
+                </div>
+              </div>
+              <div class="date-picker">
+                <div class="date-picker-text">
+                  End
+                </div>
+                <div>
+                  <input type="date" v-model="endDate" @change="checkDate">
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div>
+
       <div>
-        Contents:
+        <button class="big-blue-button" @click="post()">Post</button>
       </div>
-      <div>
-        <input type="text">
-      </div>
-    </div>
-    <div>
-      <button @click="post()">Post</button>
     </div>
   </div>
 </template>

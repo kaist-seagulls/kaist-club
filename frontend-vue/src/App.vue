@@ -630,11 +630,15 @@ body {
   background-color: #0D2959;
 }
 
+#schedule {
+  background-color: #11294B;
+}
+
 .date {
   display: flex;
   font-weight: 400;
   font-size: 15px;
-  color: #18408C;
+  color: #11294B;
 }
 
 .post-title {
@@ -723,4 +727,137 @@ body {
 }
 
 /* UserProfile fin */
+/* CreatePost start */
+.flex-create-post {
+  display: flex;
+  padding-top: 55px;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  overflow-y: auto;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.create-post-box {
+  margin: 30px 80px 30px 80px;
+}
+
+.page-title {
+  width: 100%;
+  margin-bottom: 15px;
+  font-weight: 600;
+  font-size: 20px;
+  color: #000000;
+}
+
+.create-post-inner-box {
+  display: flex;
+}
+
+.box-left {
+  padding: 15px;
+  width: 80%;
+  background-color: #F6F6F9;
+  margin-right: 20px;
+  box-sizing: border-box;
+}
+
+.box-right {
+  display: flex;
+  flex-direction: column;
+  width: 20%;
+  padding: 15px;
+  background-color: #F6F6F9;
+  box-sizing: border-box;
+}
+
+.post-checkbox {
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+}
+
+.checkbox {
+  width: 15px;
+  height: 15px;
+  border: 1px solid #D8D8D8;
+  border-radius: 5px;
+  margin-right: 10px;
+}
+
+.title-input-section {
+  display: flex;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.title-text {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  font-size: 16px;
+  color: #303030;
+  margin-right: 10px;
+}
+
+.title-text-box {
+  border: 1px solid #D8D8D8;
+  border-radius: 5px;
+  height: 30px;
+  padding-right: 10px;
+  padding-left: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  font-size: 15px;
+}
+
+.date-picker {
+  margin-top: 10px;
+}
+
+.date-picker-text {
+  font-weight: 300;
+  font-size: 13px;
+  color: #303030;
+}
+
+.img-box {
+  display: flex;
+  background-color: #FFFFFF;
+  padding: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  border: 1px solid #D8D8D8;
+  border-radius: 5px;
+  height: 220px;
+  margin-top: 5px;
+}
+
+.img-setting {
+  margin: 10px;
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+}
+
+.content-input-section {
+  align-items: flex-start;
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.content-text-box {
+  border: 1px solid #D8D8D8;
+  border-radius: 5px;
+  height: 100px;
+  padding-right: 10px;
+  padding-left: 10px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* CreatePost fin */
 </style>
