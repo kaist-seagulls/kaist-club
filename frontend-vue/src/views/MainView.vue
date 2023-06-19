@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-main">
+  <div class="flex-main flex-slot">
     <div>
       <div class="post" v-for="post in searchResult.posts" :key="post.postId">
         <div class="post-club">

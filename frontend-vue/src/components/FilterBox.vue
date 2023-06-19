@@ -2,8 +2,8 @@
   <div class="flex-filter-box">
     <div class="filter">
       <div class="search-bar">
-        <input v-model="q" />
-        <button @click="goSearch()">Search</button>
+        <input class="search-text-box" v-model="q" />
+        <button class="search-button" @click="goSearch()">Search</button>
       </div>
       <div class="filter-box">
         <div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-create-post">
+  <div class="flex-create-post flex-slot">
     <div class="create-post-box">
       <div class="page-title">
         Add New Post
@@ -15,7 +15,7 @@
             </div>
           </div>
           <div>
-            <input type="file" accept="image/png, image/jpeg" @change="changeFile" multiple>
+            <input class="pic-upload" type="file" accept="image/png, image/jpeg" @change="changeFile" multiple>
           </div>
           <div class="img-box">
             <div v-for="(file, index) in files" v-bind:key="index">

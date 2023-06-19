@@ -297,11 +297,11 @@ body {
 /* Calendar start */
 .flex-calendar {
   padding-top: 100px;
+  flex: 1 0 auto;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  width: 100%;
   box-sizing: border-box;
 }
 
@@ -472,6 +472,7 @@ body {
 
 /* NavBar start */
 .flex-nav-bar {
+  top: 0;
   position: fixed;
   display: flex;
   background-color: #EFF1FE;
@@ -521,8 +522,7 @@ body {
   margin-top: 55px;
   flex-direction: column;
   justify-content: space-between;
-  width: 300px;
-  height: calc(100vh-55px);
+  width: 310px;
   box-sizing: border-box;
   border-right: 1px solid #D8D8D8;
 }
@@ -533,8 +533,32 @@ body {
 }
 
 .search-bar {
-  margin: 20px 40px 20px 40px;
+  display: flex;
+  margin: 50px 40px 20px 40px;
+  padding-bottom: 10px;
   height: 30px;
+  border-bottom: 1px solid #D8D8D8;
+}
+
+.search-text-box {
+  background: #F8F8F8;
+  border: 1px solid #D8D8D8;
+  border-radius: 9px;
+  height: 25px;
+  padding-right: 10px;
+  padding-left: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  font-size: 15px;
+  margin-right: 5px;
+}
+
+.search-button {
+  color: #303030;
+  background: #D8D8D8;
+  border: 1px solid #303030;
+  border-radius: 9px;
+  height: 25px;
 }
 
 .filter-box {
@@ -571,13 +595,15 @@ body {
 /* FilterBox fin */
 
 /* Main start */
+.flex-slot {
+  flex: 1 0 auto;
+}
+
 .flex-main {
   display: flex;
   margin-top: 55px;
   flex-direction: column;
   justify-content: space-between;
-  height: calc(100vh-55px);
-  width: 100%;
   overflow-y: auto;
   white-space: nowrap;
   box-sizing: border-box;
@@ -718,7 +744,6 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: calc(100vh-55px);
   width: 100%;
   box-sizing: border-box;
 }
@@ -734,8 +759,6 @@ body {
   display: flex;
   margin-top: 55px;
   flex-direction: column;
-  height: (100vh-55px);
-  width: 100%;
   overflow-y: auto;
   white-space: nowrap;
   box-sizing: border-box;
@@ -812,6 +835,10 @@ body {
   box-sizing: border-box;
   width: 100%;
   font-size: 15px;
+}
+
+.pic-upload {
+  cursor: pointer;
 }
 
 .date-picker {
