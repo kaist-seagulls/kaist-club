@@ -251,10 +251,10 @@ app.post("/api/v1/send-files-for-post", uploadMiddleware, (req, res) => {
   const clubName = req.body.clubName
 
   doTransaction(res, async (D) => {
-    const checkRep = await D.Represents.lookupByUser(userId)
-    console.log(checkRep["clubName"])
+    const represented = await D.Represents.lookupByUser(userId)
+    console.log(represented)
     console.log(userId)
-    if (checkRep["clubName"] !== clubName) {
+    if (represented !== clubName) {
       await D.rollback()
       res.status(StatusCodes.FORBIDDEN).json({
         message: "Not a club representative",
@@ -927,9 +927,9 @@ app.post("/api/v1/create-post", (req, res) => {
   const clubName = req.body.clubName
   const postInfo = req.body.postInfo
   doTransaction(res, async (D) => {
-    const checkRep = await D.Represents.lookupByUser(userId)
-    console.log(checkRep)
-    if (!checkRep.length || checkRep[0]["clubName"] !== clubName) {
+    const represented = await D.Represents.lookupByUser(userId)
+    console.log("checkRep", represented)
+    if (!represented || represented !== clubName) {
       await D.rollback()
       res.status(StatusCodes.FORBIDDEN).json({
         message: "Not a club representative",
@@ -947,7 +947,7 @@ app.post("/api/v1/create-post", (req, res) => {
     }
 
     await D.commit()
-    res.status(StatusCodes.OK).sendStatus(insertResult)
+    res.status(StatusCodes.OK).json({ postId: insertResult })
     return
   })
 })
@@ -1368,9 +1368,9 @@ app.get("/api/v1/retrieve", (req, res) => {
     }
 
     let representingClub = undefined
-    const club = await D.Represents.lookupByUser(userId)
-    if (club) {
-      representingClub = club.clubName
+    const clubName = await D.Represents.lookupByUser(userId)
+    if (clubName) {
+      representingClub = clubName
     } else if (authority === "r") {
       await D.rollback()
       res.status(StatusCodes.FORBIDDEN).end()

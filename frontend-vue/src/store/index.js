@@ -660,6 +660,7 @@ export default createStore({
           requiredAuthority: "r",
         }
         const res = await api.retrieve(options)
+        console.log("res", res)
         const userInfo = {
           userId: res.data.userId,
           representingClub: res.data.representingClub,
