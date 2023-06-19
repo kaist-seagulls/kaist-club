@@ -43,8 +43,18 @@ async function denyJoin(clubName, userId) {
 async function getOuttaMyClubDude(clubName, userId) {
   return await axios.post(prefix + "get-outta-my-club-dude/" + clubName, { userId })
 }
-async function createPost(clubName, postInfo) {
-  return await axios.post(prefix + "create-post/" + clubName, { postInfo })
+async function createPost(clubName, postInfo, files) {
+  await axios.post(prefix + "create-post/" + clubName, postInfo)
+  const formData = new FormData()
+  for (let i = 0; i < files.length; i++) {
+    let file = files[i]
+    formData.append("files[" + i + "]", file)
+  }
+  return await axios.post(prefix + "send-files-for-post/" + clubName, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  })
 }
 async function updatePost(clubName, postId, postInfo) {
   return await axios.post(prefix + "update-post/" + clubName + "/" + postId, { postInfo })

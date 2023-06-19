@@ -22,6 +22,14 @@
     </div>
     <div>
       <div>
+        <input type="checkbox" v-model="isRecruitment">
+        <div>
+          This post is for recruitment
+        </div>
+      </div>
+    </div>
+    <div>
+      <div>
         <input type="checkbox" v-model="isScheduleIncluded">
         <div>
           Include schedule data
@@ -54,11 +62,15 @@
         <input type="text">
       </div>
     </div>
+    <div>
+      <button @click="post()">Post</button>
+    </div>
   </div>
 </template>
 
 <script>
-//import api from "@/api"
+import api from "@/api"
+import { mapGetters } from "vuex"
 
 export default {
   name: "SignInView",
@@ -67,13 +79,40 @@ export default {
       title: "",
       files: [],
       isScheduleIncluded: false,
+      isRecruitment: false,
       startDate: new Date(),
       endDate: new Date(),
       content: "",
       imgUrls: [],
     }
   },
+  computed: {
+    ...mapGetters({
+      userInfo: "userInfo",
+    }),
+  },
   methods: {
+    async post() {
+      try {
+        await api.createPost(
+          this.userInfo.representing,
+          {
+            title: this.title,
+            isScheduleIncluded: this.isScheduleIncluded,
+            isRecruitment: this.isRecruitment,
+            startDate: this.startDate,
+            endDate: this.endDate,
+            content: this.content,
+          },
+          this.files,
+        )
+        alert("Post uploaded")
+        this.goHome()
+      } catch (err) {
+        alert(err)
+        console.log(err)
+      }
+    },
     addFile() {
       this.files.push(null)
     },
@@ -92,6 +131,9 @@ export default {
         alert("startDate cannot be later than endDate")
         event.target.value = event.target.defaultValue
       }
+    },
+    goHome() {
+      this.$router.push("/")
     },
   },
 }
