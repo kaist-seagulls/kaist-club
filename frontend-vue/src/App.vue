@@ -293,6 +293,15 @@ body {
 /* Changepw fin */
 
 /* Calendar start */
+.flex-calendar {
+  padding-top: 100px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+}
 
 .calendar-view {
   display: flex;
@@ -696,4 +705,22 @@ body {
 }
 
 /* Main fin */
+/* UserProfile start */
+.flex-user-profile {
+  display: flex;
+  padding-top: 55px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.user-profile-box {
+  display: flex;
+  flex-direction: column;
+}
+
+/* UserProfile fin */
 </style>

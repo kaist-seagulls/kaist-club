@@ -1,24 +1,23 @@
 <template>
-  <div class="t-box">
-    <div class="t-title">
-      UserProfileView
+  <div class="flex-user-profile">
+    <div class="user-profile-box">
+      <div>
+        Username: {{ userInfo.userId }}
+      </div>
+      <div>
+        Phone Number: {{ userInfo.phoneNumber || "Not Found" }}
+      </div>
+      <span>
+        <button class="big-blue-button" v-if="isRepresentative">
+          Manage My Club
+        </button>
+      </span>
+      <span>
+        <button class="big-blue-button" @click="goChangePassword()">
+          Change Password
+        </button>
+      </span>
     </div>
-    <div>
-      Username: {{ userInfo.userId }}
-    </div>
-    <div>
-      Phone Number: {{ userInfo.phoneNumber || "Not Found" }} 
-    </div>
-    <span>
-      <button v-if="isRepresentative">
-        Manage My Club
-      </button>
-    </span>
-    <span>
-      <button @click="goChangePassword()">
-        Change Password
-      </button>
-    </span>
   </div>
 </template>
 
