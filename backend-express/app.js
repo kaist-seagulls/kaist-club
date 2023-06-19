@@ -73,11 +73,12 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const ext = path.extname(file.originalname)
-    cb(null, path.basename(file.originalname, ext) + "-" + Date.now() + ext)
+    //cb(null, path.basename(file.originalname, ext) + "-" + Date.now() + ext)
+    cb(null, path.basename(file.originalname, ext) + ext)
   },
 })
 
-const upload = multer({ storage: storage })
+let upload = multer({ storage: storage })
 
 const isSignedIn = (req) => {
   return req.session.mode === "i"
@@ -104,7 +105,7 @@ const userIdOf = (req) => {
 const sessOut = (req) => {
   req.session.destroy()
 }
-app.get("/api/v1/get-file", (req, res) => {
+app.get("/api/v1/get-file-for-post", (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -115,7 +116,7 @@ app.get("/api/v1/get-file", (req, res) => {
 
   doTransaction(res, async (D) => {
 
-    const checkExists = D.Posts.lookupFilterByClub(postId, clubName)
+    const checkExists = await D.Posts.lookupFilterByClub(postId, clubName)
     if (checkExists.length === 0) {
       await D.rollback()
       res.status(StatusCodes.NOT_FOUND).json({
@@ -123,6 +124,7 @@ app.get("/api/v1/get-file", (req, res) => {
       })
       return
     }
+    console.log("dsasdasdaasd")
     const postFile = checkExists["postFile"]
     res.sendFile(postFile, options, (err) => {
       if (err) {
@@ -135,7 +137,7 @@ app.get("/api/v1/get-file", (req, res) => {
   })
 })
 
-app.post("/api/v1/post-file", upload.single("image"), (req, res) => {
+app.post("/api/v1/post-file-for-post", upload.single("image"), (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -144,18 +146,29 @@ app.post("/api/v1/post-file", upload.single("image"), (req, res) => {
   const userId = req.session.userId
   const postId = req.body.postId
   const clubName = req.body.clubName
-  const image = `/uploadFiles/${req.file.filename}`
+  const image = `/uploadFiles/post/${req.file.filename}`
 
   doTransaction(res, async (D) => {
-    const checkRep = D.Represents.lookupByUser(userId)
-    if (checkRep.length === 0 || checkRep["clubName"] !== clubName) {
+    const checkRep = await D.Represents.lookupByUser(userId)
+    console.log(checkRep["clubName"])
+    console.log(userId)
+    if (checkRep["clubName"] !== clubName) {
       await D.rollback()
       res.status(StatusCodes.FORBIDDEN).json({
         message: "Not a club representative",
       })
       return
     }
-    const fileUpdate = D.Posts.fileUpdate(postId, image)
+    const checkPost = await D.Posts.lookupFilterByClub(postId, clubName)
+    if (!checkPost) {
+      await D.rollback()
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Post not found",
+      })
+      return
+    }
+    console.log("dsdsdsa")
+    const fileUpdate = await D.Posts.fileUpdate(postId, image)
     if (!fileUpdate) {
       await D.rollback()
       res.status(StatusCodes.CONFLICT).json({
@@ -163,6 +176,135 @@ app.post("/api/v1/post-file", upload.single("image"), (req, res) => {
       })
       return
     }
+    await D.commit()
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
+})
+
+app.get("/api/v1/get-logo-for-creation-request", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "Not signed in",
+    })
+  }
+  const requestId = req.body.requestId
+
+  doTransaction(res, async (D) => {
+
+    const checkExists = await D.CreationRequests.lookupByRequestId(requestId)
+    if (checkExists.length === 0) {
+      await D.rollback()
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Post not found",
+      })
+      return
+    }
+    const logoImg = checkExists["logoImg"]
+    res.sendFile(logoImg, options, (err) => {
+      if (err) {
+        res.status(StatusCodes.CONFLICT).json({
+          message: "Conflict occurred while accessing the file",
+        })
+        return
+      }
+    })
+  })
+})
+
+app.get("/api/v1/get-header-for-creation-request", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "Not signed in",
+    })
+  }
+  const requestId = req.body.requestId
+
+  doTransaction(res, async (D) => {
+
+    const checkExists = await D.CreationRequests.lookupByRequestId(requestId)
+    if (checkExists.length === 0) {
+      await D.rollback()
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Post not found",
+      })
+      return
+    }
+    const headerImg = checkExists["headerImg"]
+    res.sendFile(headerImg, options, (err) => {
+      if (err) {
+        res.status(StatusCodes.CONFLICT).json({
+          message: "Conflict occurred while accessing the file",
+        })
+        return
+      }
+    })
+  })
+})
+
+app.post("/api/v1/post-header-for-creation-request", upload.single("image"), (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "Not signed in",
+    })
+  }
+  const requestId = req.body.requestId
+  const clubName = req.body.clubName
+  const image = `/uploadFiles/headerImg/${req.file.filename}`
+
+  doTransaction(res, async (D) => {
+    const checkRequest = await D.CreationRequests.lookupByClubName(clubName)
+    if (!checkRequest) {
+      await D.rollback()
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Club request not found",
+      })
+      return
+    }
+    const fileUpdate = await D.CreationRequests.headerUpdate(requestId, image)
+    if (!fileUpdate) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "Requested file cannot be updated",
+      })
+      return
+    }
+    await D.commit()
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
+  })
+})
+
+app.post("/api/v1/post-logo-for-creation-request", upload.single("image"), (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.FORBIDDEN).json({
+      message: "Not signed in",
+    })
+  }
+  const requestId = req.body.requestId
+  const clubName = req.body.clubName
+  const image = `/uploadFiles/logoImg/${req.file.filename}`
+
+  doTransaction(res, async (D) => {
+    const checkRequest = await D.CreationRequests.lookupByClubName(clubName)
+    if (!checkRequest) {
+      await D.rollback()
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: "Club request not found",
+      })
+      return
+    }
+    const fileUpdate = await D.CreationRequests.logoUpdate(requestId, image)
+    if (!fileUpdate) {
+      await D.rollback()
+      res.status(StatusCodes.CONFLICT).json({
+        message: "Requested file cannot be updated",
+      })
+      return
+    }
+    await D.commit()
+    res.status(StatusCodes.NO_CONTENT).end()
+    return
   })
 })
 

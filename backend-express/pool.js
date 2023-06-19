@@ -158,6 +158,27 @@ function buildDataController(conn) {
         )
         return result[0].affectedRows
       },
+      lookupByClubName: async (clubName) => {
+        const result = await conn.execute(
+          "SELECT * FROM CreationRequests WHERE clubName=?",
+          [clubName],
+        )
+        return result[0][0]
+      },
+      headerUpdate: async (requestId, fileName) => {
+        const result = await conn.execute(
+          "UPDATE CreationRequests SET headerImg=? WHERE postId=?",
+          [fileName, requestId],
+        )
+        return result[0].affectedRows
+      },
+      logoUpdate: async (requestId, fileName) => {
+        const result = await conn.execute(
+          "UPDATE CreationRequests SET logoImg=? WHERE postId=?",
+          [fileName, requestId],
+        )
+        return result[0].affectedRows
+      },
     },
     AuthCodes: {
       lookup: async (userId) => {
@@ -260,7 +281,7 @@ function buildDataController(conn) {
           "SELECT * FROM Represents WHERE userId = ?",
           [userId],
         )
-        if (result[0].length == 0) {
+        if (result[0].length === 0) {
           return null
         } else {
           return result[0][0]
@@ -271,7 +292,7 @@ function buildDataController(conn) {
           "SELECT * FROM Represents WHERE userId=?",
           [userId],
         )
-        return result[0]
+        return result[0][0]
       },
     },
     JoinRequests: {
@@ -470,7 +491,7 @@ function buildDataController(conn) {
       },
       fileUpdate: async (postId, fileName) => {
         const result = await conn.execute(
-          "UPDATE POSTS SET postFile=? WEHRE postId=?",
+          "UPDATE Posts SET postFile=? WHERE postId=?",
           [fileName, postId],
         )
         return result[0].affectedRows
