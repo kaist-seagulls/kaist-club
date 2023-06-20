@@ -23,16 +23,6 @@
       </button>
     </div>
     <div>
-      <button class="nav-button" @click="goCreateClub()">
-        <svg class="nav-icon" width="25" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M23.7273 0L22.0664 3.625L18.4545 5.27273L22.0664 6.93364L23.7273 10.5455L25.375 6.93364L29 5.27273L25.375 3.625M10.5455 3.95455L7.25 11.2045L0 14.5L7.25 17.7955L10.5455 25.0455L13.8409 17.7955L21.0909 14.5L13.8409 11.2045M23.7273 18.4545L22.0664 22.0664L18.4545 23.7273L22.0664 25.375L23.7273 29L25.375 25.375L29 23.7273L25.375 22.0664"
-            fill="#698FC1" />
-        </svg>
-        Create New Club
-      </button>
-    </div>
-    <div>
       <button class="nav-button" :id="selectedCalendar" @click="goCalendar()">
         <svg class="nav-icon" width="23" viewBox="0 0 29 32" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -62,7 +52,7 @@
 
 <script >
 import api from "@/api"
-import { mapGetters } from "vuex"
+import { mapActions, mapGetters } from "vuex"
 
 const selectedId = "nav-button-selected"
 
@@ -98,6 +88,12 @@ export default {
     selectedMyPage() {
       return this.isMyPageSelected ? selectedId : null
     },
+    isRepresentative() {
+      return this.userInfo.userId === "representative"
+    },
+    ...mapGetters({
+      userInfo: "userInfo",
+    }),
   },
   methods: {
     goMain() {
@@ -138,6 +134,12 @@ export default {
       } catch (e) {
         alert(e)
       }
+    },
+    ...mapActions({
+      fetchUserInfo: "fetchUserInfo",
+    }),
+    beforeMount() {
+      this.fetchUserInfo()
     },
   },
 }

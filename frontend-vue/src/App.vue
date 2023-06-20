@@ -795,6 +795,13 @@ body {
   height: 100%;
 }
 
+.post-img-wrapper {
+  position: relative;
+  margin: 10px;
+  height: 350px;
+  width: 350px;
+}
+
 .upload-time {
   display: flex;
   justify-content: flex-end;
@@ -839,6 +846,19 @@ body {
 .user-profile-box {
   display: flex;
   flex-direction: column;
+  width: 400px;
+}
+
+.user-profile-email {
+  margin-bottom: 10px;
+}
+
+.user-profile-buttons {
+  display: flex;
+}
+
+.user-profile-button-margin {
+  margin-right: 20px;
 }
 
 /* UserProfile fin */

@@ -50,7 +50,8 @@
             <div class="content-pic-box">
               <!-- <img v-for="link in post.images" :key="link" class="content-pic" :src="link" width="300"> -->
               <img v-for="image of post.images" :key="image"
-                :src="'/api/v1/images/post/' + String(post.postId) + '/' + image" class="content-pic" width="300" />
+                :src="'/api/v1/images/post/' + String(post.postId) + '/' + image" class="content-pic post-img-wrapper"
+                width="300" />
               <!-- <img class="content-pic" :src="require('@/assets/NumberProfile.png')" width="300"> -->
             </div>
           </div>

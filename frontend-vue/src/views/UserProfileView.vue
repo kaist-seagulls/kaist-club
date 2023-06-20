@@ -1,22 +1,20 @@
 <template>
   <div class="flex-user-profile">
     <div class="user-profile-box">
-      <div>
-        Username: {{ userInfo.userId }}
+      <div class="user-profile-email">
+        Email: {{ userInfo.userId }}
       </div>
       <div>
         Phone Number: {{ userInfo.phoneNumber || "Not Found" }}
       </div>
-      <span>
-        <button class="big-blue-button" v-if="isRepresentative">
+      <div class="user-profile-buttons">
+        <button class="big-blue-button user-profile-button-margin" v-if="isRepresentative">
           Manage My Club
         </button>
-      </span>
-      <span>
         <button class="big-blue-button" @click="goChangePassword()">
           Change Password
         </button>
-      </span>
+      </div>
     </div>
   </div>
 </template>
