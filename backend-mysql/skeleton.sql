@@ -1,6 +1,6 @@
 -- Active: 1685622877657@@127.0.0.1@3306@cs350db
 
-DROP DATABASE cs350db;
+DROP DATABASE IF EXISTS cs350db;
 
 CREATE DATABASE cs350db;
 
@@ -47,7 +47,7 @@ CREATE TABLE
         clubName VARCHAR(20) PRIMARY KEY,
         descriptions VARCHAR(100) NOT NULL,
         categoryName VARCHAR(30) NOT NULL,
-        color CHAR(7) NOT NULL,
+        color CHAR(7) NOT NULL
     );
 
 INSERT INTO Clubs
@@ -148,8 +148,6 @@ VALUES (
         TRUE,
         TRUE
     );
-
-drop table postfiles;
 
 CREATE TABLE
     PostFiles (
