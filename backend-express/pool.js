@@ -285,7 +285,7 @@ function buildDataController(conn) {
 
       checkAlreadyJoined: async (userId, clubName) => {
         const result = await conn.execute(
-          "SELECT userId, clubName from joins WHERE userId=? and clubName=?",
+          "SELECT * FROM Joins WHERE userId = ? and clubName = ?",
           [userId, clubName],
         )
         return result[0]
@@ -393,6 +393,14 @@ function buildDataController(conn) {
       },
     },
     Posts: {
+      lookup: async (postId) => {
+        const result = await conn.execute("SELECT * FROM Posts WHERE postId = ?", [postId])
+        if (result[0].length == 0) {
+          return null
+        } else {
+          return result[0][0]
+        }
+      },
       insert: async (clubName, title, contents, startDate, endDate, isRecruit, isOnly) => {
         const result = await conn.execute(
           "INSERT INTO Posts VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?)",
@@ -662,7 +670,7 @@ function buildDataController(conn) {
           "SELECT * FROM PostFiles WHERE postId=?",
           [postId],
         )
-        return result
+        return result[0]
       },
     },
     HandoverRequests: {

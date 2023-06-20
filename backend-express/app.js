@@ -207,6 +207,40 @@ const sessOut = (req) => {
   req.session.destroy()
 }
 
+app.get("/api/v1/images/post/:postId/:imageName", (req, res) => {
+  if (!isSignedIn(req)) {
+    res.status(StatusCodes.UNAUTHORIZED).end()
+    return
+  }
+  const userId = userIdOf(req)
+  const postId = req.params.postId
+  const imageName = req.params.imageName
+  doTransaction(res, async (D) => {
+    const post = await D.Posts.lookup(postId)
+    if (!post) {
+      await D.rollback()
+      res.status(StatusCodes.NOT_FOUND).end()
+      return
+    }
+    if (post.isOnly) {
+      const clubName = post.clubName
+      console.log(userId, clubName)
+      const joined = await D.Joins.checkAlreadyJoined(userId, clubName)
+      if (joined.length !== 1) {
+        await D.rollback()
+        res.status(StatusCodes.FORBIDDEN).end()
+        return
+      }
+    }
+    await D.commit()
+    res.sendFile(path.join(imageName), {
+      root: path.join(__dirname, "uploadFiles", "post", postId),
+    })
+    return
+  })
+
+})
+
 app.post("/api/v1/get-files-for-post", (req, res) => {
   console.log("request received")
   if (!isSignedIn(req)) {
@@ -1444,13 +1478,23 @@ app.get("/api/v1/retrieve", (req, res) => {
         }
       }
       const filter = req.query.search.filter
+      let posts = []
       if (!Array.isArray(filter) || filter.length === 0) {
         search.numPosts = await D.Posts.countFilteredByQ(userId, q)
-        search.posts = await D.Posts.filterByQPage(userId, q, page)
+        posts = await D.Posts.filterByQPage(userId, q, page)
       } else {
         search.numPosts = await D.Posts.countFilteredByQFilter(userId, q, filter)
-        search.posts = await D.Posts.filterByQFilterPage(userId, q, filter, page)
+        posts = await D.Posts.filterByQFilterPage(userId, q, filter, page)
       }
+      for (const post of posts) {
+        const postId = post.postId
+        post.images = []
+        const images = await D.PostFiles.lookupByPostId(postId)
+        for (const image of images) {
+          post.images.push(image.imageName)
+        }
+      }
+      search.posts = posts
     }
 
     let clubProfile = undefined
