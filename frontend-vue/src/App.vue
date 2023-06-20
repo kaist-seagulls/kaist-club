@@ -402,6 +402,10 @@ body {
   text-align: center;
 }
 
+.today {
+  color: #A4423E;
+}
+
 .calendar-flex {
   display: flex;
   padding: 10px;
@@ -413,6 +417,8 @@ body {
   font-size: 12px;
   color: #000000;
 }
+
+
 
 .event {
   display: flex;

@@ -8,9 +8,6 @@
         Phone Number: {{ userInfo.phone || "Not Found" }}
       </div>
       <div class="user-profile-buttons">
-        <button class="big-blue-button user-profile-button-margin" v-if="isRepresentative">
-          Manage My Club
-        </button>
         <button class="big-blue-button" @click="goChangePassword()">
           Change Password
         </button>
