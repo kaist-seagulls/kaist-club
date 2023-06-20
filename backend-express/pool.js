@@ -406,7 +406,6 @@ function buildDataController(conn) {
           "INSERT INTO Posts VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?)",
           [null, clubName, title, contents, startDate, endDate, isRecruit, isOnly],
         )
-        console.log(result)
         return result[0]["insertId"]
       },
       delete: async (postId) => {
@@ -421,7 +420,6 @@ function buildDataController(conn) {
           "SELECT * FROM Posts WHERE postId = ? AND clubName = ?",
           [postId, clubName],
         )
-        console.log("lookupFilterByClub: ", result)
         if (result[0].length == 0) {
           return null
         } else {

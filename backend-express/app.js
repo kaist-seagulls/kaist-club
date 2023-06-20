@@ -51,6 +51,14 @@ const generateCode = () => {
 
 const sessionStore = new MySQLStore(options)
 
+// parse application/x-www-form-urlencoded
+// { extended: true } : support nested object
+app.use(bodyParser.urlencoded({ extended: true }))
+
+// parse application/json
+app.use(bodyParser.json())
+
+
 app.use(
   session({
     secret: SECRET.session.secret,
@@ -60,18 +68,14 @@ app.use(
   }),
 )
 
-// parse application/x-www-form-urlencoded
-// { extended: true } : support nested object
-app.use(bodyParser.urlencoded({ extended: true }))
 
-// parse application/json
-app.use(bodyParser.json())
 
 const MIME_TYPE_MAP = {
   "image/png": "png",
   "image/jpeg": "jpeg",
   "image/jpg": "jpg",
 }
+/*
 const storagePost = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploadFiles/post/")
@@ -83,6 +87,7 @@ const storagePost = multer.diskStorage({
     cb(null, file.originalname + "-" + Date.now() + "." + ext)
   },
 })
+*/
 const storageLogo = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploadFiles/logoImg/")
@@ -124,39 +129,45 @@ const storageClubLogo = multer.diskStorage({
   },
 })
 
-//const uploadPost = multer({ storage: storagePost, fileFilter: fileFilter }).array("uploadImages", 5)
+const storagePost = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const newDestination = "uploadFiles/post/" + req.body.postId
+    console.log(newDestination)
+    let stat = null
+    try {
+      stat = readFileSync.statSync(newDestination)
+    } catch (err) {
+      readFileSync.mkdirSync(newDestination)
+    }
+    if (stat && !stat.isDirectory()) {
+      throw new Error("Directory cannot be created")
+    }
+    cb(null, newDestination)
+  },
+  filename: function (req, file, cb) {
+    const ext = MIME_TYPE_MAP[file.mimetype]
+    file.originalname = file.originalname.split(`.${ext}`)[0]
+    //cb(null, path.basename(file.originalname, ext) + "-" + Date.now() + ext)
+    cb(null, path.basename(file.originalname, ext) + "-" + Date.now() + "." + ext)
+  },
+})
+
 const uploadHeader = multer({ storage: storageHeader, fileFilter: fileFilter }).single("uploadImages")
 const uploadLogo = multer({ storage: storageLogo, fileFilter: fileFilter }).single("uploadImages")
 const uploadClubLogo = multer({ storage: storageClubLogo, fileFilter: fileFilter }).single("uploadImages")
-const uploadFunc = (postId) => {
-  const upload = multer({
-    storage: storagePost, fileFilter: fileFilter,
-    changeDest: function (dest) {
-      const newDestination = dest + postId
-      let stat = null
-      try {
-        stat = readFileSync.statSync(newDestination)
-      } catch (err) {
-        readFileSync.mkdirSync(newDestination)
-      }
-      if (stat && !stat.isDirectory()) {
-        throw new Error("Directory cannot be created")
-      }
-      return newDestination
-    },
-  }).array("uploadImages", 5)
-  return upload
-  //upload(req, res, function (err) {
-  //  if (err instanceof multer.MulterError) {
-  //    const err = new Error("Multer error")
-  //    next(err)
-  //  } else if (err) {
-  //    const err = new Error("File type not supported")
-  //    next(err)
-  //  }
-  //  next()
-  //})
-}
+const uploadFuncPost = multer({ storage: storagePost, fileFilter: fileFilter })
+
+//upload(req, res, function (err) {
+//  if (err instanceof multer.MulterError) {
+//    const err = new Error("Multer error")
+//    next(err)
+//  } else if (err) {
+//    const err = new Error("File type not supported")
+//    next(err)
+//  }
+//  next()
+//})
+
 
 const uploadMiddlewareLogo = (req, res, next) => {
   const upload = uploadLogo
@@ -197,6 +208,8 @@ const uploadMiddlewareClubLogo = (req, res, next) => {
     next()
   })
 }
+
+
 //app.use(uploadMiddleware)
 const isSignedIn = (req) => {
   return req.session.mode === "i"
@@ -223,6 +236,8 @@ const userIdOf = (req) => {
 const sessOut = (req) => {
   req.session.destroy()
 }
+
+
 
 app.get("/api/v1/images/post/:postId/:imageName", (req, res) => {
   if (!isSignedIn(req)) {
@@ -290,7 +305,7 @@ app.post("/api/v1/get-files-for-post", (req, res) => {
   })
 })
 
-app.post("/api/v1/send-files-for-post", (req, res) => {
+app.post("/api/v1/send-files-for-post", uploadFuncPost.array("uploadImages", 5), (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -302,8 +317,7 @@ app.post("/api/v1/send-files-for-post", (req, res) => {
 
   doTransaction(res, async (D) => {
     const represented = await D.Represents.lookupByUser(userId)
-    console.log(represented)
-    console.log(userId)
+
     if (represented !== clubName) {
       await D.rollback()
       res.status(StatusCodes.FORBIDDEN).json({
@@ -319,7 +333,8 @@ app.post("/api/v1/send-files-for-post", (req, res) => {
       })
       return
     }
-    const uploadWithId = uploadFunc(postId)
+    /*
+    const uploadWithId = uploadFuncPost(postId)
     uploadWithId(req, res, (err) => {
       if (err instanceof multer.MulterError) {
         const err = new Error("Multer error")
@@ -329,6 +344,8 @@ app.post("/api/v1/send-files-for-post", (req, res) => {
         throw err
       }
     })
+    */
+    console.log(req.files)
     for (const file of req.files) {
       const fileName = file.filename
       const insertFile = await D.PostFiles.insert(postId, clubName, fileName)
