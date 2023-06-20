@@ -837,8 +837,48 @@ body {
   margin-top: 5px;
 }
 
-.img-setting {
+.img-wrapper {
+  position: relative;
   margin: 10px;
+  height: 200px;
+  width: 200px;
+}
+
+.img-delete-overlay {
+  position: absolute;
+  height: 200px;
+  width: 200px;
+  background-color: rgba(255, 255, 255, 0.3);
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #FF4646;
+}
+
+.img-delete-button {
+  width: 80px;
+  height: 30px;
+  background-color: #FF4646;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+}
+
+.img-delete-button-text {
+  color: white;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 24px;
+  cursor: pointer;
+}
+
+.img-setting {
   width: 200px;
   height: 200px;
   object-fit: cover;
