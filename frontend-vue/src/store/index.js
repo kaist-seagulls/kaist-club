@@ -659,6 +659,7 @@ export default createStore({
           userId: res.data.userId,
           representingClub: res.data.representingClub,
           isAdmin: res.data.isAdmin,
+          phone: res.data.phone,
         }
         context.commit("updateUserInfo", userInfo)
       }
@@ -671,6 +672,7 @@ export default createStore({
           userId: res.data.userId,
           representingClub: res.data.representingClub,
           isAdmin: res.data.isAdmin,
+          phone: res.data.phone,
         }
         context.commit("updateUserInfo", userInfo)
       }

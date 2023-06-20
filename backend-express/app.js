@@ -1395,6 +1395,7 @@ app.get("/api/v1/retrieve", (req, res) => {
       return
     }
     const isAdmin = user.isAdmin
+    const phone = user.phone
     if (authority === "a") {
       if (!isAdmin) {
         await D.rollback()
@@ -1553,6 +1554,7 @@ app.get("/api/v1/retrieve", (req, res) => {
 
     await D.commit()
     res.status(StatusCodes.OK).json({
+      phone,
       userId,
       representingClub,
       isAdmin,

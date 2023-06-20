@@ -5,7 +5,7 @@
         Email: {{ userInfo.userId }}
       </div>
       <div>
-        Phone Number: {{ userInfo.phoneNumber || "Not Found" }}
+        Phone Number: {{ userInfo.phone || "Not Found" }}
       </div>
       <div class="user-profile-buttons">
         <button class="big-blue-button user-profile-button-margin" v-if="isRepresentative">
