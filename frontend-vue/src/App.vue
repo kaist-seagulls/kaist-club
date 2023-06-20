@@ -19,7 +19,10 @@ const layout = computed(() => useRoute().meta.layout)
 }
 
 body {
+  top: 0;
+  position: fixed;
   margin: 0;
+  width: 100vw;
   height: 100vh;
 }
 
