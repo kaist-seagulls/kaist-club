@@ -42,10 +42,16 @@
             <div class="content-text">
               {{ post.contents }}
             </div>
-            <div class="content-pic-box">
+            <!-- <div class="content-pic-box">
               <img v-for="link in getImages(post.postId, post.clubName)" v-bind:key="link" class="content-pic" :src="link"
                 width="300">
               <img class="content-pic" :src="require('@/assets/NumberProfile.png')" width="300">
+            </div> -->
+            <div class="content-pic-box">
+              <!-- <img v-for="link in post.images" :key="link" class="content-pic" :src="link" width="300"> -->
+              <img v-for="image of post.images" :key="image"
+                :src="'/api/v1/images/post/' + String(post.postId) + '/' + image" class="content-pic" width="300" />
+              <!-- <img class="content-pic" :src="require('@/assets/NumberProfile.png')" width="300"> -->
             </div>
           </div>
           <div class="upload-time">
@@ -71,8 +77,8 @@
 </template>
 
 <script>
-import api from "@/api"
-import { mapActions, mapGetters } from "vuex"
+// import api from "@/api"
+import { mapGetters } from "vuex"
 
 export default {
   name: "MainView",
@@ -118,26 +124,23 @@ export default {
     },
   },
   methods: {
-    ...mapActions({
-      updateSearchPage: "updateSearchPage",
-    }),
-    async getImages(postId, clubName) {
-      console.log("getImages: ", postId, clubName)
-      let urls = []
-      let res = null
-      try {
-        res = await api.getPostFiles(postId, clubName)
-        console.log(res)
-      } catch (err) {
-        alert(err)
-        console.log(err)
-      }
-      for (const file in res.data) {
-        const url = URL.createObjectURL(file)
-        urls.push(url)
-      }
-      return urls
-    },
+    // async getImages(postId, clubName) {
+    //   console.log("getImages: ", postId, clubName)
+    //   let urls = []
+    //   let res = null
+    //   try {
+    //     res = await api.getPostFiles(postId, clubName)
+    //     console.log(res)
+    //   } catch (err) {
+    //     alert(err)
+    //     console.log(err)
+    //   }
+    //   for (const file in res.data) {
+    //     const url = URL.createObjectURL(file)
+    //     urls.push(url)
+    //   }
+    //   return urls
+    // },
     goPage(page) {
       this.$router.push({
         name: "main",

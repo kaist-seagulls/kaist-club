@@ -138,7 +138,7 @@ router.beforeEach((to, from, next) => {
     } catch (e) {
       if (e === 404) {
         next("/notfound")
-      } else if (e.response.status === 401) {
+      } else if (e.response.status === 401 || e.response.status === 503) {
         next("/signin")
       } else {
         next("/")
