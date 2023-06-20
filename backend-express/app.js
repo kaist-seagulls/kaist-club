@@ -124,23 +124,40 @@ const storageClubLogo = multer.diskStorage({
   },
 })
 
-const uploadPost = multer({ storage: storagePost, fileFilter: fileFilter }).array("uploadImages", 5)
+//const uploadPost = multer({ storage: storagePost, fileFilter: fileFilter }).array("uploadImages", 5)
 const uploadHeader = multer({ storage: storageHeader, fileFilter: fileFilter }).single("uploadImages")
 const uploadLogo = multer({ storage: storageLogo, fileFilter: fileFilter }).single("uploadImages")
 const uploadClubLogo = multer({ storage: storageClubLogo, fileFilter: fileFilter }).single("uploadImages")
-const uploadMiddleware = (req, res, next) => {
-  const upload = uploadPost
-  upload(req, res, function (err) {
-    if (err instanceof multer.MulterError) {
-      const err = new Error("Multer error")
-      next(err)
-    } else if (err) {
-      const err = new Error("File type not supported")
-      next(err)
-    }
-    next()
-  })
+const uploadFunc = (postId) => {
+  const upload = multer({
+    storage: storagePost, fileFilter: fileFilter,
+    changeDest: function (dest) {
+      const newDestination = dest + postId
+      let stat = null
+      try {
+        stat = readFileSync.statSync(newDestination)
+      } catch (err) {
+        readFileSync.mkdirSync(newDestination)
+      }
+      if (stat && !stat.isDirectory()) {
+        throw new Error("Directory cannot be created")
+      }
+      return newDestination
+    },
+  }).array("uploadImages", 5)
+  return upload
+  //upload(req, res, function (err) {
+  //  if (err instanceof multer.MulterError) {
+  //    const err = new Error("Multer error")
+  //    next(err)
+  //  } else if (err) {
+  //    const err = new Error("File type not supported")
+  //    next(err)
+  //  }
+  //  next()
+  //})
 }
+
 const uploadMiddlewareLogo = (req, res, next) => {
   const upload = uploadLogo
   upload(req, res, function (err) {
@@ -250,7 +267,6 @@ app.post("/api/v1/get-files-for-post", (req, res) => {
   }
   const postId = req.body.postId
   const clubName = req.body.clubName
-  console.log(postId, " ", "clubName")
   doTransaction(res, async (D) => {
     const checkExists = await D.Posts.lookupFilterByClub(postId, clubName)
     if (checkExists.length === 0) {
@@ -274,7 +290,7 @@ app.post("/api/v1/get-files-for-post", (req, res) => {
   })
 })
 
-app.post("/api/v1/send-files-for-post", uploadMiddleware, (req, res) => {
+app.post("/api/v1/send-files-for-post", (req, res) => {
   if (!isSignedIn(req)) {
     res.status(StatusCodes.FORBIDDEN).json({
       message: "Not signed in",
@@ -303,7 +319,16 @@ app.post("/api/v1/send-files-for-post", uploadMiddleware, (req, res) => {
       })
       return
     }
-
+    const uploadWithId = uploadFunc(postId)
+    uploadWithId(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        const err = new Error("Multer error")
+        throw err
+      } else if (err) {
+        const err = new Error("File type not supported")
+        throw err
+      }
+    })
     for (const file of req.files) {
       const fileName = file.filename
       const insertFile = await D.PostFiles.insert(postId, clubName, fileName)
