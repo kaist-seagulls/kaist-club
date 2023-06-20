@@ -449,32 +449,78 @@ body {
 .flex-admin {
   display: flex;
   justify-content: space-between;
-  padding-top: 30px;
+  margin-top: 55px;
   width: 100vw;
-  height: 100vh;
+  height: calc(100vh - 55px);
   box-sizing: border-box;
-}
-
-.admin-heading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 800;
-  font-size: 25px;
-  color: #000000;
-  margin-bottom: 20px;
 }
 
 .admin-columns {
   display: flex;
   flex-direction: column;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-top: 50px;
+  padding-left: 60px;
   flex-grow: 1;
+  border-right: 1px solid #000000;
   box-sizing: border-box;
-  overflow-y: scroll;
+}
+
+.admin-heading {
+  display: flex;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 800;
+  font-size: 30px;
+  color: #000000;
+  margin-bottom: 20px;
+}
+
+.admin-box {
+  display: flex;
+  flex-direction: column;
+  padding-right: 40px;
+  padding-left: 15px;
+  border-left: 2px solid #808080;
+  overflow-y: auto;
+  white-space: nowrap;
+}
+
+.admin-items {
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  font-weight: 300;
+  font-size: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-description {
+  margin-top: 5px;
+  font-weight: 200;
+  font-size: 13px;
+}
+
+.admin-clicks {
+  display: flex;
+}
+
+.admin-red-click {
+  cursor: pointer;
+  color: #FF4646;
+  font-weight: 200;
+  text-decoration-line: underline;
+
+}
+
+.admin-blue-click {
+  margin-left: 10px;
+  cursor: pointer;
+  color: #18408C;
+  font-weight: 200;
+  text-decoration-line: underline;
+
 }
 
 /* Admin fin */
