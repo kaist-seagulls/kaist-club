@@ -65,7 +65,7 @@
                 <input class="checkbox" type="checkbox" v-model="isOnly">
               </div>
               <div class="tag" id="member-only">
-                MEMBER ONLY
+                MEMBERS ONLY
               </div>
             </div>
           </div>

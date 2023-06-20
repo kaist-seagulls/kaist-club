@@ -676,6 +676,19 @@ export default createStore({
         }
         context.commit("updateUserInfo", userInfo)
       }
+      else if (viewName === "newpost") {
+        const options = {
+          requiredAuthority: "r",
+        }
+        const res = await api.retrieve(options)
+        console.log("res", res)
+        const userInfo = {
+          userId: res.data.userId,
+          representingClub: res.data.representingClub,
+          isAdmin: res.data.isAdmin,
+        }
+        context.commit("updateUserInfo", userInfo)
+      }
     },
     async requestHandover(context, id) {
       let userInfo = context.state.userInfo

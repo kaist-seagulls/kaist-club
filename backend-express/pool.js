@@ -406,7 +406,6 @@ function buildDataController(conn) {
           "INSERT INTO Posts VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?)",
           [null, clubName, title, contents, startDate, endDate, isRecruit, isOnly],
         )
-        console.log(result)
         return result[0]["insertId"]
       },
       delete: async (postId) => {
