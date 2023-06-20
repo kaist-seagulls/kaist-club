@@ -655,13 +655,18 @@ export default createStore({
         const res = await api.retrieve(options)
         context.commit("updateRelatedClubs", res.data.relatedClubs)
         context.commit("updateSearchResult", res.data.search)
+        const userInfo = {
+          userId: res.data.userId,
+          representingClub: res.data.representingClub,
+          isAdmin: res.data.isAdmin,
+        }
+        context.commit("updateUserInfo", userInfo)
       }
       else if (viewName === "newpost") {
         const options = {
-          requiredAuthority: "r",
+          requiredAuthority: "i",
         }
         const res = await api.retrieve(options)
-        console.log("res", res)
         const userInfo = {
           userId: res.data.userId,
           representingClub: res.data.representingClub,

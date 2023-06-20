@@ -13,7 +13,7 @@
       </button>
     </div>
     <div>
-      <button class="nav-button" :id="selectedNewPost" @click="goCreatePost()">
+      <button v-if="userInfo.representingClub" class="nav-button" :id="selectedNewPost" @click="goCreatePost()">
         <svg class="nav-icon" width="24" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M28.5421 7.63158C29.1526 7.02105 29.1526 6.10526 28.5421 5.49474L25.0316 1.98421C24.4211 1.37368 23.5053 1.37368 22.8947 1.98421L20.1474 4.73158L25.9474 10.5316M1.52632 23.2V29H7.32631L24.1158 12.0579L18.4684 6.25789L1.52632 23.2ZM7.63158 0V4.57895H12.2105V7.63158H7.63158V12.2105H4.57895V7.63158H0V4.57895H4.57895V0H7.63158Z"
@@ -63,6 +63,7 @@ export default {
     ...mapGetters({
       searchQ: "searchQ",
       searchPage: "searchPage",
+      userInfo: "userInfo",
     }),
     isMainSelected() {
       return this.$route.name === "main"
