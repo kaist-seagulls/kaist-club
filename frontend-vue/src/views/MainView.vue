@@ -10,7 +10,7 @@
         </div>
         <div class="post-box">
           <div class="post-heading">
-            <div>
+            <div class="tags">
               <div class="tag" id="recruitment" v-if="post.isRecruit">
                 RECRUITMENT
               </div>

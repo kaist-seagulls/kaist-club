@@ -136,6 +136,7 @@ router.beforeEach((to, from, next) => {
       await store.dispatch("fetchData", { to })
       next()
     } catch (e) {
+      alert(e)
       if (e === 404) {
         next("/notfound")
       } else if (e.response.status === 401 || e.response.status === 503) {

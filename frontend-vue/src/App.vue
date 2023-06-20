@@ -381,6 +381,8 @@ body {
   line-height: 58px;
   color: #000000;
   margin: 10px;
+  text-align: center;
+  width: 200px;
 }
 
 
@@ -674,12 +676,16 @@ body {
   flex-direction: column;
 }
 
+.tags {
+  display: flex;
+}
+
 .tag {
   font-weight: 400;
   font-size: 15px;
   color: #FFFFFF;
   padding: 5px 10px 5px 10px;
-
+  margin-right: 10px;
   border-radius: 5px;
   width: fit-content;
 
@@ -959,10 +965,11 @@ body {
   border: 1px solid #D8D8D8;
   border-radius: 5px;
   height: 100px;
-  padding-right: 10px;
-  padding-left: 10px;
+  padding: 10px;
   box-sizing: border-box;
   width: 100%;
+  font-size: 15px;
+  font-weight: 500;
 }
 
 /* CreatePost fin */

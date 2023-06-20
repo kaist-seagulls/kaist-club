@@ -86,9 +86,12 @@
             <div v-for="(e, eventIdx) in day.events" :key="eventIdx">
               <div class="dimmed-date" v-if="day.month !== Number(month)">
               </div>
-              <div class="calendar-flex" v-else>
-                <span class="circle"></span>
-                {{ e ? (e.title) : "" }}
+              <div v-else>
+                <div class="event" v-if="(e, eventIdx) in day.events == true">
+                  {{ e ? (e.title) : "" }}
+                </div>
+                <div class="event" id="dimmed-date" v-else>
+                </div>
               </div>
             </div>
           </div>

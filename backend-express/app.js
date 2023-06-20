@@ -1148,6 +1148,7 @@ app.post("/api/v1/check-auth-code", (req, res) => {
 app.post("/api/v1/sign-in", (req, res) => {
   const userId = req.body.userId
   const pw = req.body.password
+  console.log(userId, pw)
   doTransaction(res, async (D) => {
     const user = await D.Users.lookupBySign(userId, pw)
     if (!user) {
@@ -1371,6 +1372,7 @@ const localToUTC = (localDate) => {
 }
 
 app.get("/api/v1/retrieve", (req, res) => {
+  console.log("retrieve")
   const authority = req.query.requiredAuthority
   if (authority === "n") {
     if (isSignedIn(req)) {

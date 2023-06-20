@@ -642,6 +642,7 @@ export default createStore({
         }
       }
       else if (viewName === "main") {
+        console.log("fetchData main")
         const options = {
           requiredAuthority: "i",
           relatedClubs: true,
