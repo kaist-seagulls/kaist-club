@@ -15,11 +15,28 @@
             </div>
           </div>
           <div>
-            <input class="pic-upload" type="file" accept="image/png, image/jpeg" @change="changeFile" multiple>
+            <button>
+              <label for="create-post-view-file-input">
+                <div>
+                  Upload images (PNG/JPEG)
+                </div>
+              </label>
+            </button>
+            <input type="file" id="create-post-view-file-input" accept="image/png, image/jpeg" @change="changeFile"
+              multiple style="display: none">
           </div>
           <div class="img-box">
-            <div v-for="(file, index) in files" v-bind:key="index">
-              <img class="img-setting" :src="imgUrls[index]">
+            <div v-for="(url, index) in imgUrls" v-bind:key="index">
+              <div class="img-wrapper" @mouseenter="mouseEnterImage(index)" @mouseleave="mouseLeaveImage(index)">
+                <div class="img-delete-overlay" v-if="isMouseOver[index]">
+                  <div class="img-delete-button" @click="removeFile(index)">
+                    <div class="img-delete-button-text">
+                      Delete
+                    </div>
+                  </div>
+                </div>
+                <img class="img-setting" :src="url">
+              </div>
             </div>
           </div>
           <div class="content-input-section">
@@ -27,7 +44,7 @@
               Contents
             </div>
             <div style="width: 100%;">
-              <input class="content-text-box" type="text" v-model="content">
+              <textarea class="content-text-box" v-model="content" />
             </div>
           </div>
         </div>
@@ -106,6 +123,7 @@ export default {
       isOnly: false,
       content: "",
       imgUrls: [],
+      isMouseOver: [],
     }
   },
   computed: {
@@ -140,18 +158,31 @@ export default {
         console.log(err)
       }
     },
-    addFile() {
-      this.files.push(null)
-    },
     removeFile(index) {
       this.files.splice(index, 1)
+      this.imgUrls.splice(index, 1)
+      this.isMouseOver.splice(index, 1)
     },
     changeFile(event) {
-      this.files = event.target.files || event.dataTransfer.files
-      for (const file of this.files) {
+      console.log("changeFile")
+      const newFiles = event.target.files
+      this.files = this.files.concat(newFiles)
+      for (const file of newFiles) {
         const url = URL.createObjectURL(file)
         this.imgUrls.push(url)
+        this.isMouseOver.push(false)
       }
+      console.log(this.files)
+      for (const imgUrl of this.imgUrls) {
+        console.log(imgUrl)
+      }
+      event.target.value = null
+    },
+    mouseEnterImage(index) {
+      this.isMouseOver[index] = true
+    },
+    mouseLeaveImage(index) {
+      this.isMouseOver[index] = false
     },
     checkDate(event) {
       if (this.startDate > this.endDate) {
