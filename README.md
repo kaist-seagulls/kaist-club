@@ -2,7 +2,6 @@
 KAIST-Club is a club schedule manager for Kaistian.
 
 ## Prerequisites
----
 ### Node.js
 18.x or later version is needed.
 ### Npm
@@ -12,7 +11,6 @@ KAIST-Club is a club schedule manager for Kaistian.
 ### Other dependencies
 JS Module dependency is managed by npm with packages.json file.
 ## Run a server
----
 we assume the server is run by linux.
 
  The server for Club KAIST consists of three part: MySQL server, express, vue.
